@@ -25,6 +25,7 @@ app.use(express.static(path.join(__dirname, "src")));
 
 //user routes
 app.use("/api/v1", require("./src/routes/authentication"));
+app.use("/api/v1", require("./src/routes/customerCare"));
 // app.use("/api/v1", require("./src/routes/job.js"));
 // app.use("/api/v1", require("./src/routes/Setting"));
 // app.use("/api/v1", require("./src/routes/Seeker"));
@@ -32,7 +33,6 @@ app.use("/api/v1", require("./src/routes/authentication"));
 // app.use("/api/v1", require("./src/routes/Admin"));
 // app.use("/api/v1", require("./src/routes/Payment"));
 // app.use("/api/v1", require("./src/routes/conflictResolution"));
-// app.use("/api/v1", require("./src/routes/customerCare"));
 // app.use("/api/v1", require("./src/routes/Activities"));
 
 app.listen(PORT, () => {
