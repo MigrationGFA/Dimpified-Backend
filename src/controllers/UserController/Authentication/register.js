@@ -7,8 +7,30 @@ const Register = async (req, res) => {
   try {
     await User.sync();
 
-    const { ecosystem, email, password, userType } = req.body;
-    const details = ["ecosystem", "userType", "email", "password"];
+    const {
+      ecosystem,
+      email,
+      password,
+      userType,
+      contactName,
+      phoneNumber,
+      country,
+      howDidLearnAboutUs,
+      numberOfTargetAudience,
+      category,
+    } = req.body;
+    const details = [
+      "ecosystem",
+      "userType",
+      "email",
+      "password",
+      "contactName",
+      "phoneNumber",
+      "country",
+      "howDidLearnAboutUs",
+      "numberOfTargetAudience",
+      "category",
+    ];
 
     for (const detail of details) {
       if (!req.body[detail]) {
@@ -33,6 +55,12 @@ const Register = async (req, res) => {
           password: hashedPassword,
           role: userType,
           verificationToken,
+          contactName,
+          phoneNumber,
+          country,
+          howDidLearnAboutUs,
+          numberOfTargetAudience,
+          category,
         });
 
         // Send verification email
@@ -63,6 +91,12 @@ const Register = async (req, res) => {
         verificationToken,
         role: userType,
         isVerified: false,
+        contactName,
+        phoneNumber,
+        country,
+        howDidLearnAboutUs,
+        numberOfTargetAudience,
+        category,
       });
 
       await sendVerificationEmail({

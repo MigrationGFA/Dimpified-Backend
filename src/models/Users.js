@@ -10,7 +10,7 @@ const User = sequelize.define(
       autoIncrement: true,
     },
     ecosystem: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: false,
       validate: {
         notEmpty: true,
@@ -32,6 +32,27 @@ const User = sequelize.define(
         notEmpty: true,
       },
     },
+    contactName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    phoneNumber: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    country: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
     isVerified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
@@ -44,6 +65,29 @@ const User = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
       defaultValue: "creator",
+    },
+    howDidLearnAboutUs: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    numberOfTargetAudience: {
+      type: DataTypes.ENUM,
+      values: [
+        "1-100",
+        "100-1000",
+        "1000-10000",
+        "10000-100000",
+        "100000-1000000",
+        "1000000+",
+      ],
+      allowNull: false,
+    },
+    category: {
+      type: DataTypes.TEXT,
+      allowNull: true,
     },
   },
   {
