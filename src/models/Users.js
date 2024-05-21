@@ -41,7 +41,7 @@ const User = sequelize.define(
     passwordTokenExpirationDate: DataTypes.STRING,
     verificationToken: DataTypes.STRING,
     numberOfTargetAudience: DataTypes.STRING,
-     categoryInterest: {
+    categoryInterest: {
       type: DataTypes.TEXT,
       allowNull: true,
     },

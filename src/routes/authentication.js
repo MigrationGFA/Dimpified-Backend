@@ -1,7 +1,10 @@
 const express = require("express");
 const router = express.Router();
 
-const Register = require("../controllers/UserController/Authentication/register");
+const {
+  Register,
+  onBoarding,
+} = require("../controllers/UserController/Authentication/register");
 const verifyEmail = require("../controllers/UserController/Authentication/verifyEmail");
 const resendEmail = require("../controllers/UserController/Authentication/resendEmail");
 const Login = require("../controllers/UserController/Authentication/login");
@@ -10,6 +13,7 @@ const resetPassword = require("../controllers/UserController/Authentication/rese
 const logout = require("../controllers/UserController/Authentication/logout");
 
 router.post("/register", Register);
+router.post("/onboarding", onBoarding);
 router.post("/verify-email", verifyEmail);
 router.post("/resend-email", resendEmail);
 router.post("/login", Login);
