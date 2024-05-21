@@ -37,7 +37,7 @@ const Register = async (req, res) => {
 
         // Send verification email
         await sendVerificationEmail({
-          organizationName: updateUser.organizationName,
+          username: updateUser.organizationName,
           email: updateUser.email,
           verificationToken: updateUser.verificationToken,
           origin: process.env.ORIGIN,
@@ -80,4 +80,39 @@ const Register = async (req, res) => {
   }
 };
 
-module.exports = Register;
+const onBoarding = async (req, res) => {
+  try {
+    const { userId, numberOfTargetAudience, categoryInterest } = req.body;
+    const details = ["userId", "numberOfTargetAudience", "categoryInterest"];
+
+    for (const detail of details) {
+      if (!req.body[detail]) {
+        return res.status(400).json({ message: `${detail} is required` });
+      }
+    }
+    const [updatedRows] = await User.update(
+      {
+        numberOfTargetAudience,
+        categoryInterest,
+      },
+      {
+        where: { id: userId },
+      }
+    );
+    if (updatedRows === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const updatedUser = await User.findOne({ where: { id: userId } });
+
+    return res.status(200).json({
+      message: "Onboarding successful",
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.error("Error during onboarding:", error);
+    res.status(500).json({ message: "Internal server error", error });
+  }
+};
+
+module.exports = { Register, onBoarding };
