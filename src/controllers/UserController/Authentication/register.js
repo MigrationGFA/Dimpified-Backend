@@ -7,8 +7,8 @@ const Register = async (req, res) => {
   try {
     await User.sync();
 
-    const { ecosystem, email, password, userType } = req.body;
-    const details = ["ecosystem", "userType", "email", "password"];
+    const { organizationName, email, password, userType } = req.body;
+    const details = ["organizationName", "userType", "email", "password"];
 
     for (const detail of details) {
       if (!req.body[detail]) {
@@ -29,7 +29,7 @@ const Register = async (req, res) => {
 
         // Update user information using the instance method 'update'
         const updateUser = await duplicateUser.update({
-          ecosystem,
+          organizationName,
           password: hashedPassword,
           role: userType,
           verificationToken,
@@ -37,7 +37,7 @@ const Register = async (req, res) => {
 
         // Send verification email
         await sendVerificationEmail({
-          ecosystem: updateUser.ecosystem,
+          organizationName: updateUser.organizationName,
           email: updateUser.email,
           verificationToken: updateUser.verificationToken,
           origin: process.env.ORIGIN,
@@ -57,7 +57,7 @@ const Register = async (req, res) => {
       const verificationToken = crypto.randomBytes(40).toString("hex");
 
       const newUser = await User.create({
-        ecosystem,
+        organizationName,
         email,
         password: hashedPassword,
         verificationToken,
@@ -66,7 +66,7 @@ const Register = async (req, res) => {
       });
 
       await sendVerificationEmail({
-        ecosystem: newUser.ecosystem,
+        organizationName: newUser.organizationName,
         email: newUser.email,
         verificationToken: newUser.verificationToken,
         origin: process.env.ORIGIN,
