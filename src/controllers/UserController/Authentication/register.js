@@ -90,10 +90,21 @@ const onBoarding = async (req, res) => {
         return res.status(400).json({ message: `${detail} is required` });
       }
     }
+    if (
+      !categoryInterest &&
+      !Array.isArray(categoryInterest) &&
+      categoryInterest.length === 0
+    ) {
+      return res.status(400).json({
+        message: "Please choose from the selected fields selected field.",
+      });
+    }
+
+    const interestStringified = JSON.stringify(categoryInterest);
     const [updatedRows] = await User.update(
       {
         numberOfTargetAudience,
-        categoryInterest,
+        categoryInterest: interestStringified,
       },
       {
         where: { id: userId },
