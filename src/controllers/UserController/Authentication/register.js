@@ -7,30 +7,8 @@ const Register = async (req, res) => {
   try {
     await User.sync();
 
-    const {
-      ecosystem,
-      email,
-      password,
-      userType,
-      contactName,
-      phoneNumber,
-      country,
-      howDidLearnAboutUs,
-      numberOfTargetAudience,
-      category,
-    } = req.body;
-    const details = [
-      "ecosystem",
-      "userType",
-      "email",
-      "password",
-      "contactName",
-      "phoneNumber",
-      "country",
-      "howDidLearnAboutUs",
-      "numberOfTargetAudience",
-      "category",
-    ];
+    const { organizationName, email, password, userType } = req.body;
+    const details = ["organizationName", "userType", "email", "password"];
 
     for (const detail of details) {
       if (!req.body[detail]) {
@@ -51,21 +29,15 @@ const Register = async (req, res) => {
 
         // Update user information using the instance method 'update'
         const updateUser = await duplicateUser.update({
-          ecosystem,
+          organizationName,
           password: hashedPassword,
           role: userType,
           verificationToken,
-          contactName,
-          phoneNumber,
-          country,
-          howDidLearnAboutUs,
-          numberOfTargetAudience,
-          category,
         });
 
         // Send verification email
         await sendVerificationEmail({
-          ecosystem: updateUser.ecosystem,
+          organizationName: updateUser.organizationName,
           email: updateUser.email,
           verificationToken: updateUser.verificationToken,
           origin: process.env.ORIGIN,
@@ -85,22 +57,16 @@ const Register = async (req, res) => {
       const verificationToken = crypto.randomBytes(40).toString("hex");
 
       const newUser = await User.create({
-        ecosystem,
+        organizationName,
         email,
         password: hashedPassword,
         verificationToken,
         role: userType,
         isVerified: false,
-        contactName,
-        phoneNumber,
-        country,
-        howDidLearnAboutUs,
-        numberOfTargetAudience,
-        category,
       });
 
       await sendVerificationEmail({
-        ecosystem: newUser.ecosystem,
+        organizationName: newUser.organizationName,
         email: newUser.email,
         verificationToken: newUser.verificationToken,
         origin: process.env.ORIGIN,

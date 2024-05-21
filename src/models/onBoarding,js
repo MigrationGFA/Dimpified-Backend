@@ -1,16 +1,16 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/dbConnect");
 
-const User = sequelize.define(
-  "User",
+const onBoarding = sequelize.define(
+  "onBoarding",
   {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    organizationName: {
-      type: DataTypes.STRING,
+    ecosystem: {
+      type: DataTypes.TEXT,
       allowNull: false,
       validate: {
         notEmpty: true,
@@ -40,15 +40,26 @@ const User = sequelize.define(
     passwordToken: DataTypes.STRING,
     passwordTokenExpirationDate: DataTypes.STRING,
     verificationToken: DataTypes.STRING,
-    role: {
-      type: DataTypes.STRING,
+    numberOfTargetAudience: {
+      type: DataTypes.ENUM,
+      values: [
+        "1-100",
+        "100-1000",
+        "1000-10000",
+        "10000-100000",
+        "100000-1000000",
+        "1000000+",
+      ],
       allowNull: false,
-      defaultValue: "creator",
+    },
+    categoryInterest: {
+      type: DataTypes.TEXT,
+      allowNull: true,
     },
   },
   {
-    tableName: "User",
+    tableName: "onBoarding",
   }
 );
 
-module.exports = User;
+module.exports = onBoarding;
