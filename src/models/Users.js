@@ -9,7 +9,7 @@ const User = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    ecosystem: {
+    organizationName: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
@@ -40,6 +40,11 @@ const User = sequelize.define(
     passwordToken: DataTypes.STRING,
     passwordTokenExpirationDate: DataTypes.STRING,
     verificationToken: DataTypes.STRING,
+    numberOfTargetAudience: DataTypes.STRING,
+    categoryInterest: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
     role: {
       type: DataTypes.STRING,
       allowNull: false,

@@ -84,7 +84,7 @@ const Login = async (req, res) => {
 
     const userSubset = {
       UserId: user.id,
-      ecosystem: user.ecosystem,
+      organizationName: user.organizationName,
       email: user.email,
       role: user.role,
       image: user.imageUrl,
