@@ -48,6 +48,8 @@ const Login = async (req, res) => {
     });
     const currentDate = new Date();
     const userAgent = req.headers["user-agent"];
+    const hasInterests =
+        user.categoryInterest && user.categoryInterest !== null ? "yes" : "no";
 
     let accessToken, refreshToken;
 
@@ -88,6 +90,7 @@ const Login = async (req, res) => {
       email: user.email,
       role: user.role,
       image: user.imageUrl,
+      interest: hasInterests,
     };
 
     return res.status(200).json({
