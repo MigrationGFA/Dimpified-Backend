@@ -19,7 +19,7 @@ const verifyEmail = async (req, res) => {
     user.verificationToken = "";
     await user.save();
     await sendWelcomeEmail({
-      username: user.username,
+      username: user.organizationName,
       email: email,
     });
     return res.status(200).json({ msg: "Email verified successfully" });

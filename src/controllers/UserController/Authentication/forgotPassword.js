@@ -34,7 +34,7 @@ const forgotPassword = async (req, res) => {
     await user.save();
 
     await sendForgotPasswordEmail({
-      username: user.username,
+      username: user.organizationName,
       email: user.email,
       token: resetToken,
       origin: process.env.ORIGIN,

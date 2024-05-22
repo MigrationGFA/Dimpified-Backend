@@ -1,7 +1,4 @@
-const sendEmail = require("./sendEmail");
-
-const sendWelcomeEmail = async ({ username, email }) => {
-  const message = `<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -302,15 +299,3 @@ const sendWelcomeEmail = async ({ username, email }) => {
     </main>
   </body>
 </html>
-`;
-
-  return sendEmail({
-    to: email,
-    subject: "Welcome To UNLEASHIFIED",
-    html: `<h4> Hello, ${username}</h4>
-    ${message}
-    `,
-  });
-};
-
-module.exports = sendWelcomeEmail;

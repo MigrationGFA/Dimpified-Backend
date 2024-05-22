@@ -8,7 +8,7 @@ const sendForgotPasswordEmail = async ({ username, email, token, origin }) => {
 
   return sendEmail({
     to: email,
-    subject: "UNLEASHIFIED Reset Password",
+    subject: "Dimpified Reset Password",
     html: `<h4> Hello, ${username}</h4>
     ${message}
     `,

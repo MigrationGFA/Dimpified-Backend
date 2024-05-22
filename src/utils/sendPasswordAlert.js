@@ -8,7 +8,7 @@ const sendResetPasswordAlert = async ({ username, email, origin }) => {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>UNLEASHIFIED RESET PASSWORD</title>
+    <title>Dimpified RESET PASSWORD</title>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Outfit&display=swap");
 
@@ -78,6 +78,7 @@ const sendResetPasswordAlert = async ({ username, email, origin }) => {
       }
 
       footer .wrapper {
+        padding-top: 10px;
         padding-left: 20px;
         padding-right: 20px;
         padding-bottom: 60px;
@@ -116,78 +117,82 @@ const sendResetPasswordAlert = async ({ username, email, origin }) => {
     <main class="container">
       <header class="header">
         <img  alt="Unleashified Logo"
-                        src="https://res.cloudinary.com/djhnaee9k/image/upload/v1714038296/et5gicqtnuw4u1tqujjr.png"
+                        src="https://gfa-tech.com/images/gfa-blue.png"
                         style="height: 60px" />
       </header>
       <section class="section-content">
         <p>Hello ${username}</p>
         <p>
-          Your <span>UNLEASHIFIED</span> Account was successfully changed. If
+          Your <span>Dimpified</span> Account password was successfully changed. If
           you did not initiate this process, please contact our  <a href="${resetURL}"><span>support</span></a></p> team in
           order to help you get you account back
         </p>
 
         <p class="last">Best regards,</p>
-        <p>The <span>UNLEASHIFIED</span> Team.</p>
+        <p>The <span>Dimpified</span> Team.</p>
       </section>
       <footer>
         <div class="wrapper">
           <h2>Follow us</h2>
           <div class="social-media">
             <a
-              href="https://web.facebook.com/getfundedafricaoffical?_rdc=1&_rdr"
+              href="https://web.facebook.com/dimpified"
               target="_blank"
               rel="noopener noreferrer"
             >
               <img
-                src="./images/facebook.png"
+                src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg"
                 alt="facebook"
                 style="cursor: pointer; height: 30px"
               />
             </a>
-            <a href="" target="_blank" rel="noopener noreferrer">
+            <a
+              href="https://instagram.com/dimpified"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <img
-                src="./images/instagram.png"
+                src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png"
                 alt="instagram"
                 style="cursor: pointer; height: 30px"
               />
             </a>
             <a
-              href="https://twitter.com/gfunded_africa"
+              href="https://twitter.com/dimpified"
               target="_blank"
               rel="noopener noreferrer"
             >
               <img
-                src="./images/twitter.png"
+                src="https://upload.wikimedia.org/wikipedia/commons/6/6f/Logo_of_Twitter.svg"
                 alt="twitter"
                 style="cursor: pointer; height: 30px"
               />
             </a>
             <a
-              href="https://www.linkedin.com/company/gfa-technologies/mycompany/"
+              href="https://www.linkedin.com/company/dimpified"
               target="_blank"
               rel="noopener noreferrer"
             >
               <img
-                src="./images/linkedlin.png"
-                alt="linkedil"
+                src="https://upload.wikimedia.org/wikipedia/commons/0/01/LinkedIn_Logo.svg"
+                alt="linkedin"
                 style="cursor: pointer; height: 30px"
               />
             </a>
             <a
-              href="https://www.youtube.com/channel/UCADl1rDbt5BGQKkMfMBxsOQ"
+              href="https://www.youtube.com/dimpified"
               target="_blank"
               rel="noopener noreferrer"
             >
               <img
-                src="./images/youtube.png"
-                alt="linkedil"
+                src="https://upload.wikimedia.org/wikipedia/commons/4/42/YouTube_icon_%282013-2017%29.png"
+                alt="youtube"
                 style="cursor: pointer; height: 30px; margin-left: 15px"
               />
             </a>
           </div>
           <p class="copyright">
-            <span>&copy;</span> 2024 Remsana. All rights reserved.
+            <span>&copy;</span> 2024 Dimpified. All rights reserved.
           </p>
         </div>
       </footer>
@@ -198,7 +203,7 @@ const sendResetPasswordAlert = async ({ username, email, origin }) => {
 
   return sendEmail({
     to: email,
-    subject: "UNLEASHIFIED Reset Password",
+    subject: "Dimpified Reset Password",
     html: `<h4> Hello, ${username}</h4>
     ${message}
     `,
