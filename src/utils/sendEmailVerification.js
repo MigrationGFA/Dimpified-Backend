@@ -1,7 +1,7 @@
 const sendEmail = require("./sendEmail");
 
 const sendVerificationEmail = async ({
-  username,
+  organizationName,
   email,
   verificationToken,
   origin,
@@ -13,8 +13,8 @@ const sendVerificationEmail = async ({
 
   return sendEmail({
     to: email,
-    subject: "UNLEASHIFIED Email Confirmation",
-    html: `<h4> Hello, ${username}</h4>
+    subject: "Dimpified Email Confirmation",
+    html: `<h4> Hello, ${organizationName}</h4>
     ${message}
     `,
   });

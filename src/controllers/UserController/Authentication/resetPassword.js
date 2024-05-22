@@ -36,7 +36,7 @@ const resetPassword = async (req, res) => {
       await user.save();
 
       await sendResetPasswordAlert({
-        username: user.username,
+        username: user.organizationName,
         email: user.email,
         origin: process.env.ORIGIN,
       });
