@@ -306,7 +306,7 @@ const sendWelcomeEmail = async ({ username, email }) => {
 
   return sendEmail({
     to: email,
-    subject: "Welcome To UNLEASHIFIED",
+    subject: "Welcome To DIMPIFIED",
     html: `<h4> Hello, ${username}</h4>
     ${message}
     `,
