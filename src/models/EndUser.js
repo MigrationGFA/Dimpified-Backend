@@ -1,15 +1,15 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/dbConnect");
 
-const User = sequelize.define(
-  "User",
+const EndUser = sequelize.define(
+  "EndUser",
   {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    organizationName: {
+    ecosystemId: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
@@ -40,20 +40,10 @@ const User = sequelize.define(
     passwordToken: DataTypes.STRING,
     passwordTokenExpirationDate: DataTypes.STRING,
     verificationToken: DataTypes.STRING,
-    numberOfTargetAudience: DataTypes.STRING,
-    categoryInterest: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    role: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      defaultValue: "creator",
-    },
   },
   {
-    tableName: "User",
+    tableName: "EndUser",
   }
 );
 
-module.exports = User;
+module.exports = EndUser;

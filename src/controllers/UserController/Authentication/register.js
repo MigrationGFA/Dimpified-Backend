@@ -1,45 +1,80 @@
-const User = require("../../../models/Users");
+const Admin = require("../../../models/GfaAdmin");
+const EndUser = require("../../../models/EndUser");
+const Creator = require("../../../models/Creator");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const sendVerificationEmail = require("../../../utils/sendEmailVerification");
 
 const Register = async (req, res) => {
   try {
-    await User.sync();
+    const { email, password, userType, organizationName, ecosystemId } =
+      req.body;
 
-    const { organizationName, email, password, userType } = req.body;
-    const details = ["organizationName", "userType", "email", "password"];
+    // Define required details based on userType
+    const details =
+      userType === "creator"
+        ? ["organizationName", "userType", "email", "password"]
+        : userType === "user"
+        ? ["ecosystemId", "userType", "email", "password"]
+        : ["userType", "email", "password"];
 
+    // Validate input
     for (const detail of details) {
       if (!req.body[detail]) {
-        return res.status(400).json({ msg: `${detail} is required` });
+        return res.status(400).json({ message: `${detail} is required` });
       }
     }
-    const duplicateUser = await User.findOne({
-      where: {
-        email: email,
-      },
-    });
 
+    // Check if ecosystemId is valid for user type 'user'
+    if (userType === "user") {
+      const ecosystem = await Creator.findOne({ where: { id: ecosystemId } });
+      console.log(ecosystem);
+      if (!ecosystem) {
+        return res.status(400).json({ message: "Invalid ecosystemId" });
+      }
+    }
+
+    // Select appropriate model based on userType
+    let UserModel;
+    if (userType === "admin") {
+      UserModel = Admin;
+    } else if (userType === "user") {
+      UserModel = EndUser; // Use the EndUser model
+    } else if (userType === "creator") {
+      UserModel = Creator; // Use the Creator model for creators
+    } else {
+      return res.status(400).json({ message: "Invalid user type" });
+    }
+
+    await UserModel.sync();
+
+    // Check for duplicate user
+    const duplicateUser = await UserModel.findOne({ where: { email } });
     if (duplicateUser) {
-      // if the emailis not verify, update the user account
-      if (!duplicateUser.isVerify) {
+      if (!duplicateUser.isVerified) {
         const hashedPassword = await bcrypt.hash(password, 10);
         const verificationToken = crypto.randomBytes(40).toString("hex");
 
-        // Update user information using the instance method 'update'
-        const updateUser = await duplicateUser.update({
-          organizationName,
+        const updateUserPayload = {
           password: hashedPassword,
-          role: userType,
+          userType,
           verificationToken,
-        });
+        };
+
+        if (userType === "creator") {
+          updateUserPayload.organizationName = organizationName;
+        } else if (userType === "user") {
+          updateUserPayload.ecosystemId = ecosystemId;
+        }
+
+        const updatedUser = await duplicateUser.update(updateUserPayload);
 
         // Send verification email
         await sendVerificationEmail({
-          username: updateUser.organizationName,
-          email: updateUser.email,
-          verificationToken: updateUser.verificationToken,
+          organizationName: updatedUser.organizationName || updatedUser.email,
+          email: updatedUser.email,
+          verificationToken: updatedUser.verificationToken,
+          ecosystemId: userType === "user" ? ecosystemId : null,
           origin: process.env.ORIGIN,
         });
 
@@ -47,28 +82,37 @@ const Register = async (req, res) => {
           .status(201)
           .json({ message: "Verification email resent successfully" });
       } else {
-        return res
-          .status(409)
-          .json({ message: "Email address is associated with an account" });
+        return res.status(409).json({
+          message: "Email address is associated with an existing account",
+        });
       }
     } else {
-      // If the user doesn't exist, create a new user
+      // Create a new user
       const hashedPassword = await bcrypt.hash(password, 10);
       const verificationToken = crypto.randomBytes(40).toString("hex");
 
-      const newUser = await User.create({
-        organizationName,
+      const newUserPayload = {
         email,
         password: hashedPassword,
         verificationToken,
-        role: userType,
+        userType,
         isVerified: false,
-      });
+      };
 
+      if (userType === "creator") {
+        newUserPayload.organizationName = organizationName;
+      } else if (userType === "user") {
+        newUserPayload.ecosystemId = ecosystemId;
+      }
+
+      const newUser = await UserModel.create(newUserPayload);
+
+      // Send verification email
       await sendVerificationEmail({
-        organizationName: newUser.organizationName,
+        organizationName: newUser.organizationName || newUser.email,
         email: newUser.email,
         verificationToken: newUser.verificationToken,
+        ecosystemId: userType === "user" ? ecosystemId : null,
         origin: process.env.ORIGIN,
       });
 
@@ -114,7 +158,7 @@ const onBoarding = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const updatedUser = await User.findOne({ where: { id: userId } });
+    const updatedUser = await Creator.findOne({ where: { id: userId } });
 
     return res.status(200).json({
       message: "Onboarding successful",

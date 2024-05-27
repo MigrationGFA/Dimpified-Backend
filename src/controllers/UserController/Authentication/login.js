@@ -1,4 +1,6 @@
-const User = require("../../../models/Users");
+const Admin = require("../../../models/GfaAdmin");
+const EndUser = require("../../../models/EndUser");
+const Creator = require("../../../models/Creator");
 const bcrypt = require("bcryptjs");
 const Token = require("../../../models/Token");
 const {
@@ -9,83 +11,87 @@ const {
 const Login = async (req, res) => {
   try {
     await Token.sync();
-    const { email, password } = req.body;
-    const details = ["password", "email"];
+    const { email, password, userType } = req.body;
 
-    for (const detail of details) {
-      if (!req.body[detail]) {
-        return res.status(400).json({ message: `${detail} is required` });
-      }
+    // Validate input
+    if (!email || !password || !userType) {
+      return res
+        .status(400)
+        .json({ message: "Email, password, and user type are required" });
     }
 
-    const user = await User.findOne({
-      where: {
-        email: email,
-      },
-    });
+    // Determine the model based on userType
+    let UserModel;
+    if (userType === "admin") {
+      UserModel = Admin;
+    } else if (userType === "user") {
+      UserModel = EndUser;
+    } else if (userType === "creator") {
+      UserModel = Creator;
+    } else {
+      return res.status(400).json({ message: "Invalid user type" });
+    }
+
+    // Find user by email in the specified model
+    const user = await UserModel.findOne({ where: { email } });
 
     if (!user) {
-      return res.status(404).json({ message: "Invalid email Credential" });
+      return res.status(404).json({ message: "Invalid email or password" });
     }
 
+    // Check password validity
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(404).json({ message: "Invalid password Credential" });
+      return res.status(404).json({ message: "Invalid email or password" });
     }
 
     // Check if the user's account is verified
     if (!user.isVerified) {
       return res
         .status(401)
-        .json({ msg: "Please Check your mail to verify your account" });
+        .json({ message: "Please verify your account via email" });
     }
 
-    // Check for token
-    const userTokens = await Token.findOne({
-      where: {
-        userId: user.id,
-      },
-    });
+    // Check for existing tokens
+    const userTokens = await Token.findOne({ where: { userId: user.id } });
     const currentDate = new Date();
     const userAgent = req.headers["user-agent"];
-    const hasInterests =
-        user.categoryInterest && user.categoryInterest !== null ? "yes" : "no";
+    const hasInterests = user.categoryInterest ? "yes" : "no";
 
     let accessToken, refreshToken;
 
     if (
       userTokens &&
-      userTokens.isAccessTokenValid > currentDate &&
-      userTokens.isRefreshTokenValid > currentDate
+      userTokens.accessTokenExpiration > currentDate &&
+      userTokens.refreshTokenExpiration > currentDate
     ) {
       // Tokens exist and are valid, use them
       accessToken = userTokens.accessToken;
       refreshToken = userTokens.refreshToken;
-      await userTokens.update({
-        userAgent: userAgent,
-      });
+      await userTokens.update({ userAgent });
     } else {
-      // Tokens don't exist or are invalid, generate new tokens
+      // Generate new tokens
       accessToken = generateAccessToken(user.id, user.role);
       refreshToken = generateRefreshToken(user.id, user.role);
 
-      const accessTokenExpiration = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
+      const accessTokenExpiration = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
       const refreshTokenExpiration = new Date(
         Date.now() + 15 * 24 * 60 * 60 * 1000
-      ); // 15 days from now
-      // Save the new tokens to the database
+      ); // 15 days
+
+      // Save new tokens
       await Token.create({
-        accessToken: accessToken,
-        refreshToken: refreshToken,
+        accessToken,
+        refreshToken,
         userId: user.id,
-        userAgent: userAgent,
-        accessTokenExpiration: accessTokenExpiration,
-        refreshTokenExpiration: refreshTokenExpiration,
+        userAgent,
+        accessTokenExpiration,
+        refreshTokenExpiration,
       });
     }
 
     const userSubset = {
-      UserId: user.id,
+      userId: user.id,
       organizationName: user.organizationName,
       email: user.email,
       role: user.role,
@@ -94,14 +100,14 @@ const Login = async (req, res) => {
     };
 
     return res.status(200).json({
-      message: "Login successfull",
-      accessToken: accessToken,
-      refreshToken: refreshToken,
+      message: "Login successful",
+      accessToken,
+      refreshToken,
       data: userSubset,
     });
   } catch (error) {
     console.error("Error during login:", error);
-    res.status(500).json({ message: "internal server error", error });
+    return res.status(500).json({ message: "Internal server error", error });
   }
 };
 
