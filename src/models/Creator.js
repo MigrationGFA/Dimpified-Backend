@@ -50,9 +50,13 @@ const Creator = sequelize.define(
       allowNull: false,
       defaultValue: "creator",
     },
+    userCount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
   },
   {
-    tableName: "User",
+    tableName: "Creator",
   }
 );
 

@@ -16,6 +16,10 @@ const EndUser = sequelize.define(
         notEmpty: true,
       },
     },
+    username: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     email: {
       type: DataTypes.STRING,
       allowNull: false,

@@ -7,15 +7,21 @@ const sendVerificationEmail = require("../../../utils/sendEmailVerification");
 
 const Register = async (req, res) => {
   try {
-    const { email, password, userType, organizationName, ecosystemId } =
-      req.body;
+    const {
+      email,
+      password,
+      userType,
+      organizationName,
+      ecosystemId,
+      username,
+    } = req.body;
 
     // Define required details based on userType
     const details =
       userType === "creator"
         ? ["organizationName", "userType", "email", "password"]
         : userType === "user"
-        ? ["ecosystemId", "userType", "email", "password"]
+        ? ["ecosystemId", "userType", "username", "email", "password"]
         : ["userType", "email", "password"];
 
     // Validate input
@@ -25,19 +31,21 @@ const Register = async (req, res) => {
       }
     }
 
+    let organizationNameForEmail = organizationName;
     // Check if ecosystemId is valid for user type 'user'
     if (userType === "user") {
       const ecosystem = await Creator.findOne({ where: { id: ecosystemId } });
-      console.log(ecosystem);
       if (!ecosystem) {
         return res.status(400).json({ message: "Invalid ecosystemId" });
       }
+      organizationNameForEmail = ecosystem.organizationName;
+      console.log(organizationName);
     }
 
     // Select appropriate model based on userType
     let UserModel;
     if (userType === "admin") {
-      UserModel = Admin;
+      UserModel = Admin; // Use the GfaAdmin model
     } else if (userType === "user") {
       UserModel = EndUser; // Use the EndUser model
     } else if (userType === "creator") {
@@ -71,7 +79,8 @@ const Register = async (req, res) => {
 
         // Send verification email
         await sendVerificationEmail({
-          organizationName: updatedUser.organizationName || updatedUser.email,
+          organizationName:
+            updatedUser.organizationName || updatedUser.username,
           email: updatedUser.email,
           verificationToken: updatedUser.verificationToken,
           ecosystemId: userType === "user" ? ecosystemId : null,
@@ -93,6 +102,7 @@ const Register = async (req, res) => {
 
       const newUserPayload = {
         email,
+        username,
         password: hashedPassword,
         verificationToken,
         userType,
@@ -109,7 +119,7 @@ const Register = async (req, res) => {
 
       // Send verification email
       await sendVerificationEmail({
-        organizationName: newUser.organizationName || newUser.email,
+        organizationName: newUser.organizationName || newUser.username,
         email: newUser.email,
         verificationToken: newUser.verificationToken,
         ecosystemId: userType === "user" ? ecosystemId : null,
