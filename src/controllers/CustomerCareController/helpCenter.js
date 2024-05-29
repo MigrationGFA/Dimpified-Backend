@@ -7,7 +7,7 @@ const userHelpCenter = async (req, res) => {
     await HelpCenter.sync()
     try {
         const { userId,
-            role,
+            //role,
             reason,
             message,
             creatorId,
@@ -15,7 +15,7 @@ const userHelpCenter = async (req, res) => {
         } = req.body;
         const details = [
             "userId",
-            "role",
+            //"role",
             "reason",
             "message",
             "creatorId",
@@ -32,7 +32,7 @@ const userHelpCenter = async (req, res) => {
         }
         const createHelpRequest = await HelpCenter.create({
             userId,
-            role,
+            //role,
             reason,
             message,
             creatorId,
@@ -53,7 +53,7 @@ const getAllHelpRequest = async (req, res) => {
     try {
         const allhelpRequest = await HelpCenter.findAll({
             order: [['createdAt', 'DESC']],
-            include: [{ model: User, attributes: ['username', 'email'] }]
+            attributes: ['username', 'email']
         })
 
         res.status(200).json({ allhelpRequest })
