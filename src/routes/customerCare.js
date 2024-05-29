@@ -7,16 +7,22 @@ const {
   contactUsCompleted,
 } = require("../controllers/CustomerCareController/contactUs");
 
-const { userHelpCenter, getAllHelpRequest, helpRequestCompleted } = require("../controllers/CustomerCareController/helpCenter")
+const { userHelpCenter, getAllHelpRequest, helpRequestCompleted } = require("../controllers/CustomerCareController/helpCenter");
+const { creatorSupport, getAllSupportRequest } = require("../controllers/CustomerCareController/support");
+
 
 router.post("/contact-us", userContactUs);
 router.get("/all-contact-us", allContactUs);
 router.put("/contact-us/:id/completed", contactUsCompleted);
 
 
-//Help center routes
+//End-Users Help center routes
 router.post('/help-center', userHelpCenter)
-router.get('/get-all-help-request', getAllHelpRequest)
+router.get('/all-user-help-requests', getAllHelpRequest)
 router.put("/help-center/:requestId/completed", helpRequestCompleted);
+
+//Creator Support routes
+router.post('/creator-support', creatorSupport);
+router.get('/all-creator-support-requests', getAllHelpRequest)
 
 module.exports = router;
