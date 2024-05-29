@@ -16,11 +16,11 @@ const HelpCenter = sequelize.define('HelpCenter', {
         //     key: 'id'
         // }
     },
-    role: {
-        type: DataTypes.ENUM("Creator"),
-        allowNull: false
+    // role: {
+    //     type: DataTypes.ENUM("Creator"),
+    //     allowNull: false
 
-    },
+    // },
     reason: {
         type: DataTypes.STRING,
         allowNull: false,
