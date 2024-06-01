@@ -8,78 +8,52 @@ const {
   generateRefreshToken,
 } = require("../../../utils/generateToken");
 
-const Login = async (req, res) => {
+const loginUser = async (req, res) => {
   try {
     await Token.sync();
-    const { email, password, userType } = req.body;
+    const { email, password } = req.body;
 
-    // Validate input
-    if (!email || !password || !userType) {
+    if (!email || !password) {
       return res
         .status(400)
-        .json({ message: "Email, password, and user type are required" });
+        .json({ message: "Email and password are required" });
     }
 
-    // Determine the model based on userType
-    let UserModel;
-    if (userType === "admin") {
-      UserModel = Admin;
-    } else if (userType === "user") {
-      UserModel = EndUser;
-    } else if (userType === "creator") {
-      UserModel = Creator;
-    } else {
-      return res.status(400).json({ message: "Invalid user type" });
-    }
-
-    // Find user by email in the specified model
-    const user = await UserModel.findOne({ where: { email } });
-
+    const user = await EndUser.findOne({ where: { email: email } });
     if (!user) {
-      return res.status(404).json({ message: "Invalid email or password" });
+      return res.status(404).json({ message: "Invalid email Credential" });
     }
 
-    // Check password validity
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(404).json({ message: "Invalid email or password" });
+      return res.status(404).json({ message: "Invalid password Credential" });
     }
 
-    // Check if the user's account is verified
     if (!user.isVerified) {
       return res
         .status(401)
-        .json({ message: "Please verify your account via email" });
+        .json({ msg: "Please check your mail to verify your account" });
     }
 
-    // Check for existing tokens
     const userTokens = await Token.findOne({ where: { userId: user.id } });
     const currentDate = new Date();
     const userAgent = req.headers["user-agent"];
-    const hasInterests = user.categoryInterest ? "yes" : "no";
-
-    let accessToken, refreshToken;
-
     if (
       userTokens &&
       userTokens.accessTokenExpiration > currentDate &&
       userTokens.refreshTokenExpiration > currentDate
     ) {
-      // Tokens exist and are valid, use them
       accessToken = userTokens.accessToken;
       refreshToken = userTokens.refreshToken;
       await userTokens.update({ userAgent });
     } else {
-      // Generate new tokens
       accessToken = generateAccessToken(user.id, user.role);
       refreshToken = generateRefreshToken(user.id, user.role);
-
-      const accessTokenExpiration = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+      const accessTokenExpiration = new Date(Date.now() + 30 * 60 * 1000);
       const refreshTokenExpiration = new Date(
         Date.now() + 15 * 24 * 60 * 60 * 1000
-      ); // 15 days
+      );
 
-      // Save new tokens
       await Token.create({
         accessToken,
         refreshToken,
@@ -91,12 +65,11 @@ const Login = async (req, res) => {
     }
 
     const userSubset = {
-      userId: user.id,
-      organizationName: user.organizationName,
+      UserId: user.id,
+      username: user.username,
       email: user.email,
       role: user.role,
       image: user.imageUrl,
-      interest: hasInterests,
     };
 
     return res.status(200).json({
@@ -107,8 +80,8 @@ const Login = async (req, res) => {
     });
   } catch (error) {
     console.error("Error during login:", error);
-    return res.status(500).json({ message: "Internal server error", error });
+    res.status(500).json({ message: "Internal Server Error", error });
   }
 };
 
-module.exports = Login;
+module.exports = loginUser;
