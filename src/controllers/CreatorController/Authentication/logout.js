@@ -1,4 +1,4 @@
-const Token = require("../../../models/Token");
+const CreatorToken = require("../../../models/CreatorToken");
 
 const logOut = async (req, res) => {
   try {
@@ -8,18 +8,18 @@ const logOut = async (req, res) => {
       return res.status(400).json({ message: "User ID is required" });
     }
 
-    const userToken = await Token.findOne({
+    const creatorToken = await CreatorToken.findOne({
       where: {
         userId: userId,
       },
     });
 
-    if (!userToken) {
+    if (!creatorToken) {
       return res.status(404).json({ message: "No token found for this user" });
     }
 
-    await userToken.destroy();
-    return res.status(200).json({ message: "User logged out successfully" });
+    await creatorToken.destroy();
+    return res.status(200).json({ message: "Creator logged out successfully" });
   } catch (error) {
     console.error("Error during logout:", error);
     res

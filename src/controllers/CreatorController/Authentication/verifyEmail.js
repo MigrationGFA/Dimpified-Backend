@@ -30,7 +30,7 @@ const verifyEmailCreator = async (req, res) => {
     await creator.save();
 
     await sendWelcomeEmail({
-      username: creator.organizationName,
+      organizationName: creator.organizationName,
       email: email,
     });
 

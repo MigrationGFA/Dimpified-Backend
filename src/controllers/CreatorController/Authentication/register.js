@@ -37,9 +37,9 @@ const RegisterCreator = async (req, res) => {
 
         // Send verification email
         await sendVerificationEmailCreator({
-          username: updateCreator.organizationName,
-          email: updateCreator.email,
-          verificationToken: updateCreator.verificationToken,
+          organizationName: organizationName,
+          email: email,
+          verificationToken: verificationToken,
           origin: process.env.ORIGIN,
         });
 
@@ -65,9 +65,9 @@ const RegisterCreator = async (req, res) => {
       });
 
       await sendVerificationEmailCreator({
-        username: newCreator.organizationName,
-        email: newCreator.email,
-        verificationToken: newCreator.verificationToken,
+        organizationName: organizationName,
+        email: email,
+        verificationToken: verificationToken,
         origin: process.env.ORIGIN,
       });
 
