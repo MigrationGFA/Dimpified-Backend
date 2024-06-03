@@ -1,8 +1,8 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/dbConnect");
 
-const User = sequelize.define(
-  "User",
+const Creator = sequelize.define(
+  "Creator",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -50,10 +50,14 @@ const User = sequelize.define(
       allowNull: false,
       defaultValue: "creator",
     },
+    userCount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
   },
   {
-    tableName: "User",
+    tableName: "Creator",
   }
 );
 
-module.exports = User;
+module.exports = Creator;

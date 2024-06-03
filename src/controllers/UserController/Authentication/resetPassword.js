@@ -1,34 +1,37 @@
-const User = require("../../../models/Users");
-const sendResetPasswordAlert = require("../../../utils/sendPasswordAlert");
+const Admin = require("../../../models/GfaAdmin");
+const EndUser = require("../../../models/EndUser");
+const Creator = require("../../../models/Creator");
+const sendResetPasswordAlert = require("../../../utils/userResetPassword");
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 
-const resetPassword = async (req, res) => {
+const resetPasswordUser = async (req, res) => {
   try {
     const { email, resetToken, newPassword } = req.body;
 
     const details = ["resetToken", "newPassword", "email"];
-
     for (const detail of details) {
       if (!req.body[detail]) {
         return res.status(400).json({ msg: `${detail} is required` });
       }
     }
+
     const hashedPasswordToken = crypto
       .createHash("sha256")
       .update(resetToken)
       .digest("hex");
-    const user = await User.findOne({ where: { email: email } });
+    const user = await EndUser.findOne({ where: { email: email } });
     if (!user) {
-      return res.status(400).json({ message: "user not found" });
+      return res.status(400).json({ message: "User not found" });
     }
-    console.log("this is user token", user.passwordToken);
+
     const currentDate = new Date();
     const expireTime = new Date(user.passwordTokenExpirationDate);
     if (hashedPasswordToken === user.passwordToken) {
-      if (expireTime > currentDate) {
-        return res.status(401).json({ message: "expired reset token" });
+      if (expireTime < currentDate) {
+        return res.status(401).json({ message: "Expired reset token" });
       }
+
       user.password = await bcrypt.hash(newPassword, 10);
       user.passwordToken = null;
       user.passwordTokenExpirationDate = null;
@@ -36,10 +39,11 @@ const resetPassword = async (req, res) => {
       await user.save();
 
       await sendResetPasswordAlert({
-        username: user.organizationName,
+        username: user.username,
         email: user.email,
         origin: process.env.ORIGIN,
       });
+
       return res.status(200).json({ message: "Password reset successfully" });
     } else {
       return res.status(401).json({ msg: "Incorrect password token" });
@@ -50,4 +54,4 @@ const resetPassword = async (req, res) => {
   }
 };
 
-module.exports = resetPassword;
+module.exports = resetPasswordUser;
