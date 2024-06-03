@@ -1,10 +1,8 @@
-const Admin = require("../../../models/GfaAdmin");
-const EndUser = require("../../../models/EndUser");
 const Creator = require("../../../models/Creator");
-const sendForgotPasswordEmailUser = require("../../../utils/userForgottenPassword");
+const sendForgotPasswordEmailCreator = require("../../../utils/creatorForgotPassword");
 const crypto = require("crypto");
 
-const forgotPasswordUser = async (req, res) => {
+const forgotPasswordCreator = async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -12,32 +10,34 @@ const forgotPasswordUser = async (req, res) => {
       return res.status(400).json({ message: "Email is required" });
     }
 
-    const user = await EndUser.findOne({ where: { email: email } });
+    const creator = await Creator.findOne({ where: { email: email } });
 
-    if (!user) {
-      return res.status(404).json({ message: "User does not exist" });
+    if (!creator) {
+      return res.status(404).json({ message: "Creator does not exist" });
     }
 
-    if (!user.isVerified) {
+    // Check if account has been verified
+    if (!creator.isVerified) {
       return res.status(404).json({ message: "Email not verified" });
     }
 
     const resetToken = crypto.randomBytes(40).toString("hex");
-    const resetTokenExpirationTime = 30 * 60 * 1000;
+    const resetTokenExpirationTime = 30 * 60 * 1000; // 30 minutes in milliseconds
     const expirationDate = Date.now() + resetTokenExpirationTime;
+
     const hashedPasswordToken = crypto
       .createHash("sha256")
       .update(resetToken)
       .digest("hex");
 
-    user.passwordToken = hashedPasswordToken;
-    user.passwordTokenExpirationDate = expirationDate;
+    creator.passwordToken = hashedPasswordToken;
+    creator.passwordTokenExpirationDate = expirationDate;
 
-    await user.save();
+    await creator.save();
 
-    await sendForgotPasswordEmailUser({
-      username: user.username,
-      email: user.email,
+    await sendForgotPasswordEmailCreator({
+      username: creator.organizationName,
+      email: creator.email,
       token: resetToken,
       origin: process.env.ORIGIN,
     });
@@ -49,4 +49,4 @@ const forgotPasswordUser = async (req, res) => {
   }
 };
 
-module.exports = forgotPasswordUser;
+module.exports = forgotPasswordCreator;
