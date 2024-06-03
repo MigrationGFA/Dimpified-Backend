@@ -184,7 +184,7 @@ const sendWelcomeEmailCreator = async ({ organizationName, email }) => {
                 <p>Welcome to Dimpified!</p>
                 <img src="./images/person.png" alt="person" />
               </div>
-              <p>Hello ${username},</p>
+              <p>Hello ${organizationName},</p>
               <p>
                 Welcome to <span>Dimpified</span>! We're excited to have you join our community as a creator.
               </p>

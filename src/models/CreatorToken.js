@@ -1,10 +1,9 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/dbConnect");
-const User = require("./EndUser");
 const Creator = require("./Creator");
 
-const Token = sequelize.define(
-  "Token",
+const CreatorToken = sequelize.define(
+  "CreatorToken",
   {
     accessToken: {
       type: DataTypes.STRING,
@@ -37,7 +36,6 @@ const Token = sequelize.define(
 );
 
 // Define association
-Token.belongsTo(User, { foreignKey: "userId", targetKey: "id" });
-Token.belongsTo(Creator, { foreignKey: "userId", targetKey: "id" });
+CreatorToken.belongsTo(Creator, { foreignKey: "userId", targetKey: "id" });
 
-module.exports = Token;
+module.exports = CreatorToken;
