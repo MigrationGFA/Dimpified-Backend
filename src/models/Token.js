@@ -38,6 +38,5 @@ const Token = sequelize.define(
 
 // Define association
 Token.belongsTo(User, { foreignKey: "userId", targetKey: "id" });
-Token.belongsTo(Creator, { foreignKey: "userId", targetKey: "id" });
 
 module.exports = Token;

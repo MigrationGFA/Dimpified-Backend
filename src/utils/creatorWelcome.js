@@ -289,7 +289,7 @@ const sendWelcomeEmailCreator = async ({ organizationName, email }) => {
 
   return sendEmail({
     to: email,
-    subject: "Welcome To UNLEASHIFIED",
+    subject: "Welcome To DIMPIFIED",
     html: message,
   });
 };
