@@ -1,6 +1,6 @@
 const Creator = require("../../../models/Creator");
 const bcrypt = require("bcryptjs");
-const Token = require("../../../models/Token");
+const CreatorToken = require("../../../models/CreatorToken");
 const {
   generateAccessToken,
   generateRefreshToken,
@@ -8,7 +8,7 @@ const {
 
 const LoginCreator = async (req, res) => {
   try {
-    await Token.sync();
+    await CreatorToken.sync();
     const { email, password } = req.body;
     const details = ["password", "email"];
 
@@ -41,7 +41,7 @@ const LoginCreator = async (req, res) => {
     }
 
     // to check for token
-    const creatorTokens = await Token.findOne({
+    const creatorTokens = await CreatorToken.findOne({
       where: {
         userId: creator.id,
       },
@@ -73,7 +73,7 @@ const LoginCreator = async (req, res) => {
       ); // 15 days from now
 
       // Save the new tokens to the database
-      await Token.create({
+      await CreatorToken.create({
         accessToken: accessToken,
         refreshToken: refreshToken,
         userId: creator.id,

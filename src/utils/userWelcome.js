@@ -1,6 +1,6 @@
 const sendEmail = require("./sendEmail");
 
-const userWelcomeEmailTemplate = ({ username, email }) => {
+const userWelcomeEmail = ({ username, email }) => {
   const message = `
       <!DOCTYPE html>
       <html lang="en">
@@ -309,4 +309,4 @@ const userWelcomeEmailTemplate = ({ username, email }) => {
   });
 };
 
-module.exports = userWelcomeEmailTemplate;
+module.exports = userWelcomeEmail;

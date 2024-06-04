@@ -44,8 +44,9 @@ const resetPasswordCreator = async (req, res) => {
     await creator.save();
 
     await sendResetPasswordAlert({
-      username: creator.organizationName,
-      email: creator.email,
+      organizationName: organizationName,
+      email: email,
+      verificationToken: verificationToken,
       origin: process.env.ORIGIN,
     });
 
