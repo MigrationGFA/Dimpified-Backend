@@ -1,4 +1,4 @@
-const sendEmail = require("./sendEMail");
+const sendEmail = require("./sendEmail");
 
 const sendSupportRequestCompletedEmail = async ({
   username,
