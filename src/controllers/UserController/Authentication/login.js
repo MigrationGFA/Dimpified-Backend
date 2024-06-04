@@ -12,12 +12,12 @@ const loginUser = async (req, res) => {
   try {
     await Token.sync();
     const { email, password } = req.body;
-
+    
     if (!email || !password) {
-      return res
+        return res
         .status(400)
         .json({ message: "Email and password are required" });
-    }
+      }
 
     const user = await EndUser.findOne({ where: { email: email } });
     if (!user) {
@@ -29,7 +29,7 @@ const loginUser = async (req, res) => {
       return res.status(404).json({ message: "Invalid password Credential" });
     }
 
-    if (!user.isVerified) {
+        if (!user.isVerified) {
       return res
         .status(401)
         .json({ msg: "Please check your mail to verify your account" });
@@ -38,18 +38,18 @@ const loginUser = async (req, res) => {
     const userTokens = await Token.findOne({ where: { userId: user.id } });
     const currentDate = new Date();
     const userAgent = req.headers["user-agent"];
-    if (
+        if (
       userTokens &&
       userTokens.accessTokenExpiration > currentDate &&
       userTokens.refreshTokenExpiration > currentDate
     ) {
-      accessToken = userTokens.accessToken;
+            accessToken = userTokens.accessToken;
       refreshToken = userTokens.refreshToken;
       await userTokens.update({ userAgent });
     } else {
-      accessToken = generateAccessToken(user.id, user.role);
+            accessToken = generateAccessToken(user.id, user.role);
       refreshToken = generateRefreshToken(user.id, user.role);
-      const accessTokenExpiration = new Date(Date.now() + 30 * 60 * 1000);
+const accessTokenExpiration = new Date(Date.now() + 30 * 60 * 1000);
       const refreshTokenExpiration = new Date(
         Date.now() + 15 * 24 * 60 * 60 * 1000
       );
@@ -70,7 +70,7 @@ const loginUser = async (req, res) => {
       email: user.email,
       role: user.role,
       image: user.imageUrl,
-    };
+          };
 
     return res.status(200).json({
       message: "Login successful",

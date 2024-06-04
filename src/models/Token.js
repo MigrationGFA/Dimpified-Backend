@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/dbConnect");
-const User = require("./EndUser");
+const User = require("./Users");
 
 const Token = sequelize.define(
   "Token",
@@ -27,6 +27,10 @@ const Token = sequelize.define(
     },
     userId: {
       type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    type: {
+      type: DataTypes.STRING,
       allowNull: false,
     },
   },
