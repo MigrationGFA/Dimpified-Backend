@@ -1,6 +1,6 @@
 const Admin = require("../../../models/GfaAdmin");
 const EndUser = require("../../../models/EndUser");
-const Creator = require("../../../models/Creator");
+const EndUserProfile = require("../../../models/UserProfile");
 const bcrypt = require("bcryptjs");
 const Token = require("../../../models/Token");
 const {
@@ -10,6 +10,7 @@ const {
 
 const loginUser = async (req, res) => {
   try {
+    EndUserProfile.sync();
     await Token.sync();
     const { email, password } = req.body;
 
@@ -19,7 +20,7 @@ const loginUser = async (req, res) => {
         .json({ message: "Email and password are required" });
     }
 
-    const user = await EndUser.findOne({ where: { email: email } });
+    const user = await EndUser.findOne({ where: { email } });
     if (!user) {
       return res.status(404).json({ message: "Invalid email Credential" });
     }
@@ -38,6 +39,8 @@ const loginUser = async (req, res) => {
     const userTokens = await Token.findOne({ where: { userId: user.id } });
     const currentDate = new Date();
     const userAgent = req.headers["user-agent"];
+    let accessToken, refreshToken;
+
     if (
       userTokens &&
       userTokens.accessTokenExpiration > currentDate &&
@@ -64,12 +67,20 @@ const loginUser = async (req, res) => {
       });
     }
 
+    // Check if user has completed their profile
+    let setProfile = false;
+    const userProfile = await EndUserProfile.findOne({
+      where: { userId: user.id },
+    });
+    setProfile = !!userProfile;
+
     const userSubset = {
       UserId: user.id,
       username: user.username,
       email: user.email,
       role: user.role,
       image: user.imageUrl,
+      profile: setProfile,
     };
 
     return res.status(200).json({
