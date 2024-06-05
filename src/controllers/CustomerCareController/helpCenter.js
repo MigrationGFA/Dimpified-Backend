@@ -1,13 +1,17 @@
+//const Creator = require("../../models/Creator");
+const EndUser = require("../../models/EndUser");
 const HelpCenter = require("../../models/HelpCenter");
-const User = require("../../models/Users");
+//const User = require("../../models/Users");
+
+
 const sendSupportRequestCompletedEmail = require("../../utils/supportRequestCompleted");
 
 
 const userHelpCenter = async (req, res) => {
     await HelpCenter.sync()
     try {
-        const { userId,
-            //role,
+        const {
+            userId,
             reason,
             message,
             creatorId,
@@ -15,7 +19,6 @@ const userHelpCenter = async (req, res) => {
         } = req.body;
         const details = [
             "userId",
-            //"role",
             "reason",
             "message",
             "creatorId",
@@ -26,13 +29,12 @@ const userHelpCenter = async (req, res) => {
                 return res.status(400).json({ message: `${detail} is required` });
             }
         }
-        const user = await User.findByPk(userId)
+        const user = await EndUser.findByPk(userId)
         if (!user) {
             return res.status(404).json({ message: "User not found" })
         }
         const createHelpRequest = await HelpCenter.create({
             userId,
-            //role,
             reason,
             message,
             creatorId,
@@ -53,7 +55,10 @@ const getAllHelpRequest = async (req, res) => {
     try {
         const allhelpRequest = await HelpCenter.findAll({
             order: [['createdAt', 'DESC']],
-            attributes: ['username', 'email']
+            include: {
+                model: EndUser,
+                attributes: ["username", "imageUrl"],
+            },
         })
 
         res.status(200).json({ allhelpRequest })
@@ -64,14 +69,17 @@ const getAllHelpRequest = async (req, res) => {
     };
 };
 
-const helpRequestCompleted = async (res, req) => {
+const helpRequestCompleted = async (req, res) => {
     try {
         const { requestId } = req.params
+        if (!requestId) {
+            return res.status(400).json({ message: "Missing request ID" });
+        }
 
         const helpRequestSubmission = await HelpCenter.findByPk(requestId, {
             include: [
                 {
-                    model: User,
+                    model: EndUser,
                     attributes: ['username', 'email']
                 }
             ]
@@ -85,8 +93,8 @@ const helpRequestCompleted = async (res, req) => {
 
         );
         await sendSupportRequestCompletedEmail({
-            username: helpRequestSubmission.User.username,
-            email: helpRequestSubmission.User.email,
+            username: helpRequestSubmission.EndUser.username,
+            email: helpRequestSubmission.EndUser.email,
             helpRequestId: requestId,
             reason: helpRequestSubmission.reason,
             message: helpRequestSubmission.message,
