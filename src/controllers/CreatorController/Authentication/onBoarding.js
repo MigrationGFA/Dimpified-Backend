@@ -16,25 +16,24 @@ const onBoarding = async (req, res) => {
       categoryInterest.length === 0
     ) {
       return res.status(400).json({
-        message: "Please choose from the selected fields selected field.",
+        message: "Please select at least one category interest.",
       });
     }
 
-    const interestStringified = JSON.stringify(categoryInterest);
-    const [updatedRows] = await User.update(
-      {
-        numberOfTargetAudience,
-        categoryInterest: interestStringified,
+    const updatedUser = await Creator.findOne({
+      where: {
+        id: userId,
       },
-      {
-        where: { id: userId },
-      }
-    );
-    if (updatedRows === 0) {
+    });
+
+    // Check if user exists
+    if (!updatedUser) {
       return res.status(404).json({ message: "User not found" });
     }
+    const interestStringified = JSON.stringify(categoryInterest)
+    // Update user's interests
+    await updatedUser.update({ categoryInterest: interestStringified,numberOfTargetAudience  });
 
-    const updatedUser = await Creator.findOne({ where: { id: userId } });
 
     return res.status(200).json({
       message: "Onboarding successful",
