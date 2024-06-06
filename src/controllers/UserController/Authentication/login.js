@@ -134,7 +134,7 @@ const loginUser = async (req, res) => {
       userTokens.accessTokenExpiration > currentDate &&
       userTokens.refreshTokenExpiration > currentDate
     ) {
-      accessToken = userTokens.accessToken;
+            accessToken = userTokens.accessToken;
       refreshToken = userTokens.refreshToken;
       await userTokens.update({ userAgent });
     } else {

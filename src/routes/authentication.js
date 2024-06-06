@@ -17,7 +17,7 @@ const creatorRegister = require("../controllers/CreatorController/Authentication
 const creatorResetPassword = require("../controllers/CreatorController/Authentication/resetPassword");
 const onBoarding = require("../controllers/CreatorController/Authentication/onBoarding");
 
-// // User endpoints
+// User endpoints
 router.post("/user/register", Register);
 router.post("/user/verify-email", verifyEmail);
 router.post("/user/resend-email", resendEmail);
