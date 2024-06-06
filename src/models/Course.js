@@ -86,11 +86,11 @@ const dimpifiedCourseSchema = new mongoose.Schema({
   currency: {
     type: String,
   },
-  Agent: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Instructors",
-    required: true,
-  },
+  //   Agent: {
+  //     type: mongoose.Schema.Types.ObjectId,
+  //     ref: "Creators",
+  //     required: true,
+  //   },
   //createdAt: { type: Date, default: Date.now },
 });
 module.exports = mongoose.model("dimpifiedCourse", dimpifiedCourseSchema);
