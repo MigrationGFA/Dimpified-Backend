@@ -4,7 +4,7 @@ const Rating = require("../../models/Rating");
 const submitReview = async (req, res) => {
     await Rating.sync();
     try {
-        const { userId, creatorId, adminId, rating, review } = req.body
+        const { creatorId, adminId, rating, review } = req.body
         const details = [
             "creatorId",
             "adminId",
@@ -17,7 +17,6 @@ const submitReview = async (req, res) => {
             }
         }
         const newRating = await Rating.create({
-            userId,
             creatorId,
             adminId,
             rating,
@@ -47,5 +46,25 @@ const getAllReviews = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: "Internal server error", error });
     }
-}
-module.exports = { submitReview, getAllReviews }
+};
+
+const getReviewsByCreator = async (req, res) => {
+    try {
+        const creatorId = req.params.creatorId.toString();
+        const reviews = await Rating.findAll({
+            where: { creatorId: creatorId.toString() },
+            include: {
+                model: Creator,
+                attributes: ["organizationName", "imageUrl"],
+            },
+            order: [["createdAt", "DESC"]],
+        });
+
+        return res.status(200).json({ reviews });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Internal server error", error });
+    }
+};
+
+module.exports = { submitReview, getAllReviews, getReviewsByCreator }

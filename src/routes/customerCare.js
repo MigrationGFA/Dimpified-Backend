@@ -17,8 +17,8 @@ router.put("/contact-us/:id/completed", contactUsCompleted);
 
 
 //End-Users Help center routes
-router.post('/help-center', userHelpCenter)
-router.get('/all-user-help-requests', getAllHelpRequest)
+router.post('/enduser-help-requests', userHelpCenter)
+router.get('/all-enduser-help-requests', getAllHelpRequest)
 router.put("/help-center/completed/:requestId", helpRequestCompleted);
 
 //Creator Support routes

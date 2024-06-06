@@ -18,7 +18,7 @@ const Feature = sequelize.define("Feature", {
     },
     type: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true,
 
     },
     description: {
