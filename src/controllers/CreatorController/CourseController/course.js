@@ -26,7 +26,6 @@ const createCourse = async (req, res) => {
       curriculum,
       whatIsIncluded,
       requirement,
-      status,
       price,
       hour,
       currency,
@@ -34,45 +33,48 @@ const createCourse = async (req, res) => {
 
     // Required fields validation
     const requiredFields = [
-      "title",
       "category",
+      "title",
       "level",
       "description",
       "courseType",
-      "status",
       "price",
       "hour",
       "currency",
       "creatorId",
+
     ];
 
     for (const field of requiredFields) {
       if (!req.body[field]) {
-        return res.status(400).json({ msg: `${field} is required` });
+        return res.status(400).json({ message: `${field} is required` });
       }
     }
 
-    // Parsing JSON fields
-    let curriculumData, requirementData, whatIsIncludedData;
-    try {
+        // Parsing JSON fields
+    let curriculumData, requirementData, whatisIncludedData;
+   
       curriculumData = JSON.parse(curriculum);
       requirementData = JSON.parse(requirement);
-      whatIsIncludedData = JSON.parse(whatIsIncluded);
-    } catch (parseError) {
-      return res.status(400).json({ msg: "Invalid JSON format in request" });
-    }
-
+      whatisIncludedData = JSON.parse(whatIsIncluded);
     // Validate parsed arrays
+    console.log("This is what is included", whatisIncludedData)
+    console.log("This is what is included", requirementData)
+    console.log("This is what is included", curriculumData)
+
     if (
-      !Array.isArray(curriculumData) ||
-      curriculumData.length === 0 ||
-      !Array.isArray(whatIsIncludedData) ||
-      whatIsIncludedData.length === 0 ||
-      !Array.isArray(requirementData) ||
-      requirementData.length === 0
+       !curriculumData ||
+    !whatisIncludedData ||
+    !requirementData ||
+    !Array.isArray(curriculumData) ||
+    curriculumData.length === 0 ||
+    !Array.isArray(whatisIncludedData) ||
+    whatisIncludedData.length === 0 ||
+    !Array.isArray(requirementData) ||
+    requirementData.length === 0
     ) {
       return res.status(400).json({
-        msg: "Invalid data in curriculum, whatIsIncluded, or requirement fields",
+        message: "Invalid data in curriculum, whatIsIncluded, or requirement fields",
       });
     }
 
@@ -97,11 +99,11 @@ const createCourse = async (req, res) => {
       hour,
       curriculum: curriculumData,
       requirement: requirementData,
-      status,
       currency,
-      whatIsIncluded: whatIsIncludedData,
+      whatIsIncluded: whatisIncludedData,
       image: imageLink,
     });
+
 
     // Send course creation email
     const creator = await Creator.findByPk(creatorId);
@@ -117,10 +119,10 @@ const createCourse = async (req, res) => {
     }
 
     // Respond with success
-    res.status(201).json({ msg: "Course created successfully", course });
+    res.status(201).json({ message: "Course created successfully", course });
   } catch (error) {
     console.error("Error creating course:", error);
-    res.status(500).json({ msg: "Internal server error", error });
+    res.status(500).json({ message: "Internal server error", error });
   }
 };
 

@@ -27,6 +27,7 @@ app.use(express.static(path.join(__dirname, "src")));
 app.use("/api/v1", require("./src/routes/authentication"));
 app.use("/api/v1", require("./src/routes/creatorCourse"));
 app.use("/api/v1", require("./src/routes/customerCare"));
+app.use("/api/v1/", require("./src/routes/ratingRoutes"))
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

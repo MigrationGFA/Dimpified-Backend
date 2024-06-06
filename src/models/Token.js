@@ -30,6 +30,10 @@ const Token = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    type: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
   },
   {
     timestamps: true,
