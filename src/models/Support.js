@@ -1,6 +1,7 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/dbConnect");
-const User = require("./Users");
+const Creator = require("./Creator");
+
 
 const CreatorSupport = sequelize.define('CreatorSupport', {
     id: {
@@ -8,6 +9,10 @@ const CreatorSupport = sequelize.define('CreatorSupport', {
         primaryKey: true,
         autoIncrement: true,
     },
+    // userId: {
+    //     type: DataTypes.INTEGER,
+    //     allowNull: false,
+    // },
     reason: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -42,5 +47,5 @@ const CreatorSupport = sequelize.define('CreatorSupport', {
     }
 )
 
-CreatorSupport.belongsTo(User, { foreignKey: "userId", targetKey: "id" });
+CreatorSupport.belongsTo(Creator, { foreignKey: "creatorId", targetKey: "id" });
 module.exports = CreatorSupport

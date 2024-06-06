@@ -19,10 +19,10 @@ router.put("/contact-us/:id/completed", contactUsCompleted);
 //End-Users Help center routes
 router.post('/help-center', userHelpCenter)
 router.get('/all-user-help-requests', getAllHelpRequest)
-router.put("/help-center/:requestId/completed", helpRequestCompleted);
+router.put("/help-center/completed/:requestId", helpRequestCompleted);
 
 //Creator Support routes
 router.post('/creator-support', creatorSupport);
-router.get('/all-creator-support-requests', getAllHelpRequest)
+router.get('/all-creator-support-requests', getAllSupportRequest)
 
 module.exports = router;

@@ -1,6 +1,7 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/dbConnect");
-const User = require("./Users");
+const EndUser = require("./EndUser");
+
 
 const HelpCenter = sequelize.define('HelpCenter', {
     id: {
@@ -8,13 +9,10 @@ const HelpCenter = sequelize.define('HelpCenter', {
         primaryKey: true,
         autoIncrement: true,
     },
-    UserId: {
-        type: DataTypes.STRING,
+    userId: {
+        type: DataTypes.INTEGER,
         allowNull: true,
-        // references: {
-        //     model: 'User',
-        //     key: 'id'
-        // }
+
     },
     // role: {
     //     type: DataTypes.ENUM("Creator"),
@@ -55,5 +53,5 @@ const HelpCenter = sequelize.define('HelpCenter', {
     }
 )
 
-HelpCenter.belongsTo(User, { foreignKey: "userId", targetKey: "id" });
+HelpCenter.belongsTo(EndUser, { foreignKey: "userId", targetKey: "id" });
 module.exports = HelpCenter
