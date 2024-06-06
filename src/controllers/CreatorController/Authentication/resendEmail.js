@@ -30,8 +30,8 @@ const resendEmailCreator = async (req, res) => {
     const origin = process.env.ORIGIN;
 
     await sendVerificationEmail({
-      username: creator.organizationName,
-      email: creator.email,
+      organizationName: organizationName,
+      email: email,
       verificationToken: newVerificationToken,
       origin,
     });
