@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 
 const dimpifiedCourseSchema = new mongoose.Schema({
+  creatorId: {
+    type: String,
+    required: true,
+  },
   title: {
     type: String,
     required: true,
@@ -25,11 +29,11 @@ const dimpifiedCourseSchema = new mongoose.Schema({
     enum: ["video", "audio", "document"],
   },
   hour: {
-    type: String, // Store price as a string
+    type: String, 
     required: true,
   },
   price: {
-    type: String, // Store price as a string
+    type: String, 
     required: true,
   },
 
@@ -86,11 +90,11 @@ const dimpifiedCourseSchema = new mongoose.Schema({
   currency: {
     type: String,
   },
-  //   Agent: {
+  //   ecosystem: {
   //     type: mongoose.Schema.Types.ObjectId,
   //     ref: "Creators",
   //     required: true,
   //   },
-  //createdAt: { type: Date, default: Date.now },
+  // createdAt: { type: Date, default: Date.now },
 });
 module.exports = mongoose.model("dimpifiedCourse", dimpifiedCourseSchema);
