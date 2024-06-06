@@ -54,6 +54,11 @@ const Creator = sequelize.define(
       type: DataTypes.INTEGER,
       defaultValue: 0,
     },
+    createdCourses: {
+      type: DataTypes.JSON, // Updated to JSON type to store an array of course IDs
+      allowNull: true,
+      defaultValue: [],
+    },
   },
   {
     tableName: "Creator",
