@@ -1,7 +1,6 @@
 //const Creator = require("../../models/Creator");
 const EndUser = require("../../models/EndUser");
 const HelpCenter = require("../../models/HelpCenter");
-//const User = require("../../models/Users");
 
 
 const sendSupportRequestCompletedEmail = require("../../utils/supportRequestCompleted");
