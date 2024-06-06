@@ -1,10 +1,10 @@
-const HelpCenter = require("../../models/HelpCenter");
+const Creator = require("../../models/Creator");
+//const HelpCenter = require("../../models/HelpCenter");
 const CreatorSupport = require("../../models/Support");
-const User = require("../../models/Users");
 
 const creatorSupport = async (req, res) => {
-    await CreatorSupport.sync()
     try {
+        await CreatorSupport.sync()
         const { reason, message, creatorId } = req.body;
         const details = [
             "reason",
@@ -40,8 +40,13 @@ const creatorSupport = async (req, res) => {
 const getAllSupportRequest = async (req, res) => {
     try {
         const allSupportRequest = await CreatorSupport.findAll({
+
             order: [['createdAt', 'DESC']],
-            attributes: [['username', 'email']]
+            include: {
+                model: Creator,
+                attributes: ["organizationName", "imageUrl", "email"],
+            },
+
         })
         res.status(200).json({ allSupportRequest })
     } catch (error) {
