@@ -1,6 +1,8 @@
 const Creator = require("../../models/Creator");
 //const HelpCenter = require("../../models/HelpCenter");
 const CreatorSupport = require("../../models/Support");
+const sendSupportRequestCompletedEmail = require("../../utils/supportRequestCompleted");
+
 
 const creatorSupport = async (req, res) => {
     try {
@@ -53,6 +55,65 @@ const getAllSupportRequest = async (req, res) => {
         console.error('Cannot find any support request', error);
         res.status(500).json({ message: "Internal Server Error", detail: error })
     }
+};
+
+const getSupportRequestByACreator = async (req, res) => {
+    try {
+        const creatorId = req.params.creatorId
+        if (!creatorId) {
+            return res.status(400).json({ message: "Missing creator ID" });
+        }
+
+        const supportRequestByCreator = await CreatorSupport.findAll({
+            where: {
+                creatorId: creatorId,
+            },
+            order: [["createdAt", "DESC"]],
+        })
+        res.status(200).json({ supportRequestByCreator })
+    } catch (error) {
+        console.error("Error fetching a creator support requests: ", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
 }
 
-module.exports = { creatorSupport, getAllSupportRequest }
+
+const supportRequestCompleted = async (req, res) => {
+    try {
+        const { requestId } = req.params
+        if (!requestId) {
+            return res.status(400).json({ message: "Missing request ID" });
+        }
+
+        const supportRequestSubmission = await CreatorSupport.findByPk(requestId, {
+            include: [
+                {
+                    model: Creator,
+                    attributes: ['organizationName', 'email']
+                }
+            ]
+        })
+        if (!supportRequestSubmission) {
+            return res.status(404).json({ message: "Support Request submission not found" })
+        }
+        await supportRequestSubmission.update(
+            { status: "completed" },
+            { where: { id: requestId } }
+
+        );
+        await sendSupportRequestCompletedEmail({
+            username: supportRequestSubmission.Creator.username,
+            email: supportRequestSubmission.Creator.email,
+            supportRequestId: requestId,
+            reason: supportRequestSubmission.reason,
+            message: supportRequestSubmission.message,
+        })
+        res.status(200).json({ message: "Your help request marked completed" })
+    } catch (error) {
+        console.log("Error marking request completed", error)
+        res.status(500).json({ message: "Internal Server error", detail: error })
+    }
+};
+
+
+module.exports = { creatorSupport, getAllSupportRequest, supportRequestCompleted, getSupportRequestByACreator }

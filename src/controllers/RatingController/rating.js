@@ -4,10 +4,9 @@ const Rating = require("../../models/Rating");
 const submitReview = async (req, res) => {
     await Rating.sync();
     try {
-        const { creatorId, adminId, rating, review } = req.body
+        const { creatorId, rating, review } = req.body
         const details = [
             "creatorId",
-            "adminId",
             "rating",
             "review",
         ]
@@ -18,7 +17,6 @@ const submitReview = async (req, res) => {
         }
         const newRating = await Rating.create({
             creatorId,
-            adminId,
             rating,
             review
         })
@@ -39,7 +37,7 @@ const getAllReviews = async (req, res) => {
         const reviews = await Rating.findAll({
             include: {
                 model: Creator,
-                attributes: ["organizationName", "imageUrl"]
+                attributes: ["id", "organizationName", "imageUrl", "email"]
             }
         })
         res.status(200).json({ reviews })
@@ -50,9 +48,9 @@ const getAllReviews = async (req, res) => {
 
 const getReviewsByCreator = async (req, res) => {
     try {
-        const creatorId = req.params.creatorId.toString();
+        const creatorId = req.params.creatorId;
         const reviews = await Rating.findAll({
-            where: { creatorId: creatorId.toString() },
+            where: { creatorId: creatorId },
             include: {
                 model: Creator,
                 attributes: ["organizationName", "imageUrl"],

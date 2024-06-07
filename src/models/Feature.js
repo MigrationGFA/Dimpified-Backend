@@ -16,12 +16,12 @@ const Feature = sequelize.define("Feature", {
             notEmpty: true,
         },
     },
-    type: {
+    featureType: {
         type: DataTypes.STRING,
         allowNull: true,
 
     },
-    description: {
+    featureDescription: {
 
         type: DataTypes.TEXT,
         allowNull: false,
