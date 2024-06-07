@@ -44,7 +44,8 @@ const ecosystemSchema = new mongoose.Schema({
   },
   courses: [
     {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "dimpifiedCourse",
     },
   ],
   integration: {
@@ -53,9 +54,8 @@ const ecosystemSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    required: true,
-    enum: ["Draft", "Live", "Private"],
-    default: "Draft",
+    enum: ["draft", "completed"],
+    default: "draft",
   },
   createdAt: {
     type: Date,

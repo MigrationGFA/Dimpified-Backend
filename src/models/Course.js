@@ -29,14 +29,13 @@ const dimpifiedCourseSchema = new mongoose.Schema({
     enum: ["video", "audio", "document"],
   },
   hour: {
-    type: String, 
+    type: String,
     required: true,
   },
   price: {
-    type: String, 
+    type: String,
     required: true,
   },
-
   whatIsIncluded: {
     type: [String],
     default: [],
@@ -90,11 +89,5 @@ const dimpifiedCourseSchema = new mongoose.Schema({
   currency: {
     type: String,
   },
-  //   ecosystem: {
-  //     type: mongoose.Schema.Types.ObjectId,
-  //     ref: "Creators",
-  //     required: true,
-  //   },
-  // createdAt: { type: Date, default: Date.now },
 });
 module.exports = mongoose.model("dimpifiedCourse", dimpifiedCourseSchema);
