@@ -103,6 +103,27 @@ const helpRequestCompleted = async (req, res) => {
         console.log("Error marking request completed", error)
         res.status(500).json({ message: "Internal Server error", detail: error })
     }
+};
+
+const getHelpRequestByEcosystem = async (req, res) => {
+    try {
+        const ecosystemId = req.params.ecosystemId;
+
+        if (!ecosystemId) {
+            return res.status(400).json({ message: "Missing Ecosystem ID" });
+        }
+
+        const helpRequestByEcosystem = await HelpCenter.findAll({
+            where: {
+                ecosystemId: ecosystemId,
+            },
+            order: [["createdAt", "DESC"]],
+        })
+        res.status(200).json({ helpRequestByEcosystem })
+    } catch (error) {
+        console.error("Error fetching ecosystems:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
 }
 
-module.exports = { userHelpCenter, getAllHelpRequest, helpRequestCompleted }
+module.exports = { userHelpCenter, getAllHelpRequest, helpRequestCompleted, getHelpRequestByEcosystem }
