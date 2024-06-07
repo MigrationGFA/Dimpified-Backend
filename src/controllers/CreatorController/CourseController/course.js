@@ -58,9 +58,7 @@ const createCourse = async (req, res) => {
       requirementData = JSON.parse(requirement);
       whatisIncludedData = JSON.parse(whatIsIncluded);
     // Validate parsed arrays
-    console.log("This is what is included", whatisIncludedData)
-    console.log("This is what is included", requirementData)
-    console.log("This is what is included", curriculumData)
+ 
 
     if (
        !curriculumData ||
