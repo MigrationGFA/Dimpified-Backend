@@ -1,9 +1,9 @@
-const Ecosystem = require("../models/Ecosystem");
+const Ecosystem = require("../../models/Ecosystem");
 const Creator = require("../../models/Creator");
 
 const aboutEcosystem = async (req, res) => {
   const {
-    userId,
+    creatorId,
     ecosystemName,
     ecosystemDomain,
     targetAudienceSector,
@@ -15,12 +15,17 @@ const aboutEcosystem = async (req, res) => {
   } = req.body;
 
   try {
+    const creator = await Creator.findByPk(creatorId);
+    if (!creator) {
+      return res.status(404).json({ message: "Creator not found" });
+    }
+
     let ecosystem;
     if (ecosystemId) {
       ecosystem = await Ecosystem.findByIdAndUpdate(
         ecosystemId,
         {
-          userId,
+          creatorId,
           ecosystemName,
           ecosystemDomain,
           targetAudienceSector,
@@ -35,7 +40,7 @@ const aboutEcosystem = async (req, res) => {
       );
     } else {
       ecosystem = new Ecosystem({
-        userId,
+        creatorId,
         ecosystemName,
         ecosystemDomain,
         targetAudienceSector,
@@ -57,6 +62,7 @@ const aboutEcosystem = async (req, res) => {
   }
 };
 
+// Endpoint to handle ecosystem template information
 const ecosystemTemplate = async (req, res) => {
   const { ecosystemId, template } = req.body;
 
@@ -78,6 +84,7 @@ const ecosystemTemplate = async (req, res) => {
   }
 };
 
+// Endpoint to handle ecosystem form information
 const ecosystemForm = async (req, res) => {
   const { ecosystemId, form } = req.body;
 
@@ -99,132 +106,7 @@ const ecosystemForm = async (req, res) => {
   }
 };
 
-const ecosystemCourse = async (req, res) => {
-  try {
-    const {
-      creatorId,
-      title,
-      category,
-      level,
-      description,
-      courseType,
-      curriculum,
-      whatIsIncluded,
-      requirement,
-      price,
-      hour,
-      currency,
-      ecosystemId,
-    } = req.body;
-
-    // Required fields validation
-    const requiredFields = [
-      "creatorId",
-      "category",
-      "title",
-      "level",
-      "description",
-      "courseType",
-      "price",
-      "hour",
-      "currency",
-      "ecosystemId",
-    ];
-
-    for (const field of requiredFields) {
-      if (!req.body[field]) {
-        return res.status(400).json({ message: `${field} is required` });
-      }
-    }
-
-    // Parsing JSON fields
-    let curriculumData, requirementData, whatisIncludedData;
-
-    curriculumData = JSON.parse(curriculum);
-    requirementData = JSON.parse(requirement);
-    whatisIncludedData = JSON.parse(whatIsIncluded);
-
-    // Validate parsed arrays
-    if (
-      !curriculumData ||
-      !whatisIncludedData ||
-      !requirementData ||
-      !Array.isArray(curriculumData) ||
-      curriculumData.length === 0 ||
-      !Array.isArray(whatisIncludedData) ||
-      whatisIncludedData.length === 0 ||
-      !Array.isArray(requirementData) ||
-      requirementData.length === 0
-    ) {
-      return res.status(400).json({
-        message:
-          "Invalid data in curriculum, whatIsIncluded, or requirement fields",
-      });
-    }
-
-    // Upload image if provided
-    let imageLink;
-    if (req.file) {
-      const imageUpload = await cloudinary.uploader.upload(req.file.path, {
-        resource_type: "image",
-      });
-      imageLink = imageUpload.secure_url;
-    }
-
-    // Create the course
-    const course = await Course.create({
-      creatorId,
-      title,
-      category,
-      level,
-      description,
-      courseType,
-      price,
-      hour,
-      curriculum: curriculumData,
-      requirement: requirementData,
-      currency,
-      whatIsIncluded: whatisIncludedData,
-      image: imageLink,
-    });
-
-    // Add the course to the ecosystem
-    const ecosystem = await Ecosystem.findById(ecosystemId);
-    if (!ecosystem) {
-      return res.status(404).json({ message: "Ecosystem not found" });
-    }
-    ecosystem.courses.push(course._id);
-    await ecosystem.save();
-
-    // Add the course to the creator profile
-    const creatorProfile = await CreatorProfile.findOne({ _id: creatorId });
-    if (!creatorProfile) {
-      return res.status(404).json({ message: "Creator profile not found" });
-    }
-    creatorProfile.courses.push(course._id);
-    await creatorProfile.save();
-
-    // Send course creation email
-    const creator = await Creator.findByPk(creatorId);
-    if (creator) {
-      await sendCourseCreationEmail({
-        organizationName: creator.organizationName,
-        email: creator.email,
-        title: course.title,
-        price: course.price,
-        category: course.category,
-        hour: course.hour,
-      });
-    }
-
-    // Respond with success
-    res.status(201).json({ message: "Course created successfully", course });
-  } catch (error) {
-    console.error("Error creating course:", error);
-    res.status(500).json({ message: "Internal server error", error });
-  }
-};
-
+// Endpoint to handle ecosystem integration information
 const ecosystemIntegration = async (req, res) => {
   const { ecosystemId, integration } = req.body;
 
@@ -246,18 +128,46 @@ const ecosystemIntegration = async (req, res) => {
   }
 };
 
+// Endpoint to handle ecosystem completion
 const ecosystemCompleted = async (req, res) => {
   const { ecosystemId } = req.body;
 
   try {
-    const ecosystem = await Ecosystem.findByIdAndUpdate(
-      ecosystemId,
-      {
-        status: "completed",
-        updatedAt: Date.now(),
-      },
-      { new: true }
-    );
+    const ecosystem = await Ecosystem.findById(ecosystemId);
+
+    if (!ecosystem) {
+      return res.status(404).json({ message: "Ecosystem not found" });
+    }
+
+    // Check if all required fields are filled
+    const requiredFields = [
+      "ecosystemName",
+      "ecosystemDomain",
+      "targetAudienceSector",
+      "mainObjective",
+      "expectedAudienceNumber",
+      "experience",
+      "ecosystemDescription",
+      "template",
+      "form",
+      "courses",
+      "integration",
+    ];
+
+    for (const field of requiredFields) {
+      if (
+        !ecosystem[field] ||
+        (Array.isArray(ecosystem[field]) && ecosystem[field].length === 0)
+      ) {
+        return res.status(400).json({
+          message: `Field ${field} is required to complete the ecosystem`,
+        });
+      }
+    }
+
+    ecosystem.status = "completed";
+    ecosystem.updatedAt = Date.now();
+    await ecosystem.save();
 
     res.status(200).json({ message: "Ecosystem completed", ecosystem });
   } catch (error) {
@@ -270,7 +180,6 @@ module.exports = {
   aboutEcosystem,
   ecosystemTemplate,
   ecosystemForm,
-  ecosystemCourse,
   ecosystemIntegration,
   ecosystemCompleted,
 };

@@ -6,6 +6,7 @@ const cloudinary = require("cloudinary").v2;
 // const transaction = require("../../models/Transaction");
 const mongoose = require("mongoose");
 const sendCourseCreationEmail = require("../../../utils/sendCourseCreation");
+const Ecosystem = require("../../../models/Ecosystem");
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -169,6 +170,7 @@ const createCourse = async (req, res) => {
     curriculumData = JSON.parse(curriculum);
     requirementData = JSON.parse(requirement);
     whatisIncludedData = JSON.parse(whatIsIncluded);
+    // Validate parsed arrays
 
     // Validate parsed arrays
     if (
@@ -223,12 +225,12 @@ const createCourse = async (req, res) => {
     await ecosystem.save();
 
     // Add the course to the creator profile
-    const creatorProfile = await CreatorProfile.findOne({ _id: creatorId });
-    if (!creatorProfile) {
-      return res.status(404).json({ message: "Creator profile not found" });
-    }
-    creatorProfile.courses.push(course._id);
-    await creatorProfile.save();
+    // const creatorProfile = await CreatorProfile.findOne({ _id: creatorId });
+    // if (!creatorProfile) {
+    //   return res.status(404).json({ message: "Creator profile not found" });
+    // }
+    // creatorProfile.courses.push(course._id);
+    // await creatorProfile.save();
 
     // Send course creation email
     const creator = await Creator.findByPk(creatorId);

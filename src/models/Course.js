@@ -50,10 +50,6 @@ const dimpifiedCourseSchema = new mongoose.Schema({
         type: String,
         required: true,
       },
-      videoTitle: {
-        type: String,
-        required: true,
-      },
       section: [
         {
           title: {

@@ -1,10 +1,9 @@
 const mongoose = require("mongoose");
 
 const ecosystemSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
+  creatorId: {
+    type: Number,
     required: true,
-    ref: "CreatorProfile",
   },
   ecosystemName: {
     type: String,
