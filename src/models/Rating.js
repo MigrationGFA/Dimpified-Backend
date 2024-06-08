@@ -16,10 +16,6 @@ const Rating = sequelize.define("Rating", {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-    adminId: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
     rating: {
         type: DataTypes.INTEGER,
         allowNull: false,
