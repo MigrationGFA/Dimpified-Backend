@@ -14,6 +14,24 @@ const aboutEcosystem = async (req, res) => {
     ecosystemId,
   } = req.body;
 
+  const requiredFields = [
+      "creatorId",
+      "ecosystemName",
+      "ecosystemDomain",
+      "targetAudienceSector",
+      "mainObjective",
+      "expectedAudienceNumber",
+      "experience",
+      "ecosystemDescription",
+      "ecosystemId"
+    ];
+
+    for (const field of requiredFields) {
+      if (!req.body[field]) {
+        return res.status(400).json({ message: `${field} is required` });
+      }
+    }
+
   try {
     const creator = await Creator.findByPk(creatorId);
     if (!creator) {
@@ -21,7 +39,7 @@ const aboutEcosystem = async (req, res) => {
     }
 
     let ecosystem;
-    if (ecosystemId) {
+    if (ecosystemId !== "null") {
       ecosystem = await Ecosystem.findByIdAndUpdate(
         ecosystemId,
         {
@@ -53,7 +71,7 @@ const aboutEcosystem = async (req, res) => {
       await ecosystem.save();
     }
 
-    res
+    return res
       .status(201)
       .json({ message: "Ecosystem about information saved", ecosystem });
   } catch (error) {
