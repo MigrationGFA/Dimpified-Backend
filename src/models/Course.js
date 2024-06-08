@@ -82,6 +82,9 @@ const dimpifiedCourseSchema = new mongoose.Schema({
     enum: ["pending", "live", "rejected"],
     default: "pending",
   },
+  totalDuration: {
+    type: String,
+  },
   currency: {
     type: String,
   },
