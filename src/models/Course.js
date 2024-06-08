@@ -50,6 +50,10 @@ const dimpifiedCourseSchema = new mongoose.Schema({
         type: String,
         required: true,
       },
+      moduleDuration: {
+        type: String,
+        required: true,
+      },
       section: [
         {
           title: {
@@ -81,9 +85,6 @@ const dimpifiedCourseSchema = new mongoose.Schema({
     type: String,
     enum: ["pending", "live", "rejected"],
     default: "pending",
-  },
-  totalDuration: {
-    type: String,
   },
   currency: {
     type: String,

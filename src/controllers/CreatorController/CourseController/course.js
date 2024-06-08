@@ -2,7 +2,6 @@ const Course = require("../../../models/Course");
 const Creator = require("../../../models/Creator");
 const cloudinary = require("cloudinary").v2;
 const mongoose = require("mongoose");
-const ObjectId = mongoose.Types.ObjectId;
 const sendCourseCreationEmail = require("../../../utils/sendCourseCreation");
 const Ecosystem = require("../../../models/Ecosystem");
 
@@ -29,8 +28,7 @@ const createCourse = async (req, res) => {
       price,
       hour,
       currency,
-      ecosystemId,
-      totalDuration
+      ecosystemId
     } = req.body;
 
     // Required fields validation
@@ -44,8 +42,7 @@ const createCourse = async (req, res) => {
       "price",
       "hour",
       "currency",
-      "ecosystemId",
-      "totalDuration"
+      "ecosystemId"
     ];
 
     for (const field of requiredFields) {
@@ -56,7 +53,6 @@ const createCourse = async (req, res) => {
 
     // Parsing JSON fields
     let curriculumData, requirementData, whatisIncludedData;
-
     curriculumData = JSON.parse(curriculum);
     requirementData = JSON.parse(requirement);
     whatisIncludedData = JSON.parse(whatIsIncluded);
@@ -103,12 +99,11 @@ const createCourse = async (req, res) => {
       requirement: requirementData,
       currency,
       whatIsIncluded: whatisIncludedData,
-      image: imageLink,
-      totalDuration
+      image: imageLink
     });
 
     // Add the course to the ecosystem
-    const ecoId = new ObjectId(ecosystemId);
+    const ecoId = new mongoose.Types.ObjectId(ecosystemId);
     const ecosystem = await Ecosystem.findById(ecoId);
     if (!ecosystem) {
       return res.status(404).json({ message: "Ecosystem not found" });
