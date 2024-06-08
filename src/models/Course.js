@@ -50,7 +50,7 @@ const dimpifiedCourseSchema = new mongoose.Schema({
         type: String,
         required: true,
       },
-      moduleDuration: {
+      totalDuration: {
         type: String,
         required: true,
       },
