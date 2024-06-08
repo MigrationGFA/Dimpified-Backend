@@ -14,7 +14,7 @@ const multer = require("multer");
 const storage = multer.diskStorage({});
 const upload = multer({ storage });
 
-router.post("/ecosystem/about", aboutEcosystem);
+router.post("/ecosystem/aboutDetails", aboutEcosystem);
 router.post("/ecosystem/template", ecosystemTemplate);
 router.post("/ecosystem/form", ecosystemForm);
 // router.post("/ecosystem/course", upload.single("image"), ecosystemCourse);

@@ -142,6 +142,7 @@ const createCourse = async (req, res) => {
       hour,
       currency,
       ecosystemId,
+      totalDuration
     } = req.body;
 
     // Required fields validation
@@ -156,6 +157,7 @@ const createCourse = async (req, res) => {
       "hour",
       "currency",
       "ecosystemId",
+      "totalDuration"
     ];
 
     for (const field of requiredFields) {
@@ -214,6 +216,7 @@ const createCourse = async (req, res) => {
       currency,
       whatIsIncluded: whatisIncludedData,
       image: imageLink,
+      totalDuration
     });
 
     // Add the course to the ecosystem
