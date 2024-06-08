@@ -1,16 +1,19 @@
 const Creator = require("../../models/Creator");
 const Feature = require("../../models/Feature");
 
+
+//The routes are in the ratingRoutes.js file
+
 const suggestFeatures = async (req, res) => {
     try {
         await Feature.sync()
 
-        const { featureName, type, description, creatorId } = req.body
+        const { featureName, featureType, featureDescription, creatorId } = req.body
 
         const details = [
             "featureName",
-            " type",
-            "description",
+            "featureType",
+            "featureDescription",
             "creatorId"
         ]
         for (const detail of details) {
@@ -25,8 +28,8 @@ const suggestFeatures = async (req, res) => {
         }
         const newFeature = await Feature.create({
             featureName,
-            type,
-            description,
+            featureType,
+            featureDescription,
             creatorId
         });
         res.status(201).json({ message: 'Feature suggested successfully', feature: newFeature });
@@ -41,7 +44,7 @@ const getAllFeatures = async (req, res) => {
         const features = await Feature.findAll({
             include: [{
                 model: Creator,
-                attributes: ["organizationName", "imageUrl", "email"]
+                attributes: ["organizationName", "imageUrl",]
             }],
             order: [['createdAt', 'DESC']],
         });
@@ -53,5 +56,27 @@ const getAllFeatures = async (req, res) => {
     }
 };
 
+const getACreatorFeature = async (req, res) => {
+    try {
+        const creatorId = req.params.creatorId
+        if (!creatorId) {
+            return res.status(400).json({ message: "Missing creator ID" });
+        }
 
-module.exports = { suggestFeatures, getAllFeatures }
+        const featuresByCreator = await Feature.findAll({
+            where: {
+                creatorId: creatorId
+            },
+            include: [{
+                model: Creator,
+                attributes: ["organizationName", "imageUrl",]
+            }],
+            order: [['createdAt', 'DESC']],
+        })
+        res.status(200).json({ featuresByCreator })
+    } catch (error) {
+        console.error("erroe fetching features by a creator: ", error);
+        res.status(500).json({ message: 'Internal Server Error', detail: error });
+    }
+};
+module.exports = { suggestFeatures, getAllFeatures, getACreatorFeature }
