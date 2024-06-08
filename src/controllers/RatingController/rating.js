@@ -38,9 +38,10 @@ const getAllReviews = async (req, res) => {
             include: {
                 model: Creator,
                 attributes: ["id", "organizationName", "imageUrl", "email"]
-            }
+            },
+            order: [['createdAt', 'DESC']],
         })
-        res.status(200).json({ reviews })
+        return res.status(200).json({ reviews })
     } catch (error) {
         res.status(500).json({ message: "Internal server error", error });
     }
@@ -57,7 +58,6 @@ const getReviewsByCreator = async (req, res) => {
             },
             order: [["createdAt", "DESC"]],
         });
-
         return res.status(200).json({ reviews });
     } catch (error) {
         console.error(error);
