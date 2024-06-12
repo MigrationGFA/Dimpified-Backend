@@ -217,7 +217,7 @@ const allEcosystemCourses = async (req, res) => {
 };
 
 
-//Endponit to get a particular course
+//Endpoint to get a particular course
 const getAnEcosystemCourse = async (req, res) => {
   try {
     const { ecosystemId, courseId } = req.params;
