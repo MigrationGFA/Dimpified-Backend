@@ -1,5 +1,6 @@
 const Ecosystem = require("../../models/Ecosystem");
 const Creator = require("../../models/Creator");
+const dimpifiedCourse = require("../../models/Course");
 
 const aboutEcosystem = async (req, res) => {
   const {
@@ -15,22 +16,22 @@ const aboutEcosystem = async (req, res) => {
   } = req.body;
 
   const requiredFields = [
-      "creatorId",
-      "ecosystemName",
-      "ecosystemDomain",
-      "targetAudienceSector",
-      "mainObjective",
-      "expectedAudienceNumber",
-      "experience",
-      "ecosystemDescription",
-      "ecosystemId"
-    ];
+    "creatorId",
+    "ecosystemName",
+    "ecosystemDomain",
+    "targetAudienceSector",
+    "mainObjective",
+    "expectedAudienceNumber",
+    "experience",
+    "ecosystemDescription",
+    "ecosystemId"
+  ];
 
-    for (const field of requiredFields) {
-      if (!req.body[field]) {
-        return res.status(400).json({ message: `${field} is required` });
-      }
+  for (const field of requiredFields) {
+    if (!req.body[field]) {
+      return res.status(400).json({ message: `${field} is required` });
     }
+  }
 
   try {
     const creator = await Creator.findByPk(creatorId);
@@ -194,10 +195,78 @@ const ecosystemCompleted = async (req, res) => {
   }
 };
 
+//Endpoint to get all courses for an ecosystem
+const allEcosystemCourses = async (req, res) => {
+  try {
+    const ecosystemId = req.params.ecosystemId
+    if (!ecosystemId) {
+      res.status(404).json({ message: "Ecosystem ID is required" })
+    }
+
+    const ecosystemCourses = await Ecosystem.findById(ecosystemId).populate("courses")
+
+    if (!ecosystemCourses) {
+      return res.status(404).json({ message: "Ecosystem not found" });
+    }
+
+    res.status(200).json({ ecosystemCourses: ecosystemCourses.courses });
+  } catch (error) {
+    console.error("error retrieving all ecosystem courses:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
+//Endpoint to get a particular course
+const getAnEcosystemCourse = async (req, res) => {
+  try {
+    const { ecosystemId, courseId } = req.params;
+    if (!ecosystemId || !courseId) {
+      return res.status(404).json({ message: "Ecosystem ID and course ID is required" })
+    };
+
+    //find ecosystem by ID
+    const ecosystem = await Ecosystem.findById(ecosystemId);
+
+    //check if course is part of ecosystem courses
+    if (!ecosystem.courses.includes(courseId)) {
+      return res.status(404).json({ message: 'Course not found in this ecosystem' });
+    };
+
+    //fetch course details
+    const course = await dimpifiedCourse.findById(courseId);
+
+
+    return res.status(200).json({ course })
+  } catch (error) {
+    console.error("error retrieving courses from ecosystem: ", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+const getMyEcosystem = async (req, res) => {
+  try {
+    const userId = req.params.userId
+    if(!userId){
+      return res.status(404).json({ message: "Ecosystem ID and course ID is required" })
+    }
+    const getEcosystem = await Ecosystem.find({creatorId: userId}).sort({
+      createdAt: -1,
+    });
+    return res.status(200).json({ ecosystem: getEcosystem })
+  } catch (error) {
+    console.error("error retrieving courses from ecosystem: ", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
+
 module.exports = {
   aboutEcosystem,
   ecosystemTemplate,
   ecosystemForm,
   ecosystemIntegration,
   ecosystemCompleted,
+  allEcosystemCourses,
+  getAnEcosystemCourse,
+  getMyEcosystem
 };
