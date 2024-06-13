@@ -51,6 +51,10 @@ const ecosystemSchema = new mongoose.Schema({
     type: Array,
     default: [],
   },
+  users: {
+    type: Number,
+    default: 0,
+  },
   status: {
     type: String,
     enum: ["draft", "pending", "live"],
