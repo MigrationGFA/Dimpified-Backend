@@ -6,6 +6,8 @@ const {
   ecosystemTemplate,
   ecosystemIntegration,
   ecosystemCompleted,
+  allEcosystemCourses,
+  getAnEcosystemCourse
 } = require("../controllers/EcosystemController/createEcosystem");
 
 const multer = require("multer");
@@ -21,4 +23,9 @@ router.post("/ecosystem/form", ecosystemForm);
 router.post("/ecosystem/integration", ecosystemIntegration);
 router.post("/ecosystem/completed", ecosystemCompleted);
 
+//Route to get all ecosystem courses
+router.get("/ecosystem/get-all-courses/:ecosystemId", allEcosystemCourses);
+
+//route to a particular course in the ecosystem
+router.get("/ecosystem/:ecosystemId/:courseId", getAnEcosystemCourse)
 module.exports = router;
