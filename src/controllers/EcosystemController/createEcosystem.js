@@ -222,7 +222,7 @@ const getAnEcosystemCourse = async (req, res) => {
   try {
     const { ecosystemId, courseId } = req.params;
     if (!ecosystemId || !courseId) {
-      res.status(404).json({ message: "Ecosystem ID and course ID is required" })
+      return res.status(404).json({ message: "Ecosystem ID and course ID is required" })
     };
 
     //find ecosystem by ID
@@ -237,7 +237,23 @@ const getAnEcosystemCourse = async (req, res) => {
     const course = await dimpifiedCourse.findById(courseId);
 
 
-    res.status(200).json({ course })
+    return res.status(200).json({ course })
+  } catch (error) {
+    console.error("error retrieving courses from ecosystem: ", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+const getMyEcosystem = async (req, res) => {
+  try {
+    const userId = req.params.userId
+    if(!userId){
+      return res.status(404).json({ message: "Ecosystem ID and course ID is required" })
+    }
+    const getEcosystem = await Ecosystem.find({creatorId: userId}).sort({
+      createdAt: -1,
+    });
+    return res.status(200).json({ ecosystem: getEcosystem })
   } catch (error) {
     console.error("error retrieving courses from ecosystem: ", error);
     return res.status(500).json({ error: "Internal server error" });
@@ -251,5 +267,6 @@ module.exports = {
   ecosystemIntegration,
   ecosystemCompleted,
   allEcosystemCourses,
-  getAnEcosystemCourse
+  getAnEcosystemCourse,
+  getMyEcosystem
 };
