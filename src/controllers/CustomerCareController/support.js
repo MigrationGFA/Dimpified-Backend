@@ -1,6 +1,7 @@
 const Creator = require("../../models/Creator");
 //const HelpCenter = require("../../models/HelpCenter");
 const CreatorSupport = require("../../models/Support");
+const sendHelpRequestFeedback = require("../../utils/sendHelpRequestFeedback");
 const sendSupportRequestCompletedEmail = require("../../utils/supportRequestCompleted");
 
 
@@ -115,5 +116,44 @@ const supportRequestCompleted = async (req, res) => {
     }
 };
 
+const sendSupportFeedback = async (req, res) => {
+    try {
+        const { requestId, subject, message } = req.body;
 
-module.exports = { creatorSupport, getAllSupportRequest, supportRequestCompleted, getSupportRequestByACreator }
+        if (!requestId || !subject || !message) {
+            return res.status(400).send({ error: 'requestId, subject, and message are required' });
+        }
+
+        const supportRequest = await CreatorSupport.findByPk(requestId, {
+            include: [
+                {
+                    model: Creator,
+                    attributes: ['username', 'email']
+                }
+            ]
+        })
+        if (!supportRequest || !supportRequest.Creator || !supportRequest.Creator.email) {
+            return res.status(404).send({ error: 'Valid help request with email not found' });
+        }
+
+
+        const { username, email, Message } = supportRequest;
+
+        await sendHelpRequestFeedback({
+            supportId: requestId,
+            username,
+            email: supportRequest.Creator.email,
+            subject,
+            reason: Message,
+            responseMessage: message,
+        });
+
+        res.status(200).send({ message: 'Feedback email sent successfully' });
+    } catch (error) {
+        console.error('Error sending feedback email:', error);
+        res.status(500).send({ error: 'An error occurred while sending the feedback email' })
+    }
+}
+
+
+module.exports = { creatorSupport, getAllSupportRequest, supportRequestCompleted, getSupportRequestByACreator, sendSupportFeedback }
