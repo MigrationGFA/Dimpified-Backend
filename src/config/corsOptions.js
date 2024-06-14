@@ -2,8 +2,9 @@ const whiteList = [
   "http://localhost:5175",
   "http://localhost:5173",
   "http://localhost:5174",
-  "www.dimpified.com",
+  "https://www.dimpified.com",
   "https://dimpified.com",
+  "https://dimpified-frontend-testing.azurewebsites.net"
   
 ];
 
