@@ -1,7 +1,9 @@
 const ContactUs = require("../../models/ContactUs");
+const sendContactUsFeedbackEmail = require("../../utils/sendContactUsFeedbackEmail");
 const sendHelpRequestFeedback = require("../../utils/sendHelpRequestFeedback");
 const sendSupportRequestCompletedEmail = require("../../utils/supportRequestCompleted");
-sendHelpRequestFeedback
+
+
 
 const userContactUs = async (req, res) => {
   await ContactUs.sync();
@@ -86,21 +88,15 @@ const sendContactUsFeedback = async (req, res) => {
     const { id, subject, message } = req.body;
 
     if (!id || !subject || !message) {
-      return res.status(400).send({ error: 'requestId, subject, and message are required' });
+      return res.status(400).send({ error: 'id, subject, and message are required' });
     }
 
-    const contactUs = await ContactUs.findByPk(id, {
-      include: [
-        {
-          attributes: ['firstName', 'email']
-        }
-      ]
-    })
+    const contactUs = await ContactUs.findByPk(id)
 
 
     const { username, email, Message } = contactUs;
 
-    await sendHelpRequestFeedback({
+    await sendContactUsFeedbackEmail({
       requestId: id,
       username,
       email,
@@ -109,7 +105,7 @@ const sendContactUsFeedback = async (req, res) => {
       responseMessage: message,
     });
 
-    res.status(200).send({ message: 'Feedback email sent successfully' });
+    res.status(200).send({ message: 'Your Contact us feedback email was sent successfully' });
   } catch (error) {
     console.error('Error sending feedback email:', error);
     res.status(500).send({ error: 'An error occurred while sending the feedback email' })
