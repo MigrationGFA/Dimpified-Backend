@@ -161,7 +161,7 @@ const sendFeedback = async (req, res) => {
             responseMessage: message,
         });
 
-        res.status(200).send({ message: 'Feedback email sent successfully' });
+        res.status(200).send({ message: 'Help request feedback email sent successfully' });
     } catch (error) {
         console.error('Error sending feedback email:', error);
         res.status(500).send({ error: 'An error occurred while sending the feedback email' })
