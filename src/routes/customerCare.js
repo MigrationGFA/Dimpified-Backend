@@ -5,6 +5,7 @@ const {
   userContactUs,
   allContactUs,
   contactUsCompleted,
+  sendContactUsFeedback
 } = require("../controllers/CustomerCareController/contactUs");
 
 const { userHelpCenter, getAllHelpRequest, helpRequestCompleted, getHelpRequestByEcosystem, sendFeedback } = require("../controllers/CustomerCareController/helpCenter");
@@ -14,6 +15,7 @@ const { creatorSupport, getAllSupportRequest, supportRequestCompleted, getSuppor
 router.post("/contact-us", userContactUs);
 router.get("/all-contact-us", allContactUs);
 router.put("/contact-us/:id/completed", contactUsCompleted);
+router.post("/send-contact-us-feedback", sendContactUsFeedback)
 
 
 //End-Users Help center routes
