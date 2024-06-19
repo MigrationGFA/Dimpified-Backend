@@ -8,8 +8,17 @@ const {
   sendContactUsFeedback
 } = require("../controllers/CustomerCareController/contactUs");
 
-const { userHelpCenter, getAllHelpRequest, helpRequestCompleted, getHelpRequestByEcosystem, sendFeedback } = require("../controllers/CustomerCareController/helpCenter");
-const { creatorSupport, getAllSupportRequest, supportRequestCompleted, getSupportRequestByACreator, sendSupportFeedback } = require("../controllers/CustomerCareController/support");
+const {
+  userHelpCenter,
+  getAllHelpRequest,
+  helpRequestCompleted,
+  getHelpRequestByEcosystem,
+  sendFeedback } = require("../controllers/CustomerCareController/helpCenter");
+const { creatorSupport,
+  getAllSupportRequest,
+  supportRequestCompleted,
+  getSupportRequestByACreator,
+  sendSupportFeedback } = require("../controllers/CustomerCareController/support");
 
 
 router.post("/contact-us", userContactUs);
