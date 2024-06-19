@@ -1,4 +1,4 @@
-//const Creator = require("../../models/Creator");
+const Creator = require("../../models/Creator");
 const EndUser = require("../../models/EndUser");
 const HelpCenter = require("../../models/HelpCenter");
 const sendHelpRequestFeedback = require("../../utils/sendHelpRequestFeedback");
@@ -140,6 +140,10 @@ const sendFeedback = async (req, res) => {
                 {
                     model: EndUser,
                     attributes: ['username', 'email']
+                },
+                {
+                    model: Creator,
+                    attributes: ['organizationName']
                 }
             ]
         })
@@ -148,17 +152,21 @@ const sendFeedback = async (req, res) => {
         }
 
 
-        const { username, Message } = helpRequest;
+        const { username } = helpRequest.EndUser;
+        const email = helpRequest.EndUser.email;
+        const { reason, message: originalMessage } = helpRequest;
+        const organizationName = helpRequest.Creator ? helpRequest.Creator.organizationName : 'Your Organization';
 
         //console.log(`Sending feedback email to: ${email}`);
 
         await sendHelpRequestFeedback({
             requestId: requestId,
             username,
-            email: helpRequest.EndUser.email,
+            email,
             subject,
-            reason: Message,
-            responseMessage: message,
+            reason,
+            message,
+            organizationName
         });
 
         res.status(200).send({ message: 'Help request feedback email sent successfully' });
@@ -168,4 +176,10 @@ const sendFeedback = async (req, res) => {
     }
 }
 
-module.exports = { userHelpCenter, getAllHelpRequest, helpRequestCompleted, getHelpRequestByEcosystem, sendFeedback }
+module.exports = {
+    userHelpCenter,
+    getAllHelpRequest,
+    helpRequestCompleted,
+    getHelpRequestByEcosystem,
+    sendFeedback
+}
