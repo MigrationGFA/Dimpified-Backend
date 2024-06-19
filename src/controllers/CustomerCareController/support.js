@@ -138,15 +138,19 @@ const sendSupportFeedback = async (req, res) => {
             return res.status(404).send({ error: 'Valid help request with email not found' });
         }
 
-
-        const { username, email, Message } = supportRequest;
+        //const { username } = supportRequest.EndUser;
+        const email = supportRequest.Creator.email;
+        const { reason, message: originalMessage } = supportRequest;
+        const organizationName = supportRequest.Creator ? supportRequest.Creator.organizationName : 'Your Organization';
+        // const { username, email, Message } = supportRequest;
 
         await sendCreatorSupportRequestFeedback({
-            supportId: requestId,
-            email: supportRequest.Creator.email,
+            //supportId: requestId,
+            email,
             subject,
-            reason: Message,
-            responseMessage: message,
+            reason,
+            message,
+            organizationName
         });
 
         res.status(200).send({ message: 'Creator Support Request Feedback email sent successfully' });
