@@ -1,7 +1,7 @@
 const sendEmail = require("./sendEmail");
 
 const sendCreatorSupportRequestFeedback = async ({
-    requestId,
+    // requestId,
     subject,
     organizationName,
     email,
@@ -84,7 +84,7 @@ const sendCreatorSupportRequestFeedback = async ({
                                     </p>
                                     <p style="margin-bottom: 2px; color: #333">
 
-                                        You have received a response to your help request${requestId}. Below are the
+                                        You have received a response to your Support request. Below are the
                                         details of your request and our
                                         response:
 
