@@ -1,49 +1,6 @@
 const Ecosystem = require("../../models/Ecosystem");
 const generateSimilarDomainNames = require("../../utils/domainUtils");
 
-// const checkDomainAvailability = async (req, res) => {
-//   const { domainName } = req.body;
-
-//   if (!domainName) {
-//     return res.status(400).json({ message: "Domain name is required" });
-//   }
-
-//   try {
-//     // Check if the domain name already exists
-//     const existingEcosystem = await Ecosystem.findOne({
-//       ecosystemDomain: domainName,
-//     });
-
-//     if (existingEcosystem) {
-
-//       const similarNames = generateSimilarDomainNames(domainName);
-//       const availableSuggestions = [];
-
-//       for (const name of similarNames) {
-//         const existingSuggestion = await Ecosystem.findOne({
-//           ecosystemDomain: name,
-//         });
-//         if (!existingSuggestion) {
-//           availableSuggestions.push(name);
-//         }
-
-//         if (availableSuggestions.length >= 3) {
-//           break;
-//         }
-//       }
-
-//       return res.status(200).json({
-//         message: "Domain name not available",
-//         suggestions: availableSuggestions,
-//       });
-//     }
-//     res.status(200).json({ message: "Domain name is available" });
-//   } catch (error) {
-//     console.error("Error checking domain availability:", error);
-//     res.status(500).json({ message: "Internal server error", error });
-//   }
-// };
-
 const checkDomainAvailability = async (req, res) => {
   const { domainName } = req.body;
 
@@ -56,28 +13,32 @@ const checkDomainAvailability = async (req, res) => {
       ecosystemDomain: domainName,
     });
 
-    const similarNames = generateSimilarDomainNames(domainName);
-    const availableSuggestions = [];
+    if (existingEcosystem) {
+      const similarNames = generateSimilarDomainNames(domainName);
+      const availableSuggestions = [];
 
-    for (const name of similarNames) {
-      const existingSuggestion = await Ecosystem.findOne({
-        ecosystemDomain: name,
+      for (const name of similarNames) {
+        const existingSuggestion = await Ecosystem.findOne({
+          ecosystemDomain: name,
+        });
+        if (!existingSuggestion) {
+          availableSuggestions.push(name);
+        }
+
+        if (availableSuggestions.length >= 3) {
+          break;
+        }
+      }
+
+      return res.status(200).json({
+        message: "Domain name not available",
+        suggestions: availableSuggestions,
       });
-      if (!existingSuggestion) {
-        availableSuggestions.push(name);
-      }
-
-      if (availableSuggestions.length >= 3) {
-        break;
-      }
+    } else {
+      return res.status(200).json({
+        message: "Domain name is available",
+      });
     }
-
-    return res.status(200).json({
-      message: existingEcosystem
-        ? "Domain name not available"
-        : "Domain name is available",
-      suggestions: availableSuggestions,
-    });
   } catch (error) {
     console.error("Error checking domain availability:", error);
     res.status(500).json({ message: "Internal server error", error });
