@@ -8,6 +8,7 @@ const ecosystemSchema = new mongoose.Schema({
   ecosystemName: {
     type: String,
     required: true,
+    unique: true,
   },
   ecosystemDomain: {
     type: String,
