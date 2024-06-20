@@ -3,10 +3,10 @@ const sendEmail = require("./sendEmail");
 
 
 const sendContactUsFeedbackEmail = async ({
-    requestId,
+    //requestId,
     username,
     subject,
-    organizationName,
+    //organizationName,
     email,
     reason,
     message
@@ -87,7 +87,7 @@ const sendContactUsFeedbackEmail = async ({
                                     </p>
                                     <p style="margin-bottom: 2px; color: #333">
 
-                                        You have received a response to your ${requestId}. Below are the
+                                        You have received a response to your request. Below are the
                                         details of your request and our
                                         response:
 
@@ -119,7 +119,7 @@ const sendContactUsFeedbackEmail = async ({
                       margin: 40px 0px 0px 0px;
                     ">
                                     <p style="color: #333">
-                                        Warm regards,<br />The <span>${organizationName}</span> Team
+                                        Warm regards,<br />The <span>Dimpified</span> Team
                                     </p>
                                 </div>
                             </div>
@@ -139,10 +139,10 @@ const sendContactUsFeedbackEmail = async ({
                   color: #7e8299;
                 ">
                             <p style="margin-bottom: 2px">
-                                Thank you for choosing ${organizationName}.
+                                Thank you for choosing Dinmpified.
                             </p>
                             <p style="margin-bottom: 2px">
-                                &copy; 2024 ${organizationName}. All rights Reserved.
+                                &copy; 2024 Dimpified. All rights Reserved.
                             </p>
                         </td>
                     </tr>
