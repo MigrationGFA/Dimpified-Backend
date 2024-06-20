@@ -1,6 +1,6 @@
 const ContactUs = require("../../models/ContactUs");
 const sendContactUsFeedbackEmail = require("../../utils/sendContactUsFeedbackEmail");
-const sendHelpRequestFeedback = require("../../utils/sendHelpRequestFeedback");
+//const sendHelpRequestFeedback = require("../../utils/sendHelpRequestFeedback");
 const sendSupportRequestCompletedEmail = require("../../utils/supportRequestCompleted");
 
 
@@ -94,15 +94,15 @@ const sendContactUsFeedback = async (req, res) => {
     const contactUs = await ContactUs.findByPk(id)
 
 
-    const { username, email, Message } = contactUs;
+    const { firstName: username, email, reason } = contactUs;
+    console.log({ username, email, subject, reason, message });
 
     await sendContactUsFeedbackEmail({
-      requestId: id,
       username,
       email,
       subject,
-      reason: Message,
-      responseMessage: message,
+      reason,
+      message,
     });
 
     res.status(200).send({ message: 'Your Contact us feedback email was sent successfully' });
