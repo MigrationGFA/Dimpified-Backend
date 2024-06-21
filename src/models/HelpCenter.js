@@ -1,6 +1,8 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/dbConnect");
 const EndUser = require("./EndUser");
+const Creator = require("./Creator");
+
 
 
 const HelpCenter = sequelize.define('HelpCenter', {
@@ -48,4 +50,5 @@ const HelpCenter = sequelize.define('HelpCenter', {
 )
 
 HelpCenter.belongsTo(EndUser, { foreignKey: "userId", targetKey: "id" });
+HelpCenter.belongsTo(Creator, { foreignKey: "creatorId", targetKey: "id" });
 module.exports = HelpCenter

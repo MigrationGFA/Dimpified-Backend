@@ -1,6 +1,7 @@
-//const Creator = require("../../models/Creator");
+const Creator = require("../../models/Creator");
 const EndUser = require("../../models/EndUser");
 const HelpCenter = require("../../models/HelpCenter");
+const sendHelpRequestFeedback = require("../../utils/sendHelpRequestFeedback");
 
 
 const sendSupportRequestCompletedEmail = require("../../utils/supportRequestCompleted");
@@ -126,4 +127,59 @@ const getHelpRequestByEcosystem = async (req, res) => {
     }
 }
 
-module.exports = { userHelpCenter, getAllHelpRequest, helpRequestCompleted, getHelpRequestByEcosystem }
+const sendFeedback = async (req, res) => {
+    try {
+        const { requestId, subject, message } = req.body;
+
+        if (!requestId || !subject || !message) {
+            return res.status(400).send({ error: 'requestId, subject, and message are required' });
+        }
+
+        const helpRequest = await HelpCenter.findByPk(requestId, {
+            include: [
+                {
+                    model: EndUser,
+                    attributes: ['username', 'email']
+                },
+                {
+                    model: Creator,
+                    attributes: ['organizationName']
+                }
+            ]
+        })
+        if (!helpRequest || !helpRequest.EndUser || !helpRequest.EndUser.email) {
+            return res.status(404).send({ error: 'Valid help request with email not found' });
+        }
+
+
+        const { username } = helpRequest.EndUser;
+        const email = helpRequest.EndUser.email;
+        const { reason, message: originalMessage } = helpRequest;
+        const organizationName = helpRequest.Creator ? helpRequest.Creator.organizationName : 'Your Organization';
+
+        //console.log(`Sending feedback email to: ${email}`);
+
+        await sendHelpRequestFeedback({
+            requestId: requestId,
+            username,
+            email,
+            subject,
+            reason,
+            message,
+            organizationName
+        });
+
+        res.status(200).send({ message: 'Help request feedback email sent successfully' });
+    } catch (error) {
+        console.error('Error sending feedback email:', error);
+        res.status(500).send({ error: 'An error occurred while sending the feedback email' })
+    }
+}
+
+module.exports = {
+    userHelpCenter,
+    getAllHelpRequest,
+    helpRequestCompleted,
+    getHelpRequestByEcosystem,
+    sendFeedback
+}
