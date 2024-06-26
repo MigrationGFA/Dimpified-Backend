@@ -16,6 +16,6 @@ const imgUpload = upload.fields([
   { name: "footer.logo", maxCount: 1 },
 ]);
 
-router.post("/create-templates", imgUpload, createTemplates);
+router.post("/ecosystem/create-templates", imgUpload, createTemplates);
 
 module.exports = router;
