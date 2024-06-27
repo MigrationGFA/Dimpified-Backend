@@ -120,11 +120,6 @@ const contactUsSchema = new mongoose.Schema({
 const faqSchema = new mongoose.Schema({
   question: { type: String, required: true },
   answer: { type: String, required: true },
-  styles: {
-    backgroundColor: { type: String },
-    color: { type: String },
-    fontFamily: { type: String },
-  },
 });
 
 const footerSchema = new mongoose.Schema({
