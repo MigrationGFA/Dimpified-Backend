@@ -90,7 +90,7 @@ const sendCreatorSupportRequestFeedback = async ({
 
                                         <br />
 
-                                        <strong>Your Help Request:</strong>
+                                        <strong>Your Support Request:</strong>
                                         <br>
                                         ${reason}
                                     </p>

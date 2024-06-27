@@ -140,12 +140,11 @@ const sendSupportFeedback = async (req, res) => {
 
         //const { username } = supportRequest.EndUser;
         const email = supportRequest.Creator.email;
-        const { reason, message: originalMessage } = supportRequest;
+        const { reason } = supportRequest;
         const organizationName = supportRequest.Creator ? supportRequest.Creator.organizationName : 'Your Organization';
         // const { username, email, Message } = supportRequest;
 
         await sendCreatorSupportRequestFeedback({
-            //supportId: requestId,
             email,
             subject,
             reason,
