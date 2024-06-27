@@ -22,6 +22,7 @@ app.use(express.json());
 
 // Set the static folder for serving HTML, CSS, JS, etc.
 app.use(express.static(path.join(__dirname, "src")));
+app.use("/uploads", express.static("uploads"));
 
 //user routes
 app.use("/api/v1", require("./src/routes/authentication"));
@@ -30,6 +31,7 @@ app.use("/api/v1", require("./src/routes/customerCare"));
 app.use("/api/v1", require("./src/routes/ecosystem"));
 app.use("/api/v1/", require("./src/routes/ratingRoutes"));
 app.use("/api/v1/", require("./src/routes/domainCheck"));
+app.use("/api/v1/", require("./src/routes/templates"));
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
