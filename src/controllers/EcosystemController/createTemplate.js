@@ -6,11 +6,16 @@ const createTemplate = async (req, res) => {
   try {
     const { creatorId, ecosystemId, templateNumber } = req.body;
 
-    if (!creatorId || !ecosystemId) {
-      return res
-        .status(400)
-        .json({ message: "creatorId and ecosystemId are required" });
-    }
+   const details = [
+            "creatorId",
+            "ecosystemId",
+            "templateNumber",
+        ]
+        for (const detail of details) {
+            if (!req.body[detail]) {
+                return res.status(400).json({ message: `${detail} is required` });
+            }
+        }
 
     const creator = await Creator.findByPk(creatorId);
     if (!creator) {
@@ -40,33 +45,33 @@ const createTemplate = async (req, res) => {
 
     // Set file paths in templateData
     if (req.files) {
-      if (req.files["navbar.logo"]) {
-        templateData.navbar.logo = req.files["navbar.logo"][0].path;
+      if (req.files["navbarLogo"]) {
+        templateData.navbar.logo = req.files["navbarLogo"][0].path;
       }
-      if (req.files["hero.backgroundImage"]) {
+      if (req.files["heroBackgroundImage"]) {
         templateData.hero.backgroundImage =
-          req.files["hero.backgroundImage"][0].path;
+          req.files["heroBackgroundImage"][0].path;
       }
-      if (req.files["vision.image"]) {
-        templateData.vision.image = req.files["vision.image"][0].path;
+      if (req.files["visionImage"]) {
+        templateData.vision.image = req.files["visionImage"][0].path;
       }
-      if (req.files["audience.image1"]) {
-        templateData.audience.image1 = req.files["audience.image1"][0].path;
+      if (req.files["audienceImage1"]) {
+        templateData.audience.image1 = req.files["audienceImage1"][0].path;
       }
-      if (req.files["audience.image2"]) {
-        templateData.audience.image2 = req.files["audience.image2"][0].path;
+      if (req.files["audienceImage2"]) {
+        templateData.audience.image2 = req.files["audienceImage2"][0].path;
       }
-      if (req.files["audience.image3"]) {
-        templateData.audience.image3 = req.files["audience.image3"][0].path;
+      if (req.files["audienceImage3"]) {
+        templateData.audience.image3 = req.files["audienceImage3"][0].path;
       }
-      if (req.files["audience.image4"]) {
-        templateData.audience.image4 = req.files["audience.image4"][0].path;
+      if (req.files["audienceImage4"]) {
+        templateData.audience.image4 = req.files["audienceImage4"][0].path;
       }
-      if (req.files["cta.image"]) {
-        templateData.cta.image = req.files["cta.image"][0].path;
+      if (req.files["ctaImage"]) {
+        templateData.cta.image = req.files["ctaImage"][0].path;
       }
-      if (req.files["footer.logo"]) {
-        templateData.footer.logo = req.files["footer.logo"][0].path;
+      if (req.files["footerLogo"]) {
+        templateData.footer.logo = req.files["footerLogo"][0].path;
       }
     }
 
