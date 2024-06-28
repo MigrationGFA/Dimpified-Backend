@@ -12,7 +12,6 @@ cloudinary.config({
   secure: true,
 });
 
-
 const createCourse = async (req, res) => {
   try {
     const {
@@ -28,7 +27,7 @@ const createCourse = async (req, res) => {
       price,
       hour,
       currency,
-      ecosystemId
+      ecosystemId,
     } = req.body;
 
     // Required fields validation
@@ -42,7 +41,7 @@ const createCourse = async (req, res) => {
       "price",
       "hour",
       "currency",
-      "ecosystemId"
+      "ecosystemId",
     ];
 
     for (const field of requiredFields) {
@@ -99,7 +98,7 @@ const createCourse = async (req, res) => {
       requirement: requirementData,
       currency,
       whatIsIncluded: whatisIncludedData,
-      image: imageLink
+      image: imageLink,
     });
 
     // Add the course to the ecosystem
@@ -110,14 +109,6 @@ const createCourse = async (req, res) => {
     }
     ecosystem.courses.push(course._id);
     await ecosystem.save();
-
-    // Add the course to the creator profile
-    // const creatorProfile = await CreatorProfile.findOne({ _id: creatorId });
-    // if (!creatorProfile) {
-    //   return res.status(404).json({ message: "Creator profile not found" });
-    // }
-    // creatorProfile.courses.push(course._id);
-    // await creatorProfile.save();
 
     // Send course creation email
     const creator = await Creator.findByPk(creatorId);

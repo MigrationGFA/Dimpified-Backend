@@ -40,10 +40,7 @@ const ecosystemSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  template: {
-    type: String,
-    default: "",
-  },
+  templates: [{ type: mongoose.Types.ObjectId, ref: "Template" }],
   form: {
     type: String,
     default: "",
@@ -64,7 +61,7 @@ const ecosystemSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["draft", "pending", "live"],
+    // enum: ["draft", "pending", "live"],
     default: "draft",
   },
   createdAt: {
