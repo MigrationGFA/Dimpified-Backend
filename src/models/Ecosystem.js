@@ -14,6 +14,12 @@ const ecosystemSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  ecoCertificate: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "dimpifiedEcoCertificate",
+    },
+  ],
   targetAudienceSector: {
     type: String,
     required: true,
