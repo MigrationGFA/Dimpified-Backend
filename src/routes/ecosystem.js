@@ -12,7 +12,9 @@ const {
   allEcosystemTemplates,
 } = require("../controllers/EcosystemController/createEcosystem");
 
+
 const multer = require("multer");
+const createEcoCertificate = require("../controllers/EcosystemController/ecosystemCertificate");
 
 // Set up multer for handling multipart/form-data
 const storage = multer.diskStorage({});
@@ -36,5 +38,8 @@ router.get("/ecosystem/:ecosystemId/:courseId", getAnEcosystemCourse);
 
 // to get creator ecosystems
 router.get("/creator-ecosystems/:userId", getMyEcosystem);
+
+//To create ecosystem certificate
+router.post("/create-ecosystem-certificate", createEcoCertificate)
 
 module.exports = router;
