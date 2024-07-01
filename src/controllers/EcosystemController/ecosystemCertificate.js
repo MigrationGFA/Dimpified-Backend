@@ -3,7 +3,9 @@ const Course = require("../../models/Course");
 
 const createEcoCertificate = async (req, res) => {
     try {
-        const { title,
+        const {
+            certificateNumber,
+            title,
             courseId,
             signature,
             skills,
@@ -14,6 +16,7 @@ const createEcoCertificate = async (req, res) => {
 
 
         const requiredFields = [
+            "certificateNumber",
             "title",
             "courseId",
             "signature",
@@ -36,16 +39,16 @@ const createEcoCertificate = async (req, res) => {
         };
 
         const newCertificate = await Certificate.create({
+            certificateNumber,
             title,
-            course: courseId,
+            courseId,
             signature,
             skills,
             issuerName,
             issuerTitle,
             logoUrl,
             backgroundImageUrl,
-        })
-        newCertificate.save()
+        });
 
         res.status(201).json({ newCertificate })
     } catch (error) {

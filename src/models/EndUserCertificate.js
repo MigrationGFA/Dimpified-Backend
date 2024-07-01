@@ -16,8 +16,8 @@ const UserCertificateSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
-    course: {
-        type: Schema.Types.ObjectId,
+    courseId: {
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'dimpifiedCourse',
         required: true,
     },
