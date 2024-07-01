@@ -1,7 +1,6 @@
 const sendEmail = require("./sendEmail");
 
 const sendCreatorSupportRequestFeedback = async ({
-    // requestId,
     subject,
     organizationName,
     email,
@@ -80,7 +79,7 @@ const sendCreatorSupportRequestFeedback = async ({
                       line-height: 30px;
                     ">
                                     <p style="margin-bottom: 2px; color: #333; font-weight: 600">
-                                    <p>Hello,</p>
+                                    <p>Hello ${organizationName},</p>
                                     </p>
                                     <p style="margin-bottom: 2px; color: #333">
 
@@ -96,7 +95,7 @@ const sendCreatorSupportRequestFeedback = async ({
                                     </p>
                                     <p style="margin-bottom: 2px; color: #333">
 
-                                        <strong>${organizationName} Response:</strong>
+                                        <strong>Our Response:</strong>
                                         <br>
                                         ${message}
 
@@ -116,7 +115,7 @@ const sendCreatorSupportRequestFeedback = async ({
                       margin: 40px 0px 0px 0px;
                     ">
                                     <p style="color: #333">
-                                        Warm regards,<br />The <span>${organizationName}</span> Team
+                                        Warm regards,<br />The <span>Dimpified</span> Team
                                     </p>
                                 </div>
                             </div>
@@ -136,10 +135,10 @@ const sendCreatorSupportRequestFeedback = async ({
                   color: #7e8299;
                 ">
                             <p style="margin-bottom: 2px">
-                                Thank you for choosing ${organizationName}.
+                                Thank you for choosing Dimpified.
                             </p>
                             <p style="margin-bottom: 2px">
-                                &copy; 2024 ${organizationName}. All rights Reserved.
+                                &copy; 2024 Dimpified. All rights Reserved.
                             </p>
                         </td>
                     </tr>
