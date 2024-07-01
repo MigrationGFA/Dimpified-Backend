@@ -85,4 +85,24 @@ const getFormById = async (req, res) => {
   }
 };
 
-module.exports = { createForm, getFormById };
+const allEcosystemForm = async (req, res) => {
+  try {
+    const { ecosystemId } = req.params;
+    if (!ecosystemId) {
+      return res.status(400).json({ message: "Ecosystem ID is required" });
+    }
+
+    const ecosystem = await Ecosystem.findById(ecosystemId).populate("forms");
+
+    if (!ecosystem) {
+      return res.status(404).json({ message: "Ecosystem not found" });
+    }
+
+    res.status(200).json({ ecosystemForms: ecosystem.forms });
+  } catch (error) {
+    console.error("Error retrieving all ecosystem templates:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+module.exports = { createForm, getFormById, allEcosystemForm };

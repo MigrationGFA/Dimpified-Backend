@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   createForm,
   getFormById,
+  allEcosystemForm,
 } = require("../controllers/EcosystemController/createForm");
 
 const { formUpload } = require("../utils/multerUpload");
@@ -14,5 +15,6 @@ const imgUpload = formUpload.fields([
 
 router.post("/ecosystem/create-form", imgUpload, createForm);
 router.get("/forms/:formId", getFormById);
+router.get("/ecosystem/get-all-forms/:ecosystemId", allEcosystemForm);
 
 module.exports = router;
