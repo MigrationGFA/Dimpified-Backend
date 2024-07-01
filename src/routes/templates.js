@@ -13,7 +13,12 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, 
+  },
+});
 
 const imgUpload = upload.fields([
   { name: "navbar.logo", maxCount: 1 },
