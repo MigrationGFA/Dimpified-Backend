@@ -27,6 +27,7 @@ const createTemplate = async (req, res) => {
       return res.status(404).json({ message: "Ecosystem not found" });
     }
 
+    console.log("i can see this part first")
     const templateData = {
       creatorId,
       ecosystemId,
@@ -42,6 +43,7 @@ const createTemplate = async (req, res) => {
       faq: JSON.parse(req.body.faq),
       footer: JSON.parse(req.body.footer),
     };
+    console.log("the error is here for the templateDate")
 
     // Set file paths in templateData
     if (req.files) {
@@ -74,6 +76,7 @@ const createTemplate = async (req, res) => {
         templateData.footer.logo = req.files["footer.logo"][0].path;
       }
     }
+    console.log("the error is after the template date")
 
     const template = await Template.create(templateData);
     ecosystem.templates.push(template._id);
