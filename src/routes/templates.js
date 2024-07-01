@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const createTemplates = require("../controllers/EcosystemController/createTemplate");
 
-const upload = require("../utils/multerUpload");
+const { upload } = require("../utils/multerUpload");
 
 const imgUpload = upload.fields([
   { name: "navbar.logo", maxCount: 1 },
