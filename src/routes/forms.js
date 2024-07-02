@@ -15,6 +15,6 @@ const imgUpload = formUpload.fields([
 
 router.post("/ecosystem/create-form", imgUpload, createForm);
 router.get("/forms/:formId", getFormById);
-router.get("/ecosystem/get-all-forms/:ecosystemId", allEcosystemForm);
+router.get("/ecosystem/all-forms/:ecosystemId", allEcosystemForm);
 
 module.exports = router;
