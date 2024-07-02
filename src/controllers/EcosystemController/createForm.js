@@ -88,6 +88,7 @@ const getFormById = async (req, res) => {
 const allEcosystemForm = async (req, res) => {
   try {
     const { ecosystemId } = req.params;
+
     if (!ecosystemId) {
       return res.status(400).json({ message: "Ecosystem ID is required" });
     }
