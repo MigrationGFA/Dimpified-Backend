@@ -13,20 +13,26 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, 
+  },
+});
 
 const imgUpload = upload.fields([
-  { name: "navbarLogo", maxCount: 1 },
-  { name: "heroBackgroundImage", maxCount: 1 },
-  { name: "visionImage", maxCount: 1 },
-  { name: "audienceImage1", maxCount: 1 },
-  { name: "audienceImage2", maxCount: 1 },
-  { name: "audienceImage3", maxCount: 1 },
-  { name: "audienceImage4", maxCount: 1 },
-  { name: "ctaImage", maxCount: 1 },
-  { name: "footerLogo", maxCount: 1 },
+  { name: "navbar.logo", maxCount: 1 },
+  { name: "hero.backgroundImage", maxCount: 1 },
+  { name: "Vision.image", maxCount: 1 },
+  { name: "Audience.image1", maxCount: 1 },
+  { name: "Audience.image2", maxCount: 1 },
+  { name: "Audience.image3", maxCount: 1 },
+  { name: "Audience.image4", maxCount: 1 },
+  { name: "CTA.image", maxCount: 1 },
+  { name: "footer.logo", maxCount: 1 },
 ]);
 
 router.post("/ecosystem/create-templates", imgUpload, createTemplates);
 
 module.exports = router;
+

@@ -27,6 +27,7 @@ const createTemplate = async (req, res) => {
       return res.status(404).json({ message: "Ecosystem not found" });
     }
 
+    console.log("i can see this part first")
     const templateData = {
       creatorId,
       ecosystemId,
@@ -42,38 +43,40 @@ const createTemplate = async (req, res) => {
       faq: JSON.parse(req.body.faq),
       footer: JSON.parse(req.body.footer),
     };
+    console.log("the error is here for the templateDate")
 
     // Set file paths in templateData
     if (req.files) {
-      if (req.files["navbarLogo"]) {
-        templateData.navbar.logo = req.files["navbarLogo"][0].path;
+      if (req.files["navbar.logo"]) {
+        templateData.navbar.logo = req.files["navbar.logo"][0].path;
       }
-      if (req.files["heroBackgroundImage"]) {
+      if (req.files["hero.backgroundImage"]) {
         templateData.hero.backgroundImage =
-          req.files["heroBackgroundImage"][0].path;
+          req.files["hero.backgroundImage"][0].path;
       }
-      if (req.files["visionImage"]) {
-        templateData.vision.image = req.files["visionImage"][0].path;
+      if (req.files["Vision.image"]) {
+        templateData.vision.image = req.files["Vision.image"][0].path;
       }
-      if (req.files["audienceImage1"]) {
-        templateData.audience.image1 = req.files["audienceImage1"][0].path;
+      if (req.files["Audience.image1"]) {
+        templateData.audience.image1 = req.files["Audience.image1"][0].path;
       }
-      if (req.files["audienceImage2"]) {
-        templateData.audience.image2 = req.files["audienceImage2"][0].path;
+      if (req.files["Audience.image2"]) {
+        templateData.audience.image2 = req.files["Audience.image2"][0].path;
       }
-      if (req.files["audienceImage3"]) {
-        templateData.audience.image3 = req.files["audienceImage3"][0].path;
+      if (req.files["Audience.image3"]) {
+        templateData.audience.image3 = req.files["Audience.image3"][0].path;
       }
-      if (req.files["audienceImage4"]) {
-        templateData.audience.image4 = req.files["audienceImage4"][0].path;
+      if (req.files["Audience.image4"]) {
+        templateData.audience.image4 = req.files["Audience.image4"][0].path;
       }
-      if (req.files["ctaImage"]) {
-        templateData.cta.image = req.files["ctaImage"][0].path;
+      if (req.files["CTA.image"]) {
+        templateData.cta.image = req.files["CTA.image"][0].path;
       }
-      if (req.files["footerLogo"]) {
-        templateData.footer.logo = req.files["footerLogo"][0].path;
+      if (req.files["footer.logo"]) {
+        templateData.footer.logo = req.files["footer.logo"][0].path;
       }
     }
+    console.log("the error is after the template date")
 
     const template = await Template.create(templateData);
     ecosystem.templates.push(template._id);
