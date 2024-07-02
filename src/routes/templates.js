@@ -3,20 +3,19 @@ const router = express.Router();
 const createTemplates = require("../controllers/EcosystemController/createTemplate");
 const multer = require("multer");
 
-
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/"); 
+    cb(null, "uploads/");
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + "-" + file.originalname);
   },
 });
 
-const upload = multer({ 
+const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 10 * 1024 * 1024, 
+    fileSize: 10 * 1024 * 1024,
   },
 });
 
@@ -35,4 +34,3 @@ const imgUpload = upload.fields([
 router.post("/ecosystem/create-templates", imgUpload, createTemplates);
 
 module.exports = router;
-

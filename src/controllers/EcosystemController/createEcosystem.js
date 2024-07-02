@@ -288,6 +288,7 @@ const allEcosystemTemplates = async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+
 const getAnEcosystemTemplate = async (req, res) => {
   try {
     const { ecosystemId, templateId } = req.params;
