@@ -1,14 +1,29 @@
 const express = require("express");
 const router = express.Router();
+const multer = require("multer");
 const {
   createForm,
   getFormById,
   allEcosystemForm,
 } = require("../controllers/EcosystemController/createForm");
 
-const { formUpload } = require("../utils/multerUpload");
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
 
-const imgUpload = formUpload.fields([
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024,
+  },
+});
+
+const imgUpload = upload.fields([
   { name: "sidebar.image", maxCount: 1 },
   { name: "logo.image", maxCount: 1 },
 ]);
