@@ -8,6 +8,9 @@ const UserCertificateSchema = new mongoose.Schema({
     userid: {
         type: Number
     },
+    ecosystemId: {
+        type: Number
+    },
     title: {
         type: String,
         required: true,

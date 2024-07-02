@@ -18,6 +18,14 @@ const CertificateSchema = new mongoose.Schema({
         ref: 'dimpifiedCourse',
         required: true,
     },
+    description: {
+        type: String,
+        required: true
+    },
+    summary: {
+        type: String,
+        required: true
+    },
 
     signature: {
         type: String,

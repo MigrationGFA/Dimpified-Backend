@@ -4,15 +4,11 @@ const EndUserCertificate = require("../../models/EndUserCertificate");
 const generateUserCertificate = async (req, res) => {
     try {
         const {
-            certificateNumber,
-            title,
+
             userid,
             courseId,
             recipientName,
             recipientEmail,
-            description,
-            signature,
-            skills,
             issuerName,
             issuerTitle,
             logoUrl,
@@ -20,14 +16,10 @@ const generateUserCertificate = async (req, res) => {
 
 
         const requiredFields = [
-            "certificateNumber",
-            "title",
             "userid",
             "courseId",
             "recipientName",
             "recipientEmail",
-            "description",
-            "signature",
             "issuerName",
             "issuerTitle",
             "logoUrl",
@@ -47,14 +39,10 @@ const generateUserCertificate = async (req, res) => {
         };
 
         const newUserCertificate = await EndUserCertificate.create({
-            certificateNumber,
-            title,
             userid,
             courseId,
             recipientName,
             recipientEmail,
-            description,
-            signature,
             skills,
             issuerName,
             issuerTitle,
