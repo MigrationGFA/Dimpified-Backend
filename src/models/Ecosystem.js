@@ -52,7 +52,6 @@ const ecosystemSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    // enum: ["draft", "pending", "live"],
     default: "draft",
   },
   createdAt: {
