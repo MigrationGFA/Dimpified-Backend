@@ -6,10 +6,13 @@ const UserCertificateSchema = new mongoose.Schema({
         required: true,
     },
     userid: {
-        type: Number
+        type: Number,
+        required: true,
     },
     ecosystemId: {
-        type: Number
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Ecosystem',
+        required: true,
     },
     title: {
         type: String,
@@ -51,11 +54,11 @@ const UserCertificateSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    logoUrl: {
+    logo: {
         type: String,
         required: true,
     },
-    backgroundImageUrl: {
+    backgroundImage: {
         type: String,
         required: true,
     },

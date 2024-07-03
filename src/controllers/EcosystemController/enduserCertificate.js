@@ -1,5 +1,7 @@
-const Course = require("../../models/Course");
+const Certificate = require("../../models/Certificate");
+//const Course = require("../../models/Course");
 const EndUserCertificate = require("../../models/EndUserCertificate");
+
 
 const generateUserCertificate = async (req, res) => {
     try {
@@ -9,10 +11,8 @@ const generateUserCertificate = async (req, res) => {
             courseId,
             recipientName,
             recipientEmail,
-            issuerName,
-            issuerTitle,
-            logoUrl,
-            backgroundImageUrl } = req.body
+            ecosystemId
+        } = req.body
 
 
         const requiredFields = [
@@ -20,10 +20,7 @@ const generateUserCertificate = async (req, res) => {
             "courseId",
             "recipientName",
             "recipientEmail",
-            "issuerName",
-            "issuerTitle",
-            "logoUrl",
-            "backgroundImageUrl",
+            "ecosystem"
         ];
 
         for (const field of requiredFields) {
@@ -32,25 +29,36 @@ const generateUserCertificate = async (req, res) => {
             }
         }
 
-        //Check if course exist
-        const course = await Course.findById(courseId);
-        if (!course) {
-            return res.status(404).json({ message: "Course not found" })
+
+        //Check if certificate exist
+        const ecosystemCertificate = await Certificate.findOne({
+            courseId,
+            ecosystemId
+        });
+
+        if (!ecosystemCertificate) {
+            return res.status(404).json({ message: "certificate not found" })
         };
 
-        const newUserCertificate = await EndUserCertificate.create({
+        const userCertificate = new EndUserCertificate({
+            certificateNumber: uuidv4(),
             userid,
+            ecosystemId,
+            title: ecosystemCertificate.title,
             courseId,
             recipientName,
             recipientEmail,
-            skills,
-            issuerName,
-            issuerTitle,
-            logoUrl,
-            backgroundImageUrl
+            description: ecosystemCertificate.description,
+            signature: ecosystemCertificate.signature,
+            skills: ecosystemCertificate.skills,
+            issuerName: ecosystemCertificate.issuerName,
+            issuerTitle: ecosystemCertificate.issuerTitle,
+            logo: ecosystemCertificate.logoUrl,
+            backgroundImage: ecosystemCertificate.backgroundImageUrl,
         });
 
-        res.status(201).json({ newUserCertificate })
+        await userCertificate.save()
+        res.status(201).json({ userCertificate })
     } catch (error) {
         console.error('Error creating certificate:', error);
         res.status(500).send({ error: 'An error occurred while creating certificate' })

@@ -41,9 +41,9 @@ router.get("/ecosystem/:ecosystemId/:courseId", getAnEcosystemCourse);
 router.get("/creator-ecosystems/:userId", getMyEcosystem);
 
 //To create ecosystem certificate
-router.post("/create-ecosystem-certificate", createEcoCertificate)
+router.post("/create-ecosystem-certificate", upload.fields(['logo', 'image']), createEcoCertificate)
 
 //To Create End-User Certificate
-router.post("/create-user-certificate", generateUserCertificate)
+router.post("/generate-user-certificate", generateUserCertificate)
 
 module.exports = router;
