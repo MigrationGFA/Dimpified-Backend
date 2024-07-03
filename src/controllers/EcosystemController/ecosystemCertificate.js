@@ -1,13 +1,13 @@
 const Certificate = require("../../models/Certificate");
 const Course = require("../../models/Course");
-const cloudinary = require("cloudinary").v2;
+//const cloudinary = require("cloudinary").v2;
 
-cloudinary.config({
-    cloud_name: process.env.CLOUD_NAME,
-    api_key: process.env.API_KEY,
-    api_secret: process.env.API_SECRET,
-    secure: true,
-});
+// cloudinary.config({
+//     cloud_name: process.env.CLOUD_NAME,
+//     api_key: process.env.API_KEY,
+//     api_secret: process.env.API_SECRET,
+//     secure: true,
+// });
 
 
 const createEcoCertificate = async (req, res) => {
@@ -43,14 +43,14 @@ const createEcoCertificate = async (req, res) => {
         }
 
 
-        let logoUrl, backgroundImageUrl;
-        if (req.file) {
-            const fileUpload = await cloudinary.uploader.upload(req.file.path, {
-                resource_type: "auto",
-            });
-            logoUrl = fileUpload.secure_url;
-            backgroundImageUrl = fileUpload.secure_url;
-        }
+        // let logoUrl, backgroundImageUrl;
+        // if (req.file) {
+        //     const fileUpload = await cloudinary.uploader.upload(req.file.path, {
+        //         resource_type: "auto",
+        //     });
+        //     logoUrl = fileUpload.secure_url;
+        //     backgroundImageUrl = fileUpload.secure_url;
+        // }
 
 
         //Check if course exist
