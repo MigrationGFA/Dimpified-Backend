@@ -246,7 +246,7 @@ const getMyEcosystem = async (req, res) => {
 
       const templateLogos = templates.map(template => ({
          templateId: template._id,
-        logoPath:  template.navbar.logo
+        logoPath:  `https://dimpified-backend-development.azurewebsites.net/${template.navbar.logo}`
       }));
        return {
         ...ecosystem.toObject(),
