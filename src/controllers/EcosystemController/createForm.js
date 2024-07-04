@@ -36,7 +36,7 @@ const createForm = async (req, res) => {
     // Set file paths in formData
     if (req.files) {
       if (req.files["sidebar.image"]) {
-        const sidebarImage = req.files["sidebar.image"][0];
+        const sidebarImage = `https://dimpified-backend-development.azurewebsites.net/${req.files["sidebar.image"][0]}`;
         if (!isValidFile(sidebarImage)) {
           return res
             .status(400)
@@ -45,7 +45,7 @@ const createForm = async (req, res) => {
         formData.sidebar.image = sidebarImage.path;
       }
       if (req.files["logo.image"]) {
-        const logoImage = req.files["logo.image"][0];
+        const logoImage = `https://dimpified-backend-development.azurewebsites.net/${req.files["logo.image"][0]}`;
         if (!isValidFile(logoImage)) {
           return res.status(400).json({ message: "Invalid logo image file" });
         }

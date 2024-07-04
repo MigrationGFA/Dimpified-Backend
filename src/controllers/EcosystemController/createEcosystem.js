@@ -2,7 +2,7 @@ const Ecosystem = require("../../models/Ecosystem");
 const Creator = require("../../models/Creator");
 const dimpifiedCourse = require("../../models/Course");
 const Template = require("../../models/Templates");
-const CreatorSupport = require("../../models/Support");
+const path = require("path");
 
 const aboutEcosystem = async (req, res) => {
   const {
@@ -86,30 +86,6 @@ const aboutEcosystem = async (req, res) => {
   }
 };
 
-// Endpoint to handle ecosystem template information
-
-// Endpoint to handle ecosystem form information
-const ecosystemForm = async (req, res) => {
-  const { ecosystemId, form } = req.body;
-
-  try {
-    const ecosystem = await Ecosystem.findByIdAndUpdate(
-      ecosystemId,
-      {
-        form,
-        status: "draft",
-        updatedAt: Date.now(),
-      },
-      { new: true }
-    );
-
-    res.status(200).json({ message: "Form saved", ecosystem });
-  } catch (error) {
-    console.error("Error saving form:", error);
-    res.status(500).json({ message: "Internal server error", error });
-  }
-};
-
 // Endpoint to handle ecosystem integration information
 const ecosystemIntegration = async (req, res) => {
   const { ecosystemId, integration } = req.body;
@@ -128,54 +104,6 @@ const ecosystemIntegration = async (req, res) => {
     res.status(200).json({ message: "Integration saved", ecosystem });
   } catch (error) {
     console.error("Error saving integration:", error);
-    res.status(500).json({ message: "Internal server error", error });
-  }
-};
-
-// Endpoint to handle ecosystem completion
-const ecosystemCompleted = async (req, res) => {
-  const { ecosystemId } = req.body;
-
-  try {
-    const ecosystem = await Ecosystem.findById(ecosystemId);
-
-    if (!ecosystem) {
-      return res.status(404).json({ message: "Ecosystem not found" });
-    }
-
-    // Check if all required fields are filled
-    const requiredFields = [
-      "ecosystemName",
-      "ecosystemDomain",
-      "targetAudienceSector",
-      "mainObjective",
-      "expectedAudienceNumber",
-      "experience",
-      "ecosystemDescription",
-      "template",
-      "form",
-      "courses",
-      "integration",
-    ];
-
-    for (const field of requiredFields) {
-      if (
-        !ecosystem[field] ||
-        (Array.isArray(ecosystem[field]) && ecosystem[field].length === 0)
-      ) {
-        return res.status(400).json({
-          message: `Field ${field} is required to complete the ecosystem`,
-        });
-      }
-    }
-
-    ecosystem.status = "completed";
-    ecosystem.updatedAt = Date.now();
-    await ecosystem.save();
-
-    res.status(200).json({ message: "Ecosystem completed", ecosystem });
-  } catch (error) {
-    console.error("Error completing ecosystem:", error);
     res.status(500).json({ message: "Internal server error", error });
   }
 };
@@ -237,14 +165,28 @@ const getMyEcosystem = async (req, res) => {
   try {
     const userId = req.params.userId;
     if (!userId) {
-      return res
-        .status(404)
-        .json({ message: "Ecosystem ID and course ID is required" });
+      return res.status(404).json({ message: "Ecosystem ID is required" });
     }
     const getEcosystem = await Ecosystem.find({ creatorId: userId }).sort({
       createdAt: -1,
     });
-    return res.status(200).json({ ecosystem: getEcosystem });
+    const ecosystemLogo = await Promise.all(
+      getEcosystem.map(async (ecosystem) => {
+        const templates = await Template.find({
+          _id: { $in: ecosystem.templates },
+        });
+
+        const templateLogos = templates.map((template) => ({
+          templateId: template._id,
+          logoPath: `https://dimpified-backend-development.azurewebsites.net/${template.navbar.logo}`,
+        }));
+        return {
+          ...ecosystem.toObject(),
+          templateLogos,
+        };
+      })
+    );
+    return res.status(200).json({ ecosystem: ecosystemLogo });
   } catch (error) {
     console.error("error retrieving courses from ecosystem: ", error);
     return res.status(500).json({ error: "Internal server error" });

@@ -47,36 +47,33 @@ const createTemplate = async (req, res) => {
     // Set file paths in templateData
     if (req.files) {
       if (req.files["navbar.logo"]) {
-        templateData.navbar.logo = req.files["navbar.logo"][0].path;
+        templateData.navbar.logo = `https://dimpified-backend-development.azurewebsites.net${req.files["navbar.logo"][0].path}`;
       }
       if (req.files["hero.backgroundImage"]) {
-        templateData.hero.backgroundImage =
-          req.files["hero.backgroundImage"][0].path;
+        templateData.hero.backgroundImage = `https://dimpified-backend-development.azurewebsites.net/${req.files["hero.backgroundImage"][0].path}`;
       }
-      if (req.files["vision.image"]) {
-        templateData.vision.image = req.files["vision.image"][0].path;
+      if (req.files["Vision.image"]) {
+        templateData.vision.image = `https://dimpified-backend-development.azurewebsites.net/${req.files["Vision.image"][0].path}`;
       }
-      if (req.files["audience.image1"]) {
-        templateData.audience.image1 = req.files["audience.image1"][0].path;
+      if (req.files["Audience.image1"]) {
+        templateData.audience.image1 = `https://dimpified-backend-development.azurewebsites.net/${req.files["Audience.image1"][0].path}`;
       }
-      if (req.files["audience.image2"]) {
-        templateData.audience.image2 = req.files["audience.image2"][0].path;
+      if (req.files["Audience.image2"]) {
+        templateData.audience.image2 = `https://dimpified-backend-development.azurewebsites.net/${req.files["Audience.image2"][0].path}`;
       }
-      if (req.files["audience.image3"]) {
-        templateData.audience.image3 = req.files["audience.image3"][0].path;
+      if (req.files["Audience.image3"]) {
+        templateData.audience.image3 = `https://dimpified-backend-development.azurewebsites.net/${req.files["Audience.image3"][0].path}`;
       }
-      if (req.files["audience.image4"]) {
-        templateData.audience.image4 = req.files["audience.image4"][0].path;
+      if (req.files["Audience.image4"]) {
+        templateData.audience.image4 = `https://dimpified-backend-development.azurewebsites.net/${req.files["Audience.image4"][0].path}`;
       }
-      if (req.files["cta.image"]) {
-        templateData.cta.image = req.files["cta.image"][0].path;
+      if (req.files["CTA.image"]) {
+        templateData.cta.image = `https://dimpified-backend-development.azurewebsites.net/${req.files["CTA.image"][0].path}`;
       }
       if (req.files["footer.logo"]) {
-        templateData.footer.logo = req.files["footer.logo"][0].path;
+        templateData.footer.logo = `https://dimpified-backend-development.azurewebsites.net/${req.files["footer.logo"][0].path}`;
       }
     }
-
-    console.log("The error is after the templateData");
 
     const template = await Template.create(templateData);
     ecosystem.templates.push(template._id);
