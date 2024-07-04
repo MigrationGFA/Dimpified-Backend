@@ -1,6 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const createTemplates = require("../controllers/EcosystemController/createTemplate");
+  
+const {
+  createTemplate, 
+getAnEcosystemTemplate
+
+} = require("../controllers/EcosystemController/createTemplate");
 const multer = require("multer");
 
 const storage = multer.diskStorage({
@@ -31,6 +36,7 @@ const imgUpload = upload.fields([
   { name: "footer.logo", maxCount: 1 },
 ]);
 
-router.post("/ecosystem/create-templates", imgUpload, createTemplates);
+router.post("/ecosystem/create-templates", imgUpload, createTemplate);
+router.get("/getTemplate/:ecosystemName", getAnEcosystemTemplate)
 
 module.exports = router;

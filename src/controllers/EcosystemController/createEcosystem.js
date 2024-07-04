@@ -2,7 +2,6 @@ const Ecosystem = require("../../models/Ecosystem");
 const Creator = require("../../models/Creator");
 const dimpifiedCourse = require("../../models/Course");
 const Template = require("../../models/Templates");
-const path = require('path');
 
 const aboutEcosystem = async (req, res) => {
   const {
@@ -84,53 +83,8 @@ const aboutEcosystem = async (req, res) => {
 };
 
 
-
-// Endpoint to handle ecosystem form information
-const ecosystemForm = async (req, res) => {
-  const { ecosystemId, form } = req.body;
-
-  try {
-    const ecosystem = await Ecosystem.findByIdAndUpdate(
-      ecosystemId,
-      {
-        form,
-        status: "draft",
-        updatedAt: Date.now(),
-      },
-      { new: true }
-    );
-
-    res.status(200).json({ message: "Form saved", ecosystem });
-  } catch (error) {
-    console.error("Error saving form:", error);
-    res.status(500).json({ message: "Internal server error", error });
-  }
-};
-
-// Endpoint to handle ecosystem integration information
-const ecosystemIntegration = async (req, res) => {
-  const { ecosystemId, integration } = req.body;
-
-  try {
-    const ecosystem = await Ecosystem.findByIdAndUpdate(
-      ecosystemId,
-      {
-        integration,
-        status: "draft",
-        updatedAt: Date.now(),
-      },
-      { new: true }
-    );
-
-    res.status(200).json({ message: "Integration saved", ecosystem });
-  } catch (error) {
-    console.error("Error saving integration:", error);
-    res.status(500).json({ message: "Internal server error", error });
-  }
-};
-
 // Endpoint to handle ecosystem completion
-const ecosystemCompleted = async (req, res) => {
+const ecosystemDelete = async (req, res) => {
   const { ecosystemId } = req.body;
 
   try {
@@ -139,34 +93,7 @@ const ecosystemCompleted = async (req, res) => {
     if (!ecosystem) {
       return res.status(404).json({ message: "Ecosystem not found" });
     }
-
-    // Check if all required fields are filled
-    const requiredFields = [
-      "ecosystemName",
-      "ecosystemDomain",
-      "targetAudienceSector",
-      "mainObjective",
-      "expectedAudienceNumber",
-      "experience",
-      "ecosystemDescription",
-      "template",
-      "form",
-      "courses",
-      "integration",
-    ];
-
-    for (const field of requiredFields) {
-      if (
-        !ecosystem[field] ||
-        (Array.isArray(ecosystem[field]) && ecosystem[field].length === 0)
-      ) {
-        return res.status(400).json({
-          message: `Field ${field} is required to complete the ecosystem`,
-        });
-      }
-    }
-
-    ecosystem.status = "completed";
+    ecosystem.status = "private";
     ecosystem.updatedAt = Date.now();
     await ecosystem.save();
 
@@ -201,7 +128,7 @@ const allEcosystemCourses = async (req, res) => {
 };
 
 //Endpoint to get a particular course
-const getAnEcosystemCourse = async (req, res) => {
+const getAnEcosystemCourseDetails = async (req, res) => {
   try {
     const { ecosystemId, courseId } = req.params;
     if (!ecosystemId || !courseId) {
@@ -246,7 +173,8 @@ const getMyEcosystem = async (req, res) => {
 
       const templateLogos = templates.map(template => ({
          templateId: template._id,
-        logoPath:  `https://dimpified-backend-development.azurewebsites.net/${template.navbar.logo}`
+         templateNumber: template.templateNumber,
+        logoPath:  template.navbar.logo
       }));
        return {
         ...ecosystem.toObject(),
@@ -260,71 +188,13 @@ const getMyEcosystem = async (req, res) => {
   }
 };
 
-const allEcosystemTemplates = async (req, res) => {
-  try {
-    const { ecosystemId } = req.params;
-    if (!ecosystemId) {
-      return res.status(400).json({ message: "Ecosystem ID is required" });
-    }
 
-    const ecosystem = await Ecosystem.findById(ecosystemId).populate(
-      "templates"
-    );
 
-    if (!ecosystem) {
-      return res.status(404).json({ message: "Ecosystem not found" });
-    }
-
-    res.status(200).json({ ecosystemTemplates: ecosystem.templates });
-  } catch (error) {
-    console.error("Error retrieving all ecosystem templates:", error);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-};
-
-const getAnEcosystemTemplate = async (req, res) => {
-  try {
-    const { ecosystemId, templateId } = req.params;
-    if (!ecosystemId || !templateId) {
-      return res
-        .status(400)
-        .json({ message: "Ecosystem ID and template ID are required" });
-    }
-
-    const ecosystem = await Ecosystem.findById(ecosystemId);
-
-    if (!ecosystem) {
-      return res.status(404).json({ message: "Ecosystem not found" });
-    }
-
-    if (!ecosystem.templates.includes(templateId)) {
-      return res
-        .status(404)
-        .json({ message: "Template not found in this ecosystem" });
-    }
-
-    const template = await Template.findById(templateId);
-
-    if (!template) {
-      return res.status(404).json({ message: "Template not found" });
-    }
-
-    return res.status(200).json({ template });
-  } catch (error) {
-    console.error("Error retrieving template from ecosystem: ", error);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-};
 
 module.exports = {
   aboutEcosystem,
-  // ecosystemTemplate,
-  ecosystemForm,
-  ecosystemIntegration,
-  ecosystemCompleted,
+  ecosystemDelete,
   allEcosystemCourses,
-  getAnEcosystemCourse,
+  getAnEcosystemCourseDetails,
   getMyEcosystem,
-  allEcosystemTemplates,
-  getAnEcosystemTemplate,
 };
