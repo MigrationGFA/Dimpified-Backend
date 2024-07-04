@@ -52,8 +52,12 @@ const ecosystemSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    // enum: ["draft", "pending", "live"],
+    enum: ["draft", "private", "live"],
     default: "draft",
+  },
+  steps: {
+    type: Number,
+    default: 0,
   },
   createdAt: {
     type: Date,
