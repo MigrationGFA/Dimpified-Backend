@@ -9,7 +9,7 @@ const {
 } = require("../controllers/EcosystemController/createForm");
 
 const uploadsPath = path.resolve(__dirname, "../uploads");
-console.log("Uploads folder path:", uploadsPath);
+// console.log("Uploads folder path:", uploadsPath);
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
