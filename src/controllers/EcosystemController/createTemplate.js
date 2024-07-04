@@ -89,4 +89,39 @@ const createTemplate = async (req, res) => {
   }
 };
 
-module.exports = createTemplate;
+const getAnEcosystemTemplate = async (req, res) => {
+  try {
+    const { ecosystemName, } = req.params;
+    if (!ecosystemName ) {
+      return res
+        .status(400)
+        .json({ message: "Ecosystem name  is required" });
+    }
+
+    const ecosystem = await Ecosystem.find({ecosystemName: ecosystemName});
+
+    if (!ecosystem) {
+      return res.status(404).json({ message: "Ecosystem not found" });
+    }
+    console.log("this is eco ", ecosystem.templates)
+    // if (!ecosystem.templates ) {
+    //   return res
+    //     .status(404)
+    //     .json({ message: "Template not found in this ecosystem" });
+    // }
+
+    const template = await Template.find({_id: ecosystem.templates});
+    console.log("this is template", template)
+
+    if (!template) {
+      return res.status(404).json({ message: "Template not found" });
+    }
+
+    return res.status(200).json({ templateDetails: template });
+  } catch (error) {
+    console.error("Error retrieving template from ecosystem: ", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+module.exports = {createTemplate, getAnEcosystemTemplate};
