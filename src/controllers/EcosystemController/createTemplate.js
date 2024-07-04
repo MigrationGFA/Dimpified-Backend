@@ -98,19 +98,16 @@ const getAnEcosystemTemplate = async (req, res) => {
         .json({ message: "Ecosystem name  is required" });
     }
 
-    const ecosystem = await Ecosystem.find({ecosystemName: ecosystemName});
+    const ecosystem = await Ecosystem.findOne({ecosystemName: ecosystemName});
 
     if (!ecosystem) {
       return res.status(404).json({ message: "Ecosystem not found" });
     }
-    console.log("this is eco ", ecosystem.templates)
-    // if (!ecosystem.templates ) {
-    //   return res
-    //     .status(404)
-    //     .json({ message: "Template not found in this ecosystem" });
-    // }
+    console.log("this is eco", ecosystem)
 
-    const template = await Template.find({_id: ecosystem.templates});
+    console.log("this is eco TEMPLATE ", ecosystem.templates)
+    
+    const template = await Template.findOne({_id: ecosystem.templates});
     console.log("this is template", template)
 
     if (!template) {
