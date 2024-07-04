@@ -2,6 +2,7 @@ const Ecosystem = require("../../models/Ecosystem");
 const Creator = require("../../models/Creator");
 const dimpifiedCourse = require("../../models/Course");
 const Template = require("../../models/Templates");
+const path = require('path');
 
 const aboutEcosystem = async (req, res) => {
   const {
@@ -82,27 +83,7 @@ const aboutEcosystem = async (req, res) => {
   }
 };
 
-// Endpoint to handle ecosystem template information
-// const ecosystemTemplate = async (req, res) => {
-//   const { ecosystemId, template } = req.body;
 
-//   try {
-//     const ecosystem = await Ecosystem.findByIdAndUpdate(
-//       ecosystemId,
-//       {
-//         template,
-//         status: "draft",
-//         updatedAt: Date.now(),
-//       },
-//       { new: true }
-//     );
-
-//     res.status(200).json({ message: "Template saved", ecosystem });
-//   } catch (error) {
-//     console.error("Error saving template:", error);
-//     res.status(500).json({ message: "Internal server error", error });
-//   }
-// };
 
 // Endpoint to handle ecosystem form information
 const ecosystemForm = async (req, res) => {
@@ -255,12 +236,24 @@ const getMyEcosystem = async (req, res) => {
     if (!userId) {
       return res
         .status(404)
-        .json({ message: "Ecosystem ID and course ID is required" });
+        .json({ message: "Ecosystem ID is required" });
     }
     const getEcosystem = await Ecosystem.find({ creatorId: userId }).sort({
       createdAt: -1,
     });
-    return res.status(200).json({ ecosystem: getEcosystem });
+    const ecosystemLogo = await Promise.all(getEcosystem.map(async (ecosystem) => {
+      const templates = await Template.find({ _id: { $in: ecosystem.templates } });
+
+      const templateLogos = templates.map(template => ({
+         templateId: template._id,
+        logoPath:  template.navbar.logo
+      }));
+       return {
+        ...ecosystem.toObject(),
+        templateLogos
+      };
+    }))
+    return res.status(200).json({ ecosystem: ecosystemLogo });
   } catch (error) {
     console.error("error retrieving courses from ecosystem: ", error);
     return res.status(500).json({ error: "Internal server error" });
