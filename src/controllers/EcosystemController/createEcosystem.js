@@ -321,9 +321,9 @@ const creatorEcosystemSummary = async (req, res) => {
 module.exports = {
   aboutEcosystem,
   // ecosystemTemplate,
-  ecosystemForm,
+  // ecosystemForm,
   ecosystemIntegration,
-  ecosystemCompleted,
+  // ecosystemCompleted,
   allEcosystemCourses,
   getAnEcosystemCourse,
   getMyEcosystem,

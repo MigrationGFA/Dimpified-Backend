@@ -2,10 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {
   aboutEcosystem,
-  ecosystemForm,
-  ecosystemTemplate,
   ecosystemIntegration,
-  ecosystemCompleted,
   allEcosystemCourses,
   getAnEcosystemCourse,
   getMyEcosystem,
@@ -22,12 +19,8 @@ const upload = multer({ storage });
 
 router.post("/ecosystem/aboutDetails", aboutEcosystem);
 
-// router.post("/ecosystem/template", ecosystemTemplate);
-router.post("/ecosystem/form", ecosystemForm);
-
 // router.post("/ecosystem/course", upload.single("image"), ecosystemCourse);
 router.post("/ecosystem/integration", ecosystemIntegration);
-router.post("/ecosystem/completed", ecosystemCompleted);
 
 //Route to get all ecosystem courses
 router.get("/ecosystem/get-all-courses/:ecosystemId", allEcosystemCourses);
