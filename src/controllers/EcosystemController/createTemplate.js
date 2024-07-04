@@ -78,7 +78,7 @@ const createTemplate = async (req, res) => {
     }
 
     const template = await Template.create(templateData);
-    ecosystem.templates.push(template._id);
+    ecosystem.templates = template._id;
     await ecosystem.save();
     res
       .status(201)
