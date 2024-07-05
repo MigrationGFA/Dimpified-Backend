@@ -70,16 +70,15 @@ const createTemplate = async (req, res) => {
         templateData.audience.image4 = req.files["Audience.image4"][0].path;
       }
       if (req.files["CTA.image"]) {
-        templateData.cta.image = req.files["CTA.image"][0].path;
+        templateData.cta.image =req.files["CTA.image"][0].path;
       }
       if (req.files["footer.logo"]) {
         templateData.footer.logo = req.files["footer.logo"][0].path;
       }
     }
-    console.log("the error is after the template date")
 
     const template = await Template.create(templateData);
-    ecosystem.templates.push(template._id);
+    ecosystem.templates = template._id;
     await ecosystem.save();
     res
       .status(201)
@@ -90,4 +89,36 @@ const createTemplate = async (req, res) => {
   }
 };
 
-module.exports = createTemplate;
+const getAnEcosystemTemplate = async (req, res) => {
+  try {
+    const { ecosystemName, } = req.params;
+    if (!ecosystemName ) {
+      return res
+        .status(400)
+        .json({ message: "Ecosystem name  is required" });
+    }
+
+    const ecosystem = await Ecosystem.findOne({ecosystemName: ecosystemName});
+
+    if (!ecosystem) {
+      return res.status(404).json({ message: "Ecosystem not found" });
+    }
+    console.log("this is eco", ecosystem)
+
+    console.log("this is eco TEMPLATE ", ecosystem.templates)
+    
+    const template = await Template.findOne({_id: ecosystem.templates});
+    console.log("this is template", template)
+
+    if (!template) {
+      return res.status(404).json({ message: "Template not found" });
+    }
+
+    return res.status(200).json({ templateDetails: template });
+  } catch (error) {
+    console.error("Error retrieving template from ecosystem: ", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+module.exports = {createTemplate, getAnEcosystemTemplate};

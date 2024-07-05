@@ -54,7 +54,7 @@ const createForm = async (req, res) => {
     }
 
     const form = await Form.create(formData);
-    ecosystem.forms.push(form._id);
+    ecosystem.forms = form._id;
     await ecosystem.save();
 
     res.status(201).json({ message: "Form created successfully", form });
@@ -85,7 +85,7 @@ const getFormById = async (req, res) => {
   }
 };
 
-const allEcosystemForm = async (req, res) => {
+const EcosystemForm = async (req, res) => {
   try {
     const { ecosystemId } = req.params;
 
@@ -106,4 +106,4 @@ const allEcosystemForm = async (req, res) => {
   }
 };
 
-module.exports = { createForm, getFormById, allEcosystemForm };
+module.exports = { createForm, getFormById, EcosystemForm };

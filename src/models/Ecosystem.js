@@ -40,8 +40,8 @@ const ecosystemSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  templates: [{ type: mongoose.Types.ObjectId, ref: "Template" }],
-  forms: [{ type: mongoose.Types.ObjectId, ref: "Form" }],
+  templates: { type: mongoose.Types.ObjectId, ref: "Template" },
+  forms: { type: mongoose.Types.ObjectId, ref: "Form" },
   courses: [
     {
       type: mongoose.Schema.Types.ObjectId,
