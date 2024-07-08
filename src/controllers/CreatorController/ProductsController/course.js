@@ -123,21 +123,23 @@ const createCourse = async (req, res) => {
 };
 
 const getEcosystemCourse = async (req, res) => {
-  const ecosystemId = req.params.ecosystemId;
-  if(!ecosystemId){
-     return res.status(404).json({ message: "Ecosystem id is required" });
+  const ecosystemDomain = req.params.ecosystemDomain;
+  if(!ecosystemDomain){
+     return res.status(404).json({ message: "Ecosystem domain is required" });
   }
   try {
-      const ecosystem = await Ecosystem.findById(ecosystemId);
+      const ecosystem = await Ecosystem.findOne({ecosystemDomain:ecosystemDomain});
       if (!ecosystem) {
         return res.status(401).json({ message: "Ecosystem not found" });
       }
-      const getAllCourse = await Course.find({ ecosystemId: ecosystemId}).sort({ createdAt: -1 });
+      const getAllCourse = await Course.find({ ecosystemId: ecosystem._id}).sort({ createdAt: -1 });
        return res.status(200).json({ courses: getAllCourse });
   } catch (error) {
      console.error("Error creating course:", error);
      res.status(500).json({ message: "Internal server error", error });
   }
-
 }
+
+// service product
+
 module.exports = {createCourse, getEcosystemCourse};
