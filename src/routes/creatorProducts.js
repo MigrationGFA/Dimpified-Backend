@@ -14,6 +14,6 @@ const upload = multer({
 });
 // Course creation endpoint
 router.post("/create-course", upload.single("image"), createCourse);
-router.get("/ecosystem-courses/:ecosystemId", getEcosystemCourse)
+router.get("/ecosystem-courses/:ecosystemDomain", getEcosystemCourse)
 
 module.exports = router;
