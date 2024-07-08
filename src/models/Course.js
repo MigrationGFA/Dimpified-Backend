@@ -93,5 +93,10 @@ const dimpifiedCourseSchema = new mongoose.Schema({
   currency: {
     type: String,
   },
-});
+},
+  {
+
+    timestamps: true 
+  }
+);
 module.exports = mongoose.model("dimpifiedCourse", dimpifiedCourseSchema);
