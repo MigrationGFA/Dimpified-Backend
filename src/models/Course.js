@@ -5,6 +5,10 @@ const dimpifiedCourseSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  ecosystemId: {
+    type: String,
+    required: true,
+  },
   title: {
     type: String,
     required: true,
