@@ -75,18 +75,16 @@ const createCourse = async (req, res) => {
       });
     }
 
-    // Upload image if provided
+  
     let imageLink;
     if (req.file) {
-      const imageUpload = await cloudinary.uploader.upload(req.file.path, {
-        resource_type: "image",
-      });
-      imageLink = imageUpload.secure_url;
+       imageLink = `https://dimpified-backend-development.azurewebsites.net/${req.file.path}`;
     }
 
     // Create the course
     const course = await Course.create({
       creatorId,
+     ecosystemId,
       title,
       category,
       level,
@@ -121,10 +119,11 @@ const createCourse = async (req, res) => {
         category: course.category,
         hour: course.hour,
       });
+      return res.status(201).json({ message: "Course created successfully", course });
+    } else {
+       return res.status(404).json({ message: "Creator account not found" });
     }
 
-    // Respond with success
-    res.status(201).json({ message: "Course created successfully", course });
   } catch (error) {
     console.error("Error creating course:", error);
     res.status(500).json({ message: "Internal server error", error });
