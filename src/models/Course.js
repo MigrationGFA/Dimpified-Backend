@@ -5,6 +5,10 @@ const dimpifiedCourseSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  ecosystemId: {
+    type: String,
+    required: true,
+  },
   title: {
     type: String,
     required: true,
@@ -89,5 +93,10 @@ const dimpifiedCourseSchema = new mongoose.Schema({
   currency: {
     type: String,
   },
-});
+},
+  {
+
+    timestamps: true 
+  }
+);
 module.exports = mongoose.model("dimpifiedCourse", dimpifiedCourseSchema);

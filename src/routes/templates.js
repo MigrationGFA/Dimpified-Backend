@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const {storageTemplate} = require("../helper/multerUpload")
   
 const {
   createTemplate, 
@@ -8,17 +9,9 @@ getAnEcosystemTemplate
 } = require("../controllers/EcosystemController/createTemplate");
 const multer = require("multer");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
 
 const upload = multer({
-  storage: storage,
+  storage: storageTemplate,
  limits: {
     fileSize: 104857600 // 100MB
   }
@@ -36,7 +29,17 @@ const imgUpload = upload.fields([
   { name: "footer.logo", maxCount: 1 },
 ]);
 
-router.post("/ecosystem/create-templates", imgUpload, createTemplate);
+// router.post("/ecosystem/create-templates", imgUpload, createTemplate);
+router.post("/ecosystem/create-templates", (req, res, next) => {
+  imgUpload(req, res, (err) => {
+    if (err) {
+      console.error("Multer error:", err);
+      return res.status(400).send(err.message);
+    }
+    console.log("Files received:", req.files);
+    next();
+  });
+}, createTemplate);
 router.get("/getTemplate/:ecosystemName", getAnEcosystemTemplate)
 
 module.exports = router;

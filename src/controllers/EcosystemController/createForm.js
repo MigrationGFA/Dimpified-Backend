@@ -42,14 +42,14 @@ const createForm = async (req, res) => {
             .status(400)
             .json({ message: "Invalid sidebar image file" });
         }
-        formData.sidebar.image = sidebarImage.path;
+        formData.sidebar.image = `https://dimpified-backend-development.azurewebsites.net/${sidebarImage.path}`;
       }
       if (req.files["logo.image"]) {
         const logoImage = req.files["logo.image"][0];
         if (!isValidFile(logoImage)) {
           return res.status(400).json({ message: "Invalid logo image file" });
         }
-        formData.logo.image = logoImage.path;
+        formData.logo.image = `https://dimpified-backend-development.azurewebsites.net/${logoImage.path}`;
       }
     }
 
