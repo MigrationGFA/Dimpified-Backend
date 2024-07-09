@@ -1,5 +1,5 @@
 const Creator = require("../../models/Creator");
-const EndUser = require("../../models/EndUser");
+const EndUser = require("../../models/EcosystemUser");
 const HelpCenter = require("../../models/HelpCenter");
 const sendHelpRequestFeedback = require("../../utils/sendHelpRequestFeedback");
 

@@ -3,7 +3,7 @@ const router = express.Router();
 const {
   createCourse,
   getEcosystemCourse,
-  singleCourse,
+  getAnEcosystemCourseDetails,
 } = require("../controllers/CreatorController/ProductsController/course");
 const { storageCourse, backgroundStorage } = require("../helper/multerUpload");
 const multer = require("multer");
@@ -22,9 +22,10 @@ const backgroundUpload = multer({ storage: backgroundStorage });
 // Course creation endpoint
 router.post("/create-course", upload.single("image"), createCourse);
 router.get("/ecosystem-courses/:ecosystemDomain", getEcosystemCourse);
-
-// Get single Course
-router.post("/ecosystem/:ecosystemDomain/course", singleCourse);
+router.get(
+  "/ecosystem-single-course/:ecosystemDomain/:courseId",
+  getAnEcosystemCourseDetails
+);
 
 router.post(
   "/create-service",

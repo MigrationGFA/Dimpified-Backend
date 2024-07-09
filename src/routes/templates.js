@@ -38,7 +38,16 @@ const imgUpload = upload.fields([
 ]);
 
 // router.post("/ecosystem/create-templates", imgUpload, createTemplate);
-router.post("/ecosystem/create-templates", imgUpload, createTemplate);
-router.get("/getTemplate/:ecosystemName", getAnEcosystemTemplate);
+router.post("/ecosystem/create-templates", (req, res, next) => {
+  imgUpload(req, res, (err) => {
+    if (err) {
+      console.error("Multer error:", err);
+      return res.status(400).send(err.message);
+    }
+    console.log("Files received:", req.files);
+    next();
+  });
+}, createTemplate);
+router.get("/getTemplate/:ecosystemDomain", getAnEcosystemTemplate)
 
 module.exports = router;

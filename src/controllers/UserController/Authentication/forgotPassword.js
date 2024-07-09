@@ -1,6 +1,4 @@
-const Admin = require("../../../models/GfaAdmin");
-const EndUser = require("../../../models/EndUser");
-const Creator = require("../../../models/Creator");
+const EcosystemUser = require("../../../models/EcosystemUser");
 const sendForgotPasswordEmailUser = require("../../../utils/userForgottenPassword");
 const crypto = require("crypto");
 
@@ -12,7 +10,7 @@ const forgotPasswordUser = async (req, res) => {
       return res.status(400).json({ message: "Email is required" });
     }
 
-    const user = await EndUser.findOne({ where: { email: email } });
+    const user = await EcosystemUser.findOne({ where: { email: email } });
 
     if (!user) {
       return res.status(404).json({ message: "User does not exist" });

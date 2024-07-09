@@ -2,14 +2,11 @@ const express = require("express");
 const router = express.Router();
 const {
   aboutEcosystem,
-  ecosystemIntegration,
   ecosystemDelete,
   allEcosystemCourses,
   getMyEcosystem,
-  allEcosystemTemplates,
   creatorEcosystemDashboardOverview,
   creatorEcosystemSummary,
-  getAnEcosystemCourseDetails,
 } = require("../controllers/EcosystemController/createEcosystem");
 
 const multer = require("multer");
@@ -21,15 +18,10 @@ const upload = multer({ storage });
 router.post("/ecosystem/aboutDetails", aboutEcosystem);
 
 // router.post("/ecosystem/course", upload.single("image"), ecosystemCourse);
-// router.post("/ecosystem/integration", ecosystemIntegration);
-// router.post("/ecosystem/course", upload.single("image"), ecosystemCourse);
 router.put("/ecosystem/delete", ecosystemDelete);
 
 //Route to get all ecosystem courses
 router.get("/ecosystem/get-all-courses/:ecosystemId", allEcosystemCourses);
-
-//Route to get all ecosystem templates
-// router.get("/ecosystem/get-all-templates/:ecosystemId", allEcosystemTemplates);
 
 // to get creator ecosystems
 router.get("/creator-ecosystems/:userId", getMyEcosystem);
@@ -38,7 +30,6 @@ router.get("/creator-ecosystems/:userId", getMyEcosystem);
 router.get("/creator/my-dashboard-overview", creatorEcosystemDashboardOverview);
 
 // to get he creator ecosystem summary
-
 router.get("/creator/my-ecosystem-summary", creatorEcosystemSummary);
 
 module.exports = router;

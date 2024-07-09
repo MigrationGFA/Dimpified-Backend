@@ -144,46 +144,40 @@ const getEcosystemCourse = async (req, res) => {
   }
 };
 
-//get a single course
-
-const singleCourse = async (req, res) => {
-  const ecosystemDomain = req.params.ecosystemDomain;
-  const { courseId } = req.body;
-
-  if (!ecosystemDomain) {
-    return res.status(400).json({ message: "Ecosystem domain is required" });
-  }
-
-  if (!courseId) {
-    return res.status(400).json({ message: "Course ID is required" });
-  }
-
+//Endpoint to get a particular course
+const getAnEcosystemCourseDetails = async (req, res) => {
   try {
-    const ecosystem = await Ecosystem.findOne({ ecosystemDomain }).populate(
-      "courses"
-    );
-
-    if (!ecosystem) {
-      return res.status(404).json({ message: "Ecosystem not found" });
+    const { ecosystemDomain, courseId } = req.params;
+    if (!ecosystemDomain || !courseId) {
+      return res
+        .status(404)
+        .json({ message: "Ecosystem domain and course ID is required" });
     }
 
-    // Find the specific course within the ecosystem
-    const course = ecosystem.courses.find(
-      (course) => course._id.toString() === courseId
-    );
+    //find ecosystem by ID
+    const ecosystem = await Ecosystem.findOne({
+      ecosystemDomain: ecosystemDomain,
+    });
 
-    if (!course) {
+    //check if course is part of ecosystem courses
+    if (!ecosystem.courses.includes(courseId)) {
       return res
         .status(404)
         .json({ message: "Course not found in this ecosystem" });
     }
 
-    res.status(200).json(course);
+    //fetch course details
+    const course = await Course.findById(courseId);
+
+    return res.status(200).json({ course });
   } catch (error) {
-    console.error("Error fetching course:", error);
-    res.status(500).json({ message: "Internal server error", error });
+    console.error("error retrieving courses from ecosystem: ", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
-// service product
 
-module.exports = { createCourse, getEcosystemCourse, singleCourse };
+module.exports = {
+  createCourse,
+  getEcosystemCourse,
+  getAnEcosystemCourseDetails,
+};

@@ -69,46 +69,52 @@ const createForm = async (req, res) => {
   }
 };
 
-const getFormById = async (req, res) => {
+const ecosystemForm = async (req, res) => {
   try {
-    const formId = req.params.formId;
+    const ecosystemDomain = req.params.ecosystemDomain;
 
-    if (!formId) {
-      return res.status(400).json({ message: "Form ID is required" });
+    if (!ecosystemDomain) {
+      return res.status(400).json({ message: "ecosystemDomain is required" });
     }
 
-    const form = await Form.findById(formId);
+    const ecosystem = await Ecosystem.findOne({ecosystemDomain: ecosystemDomain});
+
+    if (!ecosystem) {
+      return res.status(404).json({ message: "Ecosystem  not found" });
+    }
+
+    const form = await Form.findById(ecosystem.forms);
 
     if (!form) {
       return res.status(404).json({ message: "Form not found" });
     }
 
-    res.status(200).json({ form });
+    res.status(200).json({formDetails: form });
   } catch (error) {
     console.error("Error retrieving form:", error);
     res.status(500).json({ message: "Internal server error", error });
   }
 };
 
-const EcosystemForm = async (req, res) => {
-  try {
-    const { ecosystemId } = req.params;
+// const EcosystemForm = async (req, res) => {
+//   try {
+//     const { ecosystemId } = req.params;
 
-    if (!ecosystemId) {
-      return res.status(400).json({ message: "Ecosystem ID is required" });
-    }
+//     if (!ecosystemId) {
+//       return res.status(400).json({ message: "Ecosystem ID is required" });
+//     }
 
-    const ecosystem = await Ecosystem.findById(ecosystemId).populate("forms");
+//     const ecosystem = await Ecosystem.findById(ecosystemId).populate("forms");
 
-    if (!ecosystem) {
-      return res.status(404).json({ message: "Ecosystem not found" });
-    }
+//     if (!ecosystem) {
+//       return res.status(404).json({ message: "Ecosystem not found" });
+//     }
 
-    res.status(200).json({ ecosystemForms: ecosystem.forms });
-  } catch (error) {
-    console.error("Error retrieving all ecosystem templates:", error);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-};
+//     res.status(200).json({ ecosystemForms: ecosystem.forms });
+//   } catch (error) {
+//     console.error("Error retrieving all ecosystem templates:", error);
+//     return res.status(500).json({ error: "Internal server error" });
+//   }
+// };
 
-module.exports = { createForm, getFormById, EcosystemForm };
+module.exports = { createForm, ecosystemForm };
