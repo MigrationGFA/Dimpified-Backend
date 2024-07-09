@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/dbConnect");
-const User = require("../models/EndUser");
+const User = require("../models/EcosystemUser");
 
 const Review = sequelize.define(
   "Review",

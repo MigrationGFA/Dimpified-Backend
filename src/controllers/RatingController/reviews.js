@@ -55,8 +55,8 @@ const createReviews = async (req, res) => {
   if (!reviewedItem) {
     return res.status(404).json({ error: `${reviewedItemType} not found` });
   }
-
   try {
+    await Review.sync();
     const newReview = await Review.create({
       userId,
       reviewedItemId,
