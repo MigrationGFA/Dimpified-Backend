@@ -22,7 +22,7 @@ const ecosystemServiceSchema = new mongoose.Schema(
     likes: { type: Number, default: 0 },
     format: { type: String, required: true },
     currency: { type: String, required: true },
-    services: [packageSchema], 
+    services: [packageSchema],
   },
   {
     timestamps: true,
