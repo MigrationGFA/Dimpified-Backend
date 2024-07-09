@@ -3,6 +3,7 @@ const Creator = require("../../models/Creator");
 const dimpifiedCourse = require("../../models/Course");
 const Template = require("../../models/Templates");
 const path = require("path");
+const CreatorSupport = require("../../models/Support");
 
 const aboutEcosystem = async (req, res) => {
   const {
