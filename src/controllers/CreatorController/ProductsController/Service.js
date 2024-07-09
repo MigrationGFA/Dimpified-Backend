@@ -53,8 +53,8 @@ const createService = async (req, res) => {
     }
 
     // Ensure services are parsed correctly
-    let parsedServices=JSON.parse(services);
- 
+    let parsedServices = JSON.parse(services);
+
     const service = new Service({
       category,
       subCategory,
@@ -64,7 +64,7 @@ const createService = async (req, res) => {
       ecosystemId,
       format,
       currency,
-      services:parsedServices,
+      services: parsedServices,
       backgroundCover,
     });
 
@@ -76,4 +76,44 @@ const createService = async (req, res) => {
   }
 };
 
-module.exports = { createService };
+const getAllServices = async (req, res) => {
+  try {
+    const ecosystemId = req.params.ecosystemId;
+
+    const ecosystem = await Ecosystem.findById(ecosystemId);
+    if (!ecosystem) {
+      return res.status(404).json({ message: "Invalid ecosystemId" });
+    }
+
+    const services = await Service.find({ ecosystemId });
+
+    if (services.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No services found under this ecosystem" });
+    }
+
+    res.status(200).json({ services });
+  } catch (error) {
+    console.log("error:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const getAService = async (req, res) => {
+  try {
+    const { serviceId, ecosystemId } = req.body;
+
+    const service = await Service.findOne({ _id: serviceId, ecosystemId });
+    if (!service) {
+      return res.status(404).json({ message: "Service not found" });
+    }
+
+    res.status(200).json({ service });
+  } catch (error) {
+    console.log("error:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = { createService, getAllServices,getAService };

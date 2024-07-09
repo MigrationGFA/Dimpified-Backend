@@ -9,6 +9,8 @@ const { storageCourse, backgroundStorage } = require("../helper/multerUpload");
 const multer = require("multer");
 const {
   createService,
+  getAllServices,
+  getAService,
 } = require("../controllers/CreatorController/ProductsController/Service");
 
 const upload = multer({
@@ -34,5 +36,7 @@ router.post(
   backgroundUpload.array("backgroundCover"),
   createService
 );
+router.get("/get-all-services/:ecosystemId", getAllServices);
+router.get("/get-a-service", getAService);
 
 module.exports = router;
