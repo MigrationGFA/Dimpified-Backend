@@ -25,7 +25,6 @@ const aboutEcosystem = async (req, res) => {
     "expectedAudienceNumber",
     "experience",
     "ecosystemDescription",
-    "ecosystemId",
   ];
 
   for (const field of requiredFields) {
@@ -41,7 +40,7 @@ const aboutEcosystem = async (req, res) => {
     }
 
     let ecosystem;
-    if (ecosystemId !== "null") {
+    if (ecosystemId && ecosystemId !== "null") {
       ecosystem = await Ecosystem.findByIdAndUpdate(
         ecosystemId,
         {
@@ -58,6 +57,10 @@ const aboutEcosystem = async (req, res) => {
         },
         { new: true }
       );
+
+      if (!ecosystem) {
+        return res.status(404).json({ message: "Ecosystem not found" });
+      }
     } else {
       ecosystem = new Ecosystem({
         creatorId,
@@ -82,74 +85,8 @@ const aboutEcosystem = async (req, res) => {
   }
 };
 
-// Endpoint to handle ecosystem template information
-// const ecosystemTemplate = async (req, res) => {
-//   const { ecosystemId, template } = req.body;
-
-//   try {
-//     const ecosystem = await Ecosystem.findByIdAndUpdate(
-//       ecosystemId,
-//       {
-//         template,
-//         status: "draft",
-//         updatedAt: Date.now(),
-//       },
-//       { new: true }
-//     );
-
-//     res.status(200).json({ message: "Template saved", ecosystem });
-//   } catch (error) {
-//     console.error("Error saving template:", error);
-//     res.status(500).json({ message: "Internal server error", error });
-//   }
-// };
-
-// Endpoint to handle ecosystem form information
-const ecosystemForm = async (req, res) => {
-  const { ecosystemId, form } = req.body;
-
-  try {
-    const ecosystem = await Ecosystem.findByIdAndUpdate(
-      ecosystemId,
-      {
-        form,
-        status: "draft",
-        updatedAt: Date.now(),
-      },
-      { new: true }
-    );
-
-    res.status(200).json({ message: "Form saved", ecosystem });
-  } catch (error) {
-    console.error("Error saving form:", error);
-    res.status(500).json({ message: "Internal server error", error });
-  }
-};
-
-// Endpoint to handle ecosystem integration information
-const ecosystemIntegration = async (req, res) => {
-  const { ecosystemId, integration } = req.body;
-
-  try {
-    const ecosystem = await Ecosystem.findByIdAndUpdate(
-      ecosystemId,
-      {
-        integration,
-        status: "draft",
-        updatedAt: Date.now(),
-      },
-      { new: true }
-    );
-
-    res.status(200).json({ message: "Integration saved", ecosystem });
-  } catch (error) {
-    console.error("Error saving integration:", error);
-    res.status(500).json({ message: "Internal server error", error });
-  }
-};
-
 // Endpoint to handle ecosystem completion
-const ecosystemCompleted = async (req, res) => {
+const ecosystemDelete = async (req, res) => {
   const { ecosystemId } = req.body;
 
   try {
@@ -158,34 +95,7 @@ const ecosystemCompleted = async (req, res) => {
     if (!ecosystem) {
       return res.status(404).json({ message: "Ecosystem not found" });
     }
-
-    // Check if all required fields are filled
-    const requiredFields = [
-      "ecosystemName",
-      "ecosystemDomain",
-      "targetAudienceSector",
-      "mainObjective",
-      "expectedAudienceNumber",
-      "experience",
-      "ecosystemDescription",
-      "template",
-      "form",
-      "courses",
-      "integration",
-    ];
-
-    for (const field of requiredFields) {
-      if (
-        !ecosystem[field] ||
-        (Array.isArray(ecosystem[field]) && ecosystem[field].length === 0)
-      ) {
-        return res.status(400).json({
-          message: `Field ${field} is required to complete the ecosystem`,
-        });
-      }
-    }
-
-    ecosystem.status = "completed";
+    ecosystem.status = "private";
     ecosystem.updatedAt = Date.now();
     await ecosystem.save();
 
@@ -220,7 +130,7 @@ const allEcosystemCourses = async (req, res) => {
 };
 
 //Endpoint to get a particular course
-const getAnEcosystemCourse = async (req, res) => {
+const getAnEcosystemCourseDetails = async (req, res) => {
   try {
     const { ecosystemId, courseId } = req.params;
     if (!ecosystemId || !courseId) {
@@ -253,85 +163,108 @@ const getMyEcosystem = async (req, res) => {
   try {
     const userId = req.params.userId;
     if (!userId) {
-      return res
-        .status(404)
-        .json({ message: "Ecosystem ID and course ID is required" });
+      return res.status(404).json({ message: "Ecosystem ID is required" });
     }
     const getEcosystem = await Ecosystem.find({ creatorId: userId }).sort({
       createdAt: -1,
     });
-    return res.status(200).json({ ecosystem: getEcosystem });
+    const ecosystemLogo = await Promise.all(
+      getEcosystem.map(async (ecosystem) => {
+        const templates = await Template.find({
+          _id: { $in: ecosystem.templates },
+        });
+
+        const templateLogos = templates.map((template) => ({
+          templateId: template._id,
+          templateNumber: template.templateNumber,
+          logoPath: template.navbar.logo,
+        }));
+        return {
+          ...ecosystem.toObject(),
+          templateLogos,
+        };
+      })
+    );
+    return res.status(200).json({ ecosystem: ecosystemLogo });
   } catch (error) {
     console.error("error retrieving courses from ecosystem: ", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
 
-const allEcosystemTemplates = async (req, res) => {
-  try {
-    const { ecosystemId } = req.params;
-    if (!ecosystemId) {
-      return res.status(400).json({ message: "Ecosystem ID is required" });
-    }
+const creatorEcosystemDashboardOverview = async (req, res) => {
+  const { creatorId } = req.body;
 
-    const ecosystem = await Ecosystem.findById(ecosystemId).populate(
-      "templates"
+  if (!creatorId) {
+    return res.status(400).json({ message: "creatorId is required" });
+  }
+
+  try {
+    const totalEcosystems = await Ecosystem.countDocuments({
+      creatorId: creatorId,
+    });
+
+    // Total users in ecosystems created by the creator
+    const ecosystems = await Ecosystem.find({ creatorId: creatorId });
+    const totalUsers = ecosystems.reduce(
+      (acc, ecosystem) => acc + (ecosystem.users || 0),
+      0
     );
 
-    if (!ecosystem) {
-      return res.status(404).json({ message: "Ecosystem not found" });
-    }
+    // Total support requests
+    const totalSupportRequests = await CreatorSupport.count({
+      where: { creatorId: creatorId },
+    });
 
-    res.status(200).json({ ecosystemTemplates: ecosystem.templates });
+    res.status(200).json({
+      totalEcosystems,
+      totalUsers,
+      totalSupportRequests,
+    });
   } catch (error) {
-    console.error("Error retrieving all ecosystem templates:", error);
-    return res.status(500).json({ error: "Internal server error" });
+    console.error("Error retrieving summary information:", error);
+    res.status(500).json({ message: "Internal server error", error });
   }
 };
 
-const getAnEcosystemTemplate = async (req, res) => {
+const creatorEcosystemSummary = async (req, res) => {
+  const { creatorId } = req.body;
+
+  if (!creatorId) {
+    return res.status(400).json({ message: "creatorId is required" });
+  }
+
   try {
-    const { ecosystemId, templateId } = req.params;
-    if (!ecosystemId || !templateId) {
-      return res
-        .status(400)
-        .json({ message: "Ecosystem ID and template ID are required" });
-    }
+    const totalDrafts = await Ecosystem.countDocuments({
+      creatorId: creatorId,
+      status: "draft",
+    });
 
-    const ecosystem = await Ecosystem.findById(ecosystemId);
+    const totalPrivate = await Ecosystem.countDocuments({
+      creatorId: creatorId,
+      status: "private",
+    });
 
-    if (!ecosystem) {
-      return res.status(404).json({ message: "Ecosystem not found" });
-    }
+    const totalLive = await Ecosystem.countDocuments({
+      creatorId: creatorId,
+      status: "live",
+    });
 
-    if (!ecosystem.templates.includes(templateId)) {
-      return res
-        .status(404)
-        .json({ message: "Template not found in this ecosystem" });
-    }
-
-    const template = await Template.findById(templateId);
-
-    if (!template) {
-      return res.status(404).json({ message: "Template not found" });
-    }
-
-    return res.status(200).json({ template });
+    res.status(200).json({
+      totalLive,
+      totalPrivate,
+      totalDrafts,
+    });
   } catch (error) {
-    console.error("Error retrieving template from ecosystem: ", error);
-    return res.status(500).json({ error: "Internal server error" });
+    console.error("Error retrieving ecosystem summary:", error);
+    res.status(500).json({ message: "Internal server error", error });
   }
 };
 
 module.exports = {
   aboutEcosystem,
-  // ecosystemTemplate,
-  ecosystemForm,
-  ecosystemIntegration,
-  ecosystemCompleted,
+  ecosystemDelete,
   allEcosystemCourses,
-  getAnEcosystemCourse,
+  getAnEcosystemCourseDetails,
   getMyEcosystem,
-  allEcosystemTemplates,
-  getAnEcosystemTemplate,
 };

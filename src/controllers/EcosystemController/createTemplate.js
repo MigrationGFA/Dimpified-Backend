@@ -6,16 +6,13 @@ const createTemplate = async (req, res) => {
   try {
     const { creatorId, ecosystemId, templateNumber } = req.body;
 
-   const details = [
-            "creatorId",
-            "ecosystemId",
-            "templateNumber",
-        ]
-        for (const detail of details) {
-            if (!req.body[detail]) {
-                return res.status(400).json({ message: `${detail} is required` });
-            }
-        }
+    const details = ["creatorId", "ecosystemId", "templateNumber"];
+
+    for (const detail of details) {
+      if (!req.body[detail]) {
+        return res.status(400).json({ message: `${detail} is required` });
+      }
+    }
 
     const creator = await Creator.findByPk(creatorId);
     if (!creator) {
@@ -27,7 +24,8 @@ const createTemplate = async (req, res) => {
       return res.status(404).json({ message: "Ecosystem not found" });
     }
 
-    console.log("i can see this part first")
+    console.log("I can see this part first");
+
     const templateData = {
       creatorId,
       ecosystemId,
@@ -43,44 +41,48 @@ const createTemplate = async (req, res) => {
       faq: JSON.parse(req.body.faq),
       footer: JSON.parse(req.body.footer),
     };
-    console.log("the error is here for the templateDate")
+
+    console.log("The error is here for the templateData");
 
     // Set file paths in templateData
     if (req.files) {
       if (req.files["navbar.logo"]) {
-        templateData.navbar.logo = req.files["navbar.logo"][0].path;
+        templateData.navbar.logo = `https://dimpified-backend-development.azurewebsites.net/${req.files["navbar.logo"][0].path}`;
       }
       if (req.files["hero.backgroundImage"]) {
-        templateData.hero.backgroundImage =
-          req.files["hero.backgroundImage"][0].path;
+        templateData.hero.backgroundImage = `https://dimpified-backend-development.azurewebsites.net/${req.files["hero.backgroundImage"][0].path}`;
       }
       if (req.files["Vision.image"]) {
-        templateData.vision.image = req.files["Vision.image"][0].path;
+        templateData.vision.image = `https://dimpified-backend-development.azurewebsites.net/${req.files["Vision.image"][0].path}`;
       }
       if (req.files["Audience.image1"]) {
-        templateData.audience.image1 = req.files["Audience.image1"][0].path;
+        templateData.audience.image1 = `https://dimpified-backend-development.azurewebsites.net/${req.files["Audience.image1"][0].path}`;
       }
       if (req.files["Audience.image2"]) {
-        templateData.audience.image2 = req.files["Audience.image2"][0].path;
+        templateData.audience.image2 = `https://dimpified-backend-development.azurewebsites.net/${req.files["Audience.image2"][0].path}`;
       }
       if (req.files["Audience.image3"]) {
-        templateData.audience.image3 = req.files["Audience.image3"][0].path;
+        templateData.audience.image3 = `https://dimpified-backend-development.azurewebsites.net/${req.files["Audience.image3"][0].path}`;
       }
       if (req.files["Audience.image4"]) {
-        templateData.audience.image4 = req.files["Audience.image4"][0].path;
+        templateData.audience.image4 = `https://dimpified-backend-development.azurewebsites.net/${req.files["Audience.image4"][0].path}`;
       }
       if (req.files["CTA.image"]) {
-        templateData.cta.image = req.files["CTA.image"][0].path;
+        templateData.cta.image = `https://dimpified-backend-development.azurewebsites.net/${req.files["CTA.image"][0].path}`;
       }
       if (req.files["footer.logo"]) {
-        templateData.footer.logo = req.files["footer.logo"][0].path;
+        templateData.footer.logo = `https://dimpified-backend-development.azurewebsites.net/${req.files["footer.logo"][0].path}`;
       }
     }
-    console.log("the error is after the template date")
 
     const template = await Template.create(templateData);
     ecosystem.templates.push(template._id);
+
+    // Set steps to 2
+    ecosystem.steps = 2;
+    ecosystem.templates = template._id;
     await ecosystem.save();
+
     res
       .status(201)
       .json({ message: "Template created successfully", template });
@@ -90,4 +92,31 @@ const createTemplate = async (req, res) => {
   }
 };
 
-module.exports = createTemplate;
+const getAnEcosystemTemplate = async (req, res) => {
+  try {
+    const { ecosystemName } = req.params;
+    if (!ecosystemName) {
+      return res.status(400).json({ message: "Ecosystem name  is required" });
+    }
+
+    const ecosystem = await Ecosystem.findOne({ ecosystemName: ecosystemName });
+
+    if (!ecosystem) {
+      return res.status(404).json({ message: "Ecosystem not found" });
+    }
+
+    const template = await Template.findOne({ _id: ecosystem.templates });
+    console.log("this is template", template);
+
+    if (!template) {
+      return res.status(404).json({ message: "Template not found" });
+    }
+
+    return res.status(200).json({ templateDetails: template });
+  } catch (error) {
+    console.error("Error retrieving template from ecosystem: ", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+module.exports = { createTemplate, getAnEcosystemTemplate };
