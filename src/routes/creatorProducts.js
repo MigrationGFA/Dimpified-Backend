@@ -20,7 +20,9 @@ const upload = multer({
   },
 });
 
-const backgroundUpload = multer({ storage: backgroundStorage });
+const backgroundUpload = multer({ storage: backgroundStorage,  limits: {
+    fileSize: 104857600, // 100MB
+  }, });
 // Course creation endpoint
 router.post("/create-course", upload.single("image"), createCourse);
 router.get("/ecosystem-courses/:ecosystemDomain", getEcosystemCourse);
@@ -34,7 +36,7 @@ router.post(
   backgroundUpload.array("backgroundCover"),
   createService
 );
-router.get("/get-all-services/:ecosystemId", getAllServices);
-router.get("/get-a-service", getAService);
+router.get("/get-all-services/:ecosystemDomain", getAllServices);
+router.get("/get-a-service/:serviceId", getAService);
 
 module.exports = router;
