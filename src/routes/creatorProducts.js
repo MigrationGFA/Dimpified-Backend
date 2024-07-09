@@ -3,7 +3,7 @@ const router = express.Router();
 const {createCourse, getEcosystemCourse} = require("../controllers/CreatorController/ProductsController/course");
 const {storageCourse, backgroundStorage} = require("../helper/multerUpload")
 const multer = require("multer");
-const { createService } = require("../controllers/CreatorController/ProductsController/Service");
+const { createService, getAllServices, getAService } = require("../controllers/CreatorController/ProductsController/Service");
 
 
 
@@ -20,5 +20,7 @@ router.post("/create-course", upload.single("image"), createCourse);
 router.get("/ecosystem-courses/:ecosystemDomain", getEcosystemCourse)
 
 router.post("/create-service",backgroundUpload.array("backgroundCover"),createService)
+router.get("/get-all-services/:ecosystemId",getAllServices)
+router.get("/get-a-service",getAService)
 
 module.exports = router;
