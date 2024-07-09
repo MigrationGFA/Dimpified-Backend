@@ -29,6 +29,7 @@ const verifyEmailCreator = async (req, res) => {
     creator.verificationToken = "";
     await creator.save();
 
+
     await sendWelcomeEmail({
       organizationName: creator.organizationName,
       email: email,

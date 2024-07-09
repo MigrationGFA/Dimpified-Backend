@@ -129,35 +129,7 @@ const allEcosystemCourses = async (req, res) => {
   }
 };
 
-//Endpoint to get a particular course
-const getAnEcosystemCourseDetails = async (req, res) => {
-  try {
-    const { ecosystemId, courseId } = req.params;
-    if (!ecosystemId || !courseId) {
-      return res
-        .status(404)
-        .json({ message: "Ecosystem ID and course ID is required" });
-    }
 
-    //find ecosystem by ID
-    const ecosystem = await Ecosystem.findById(ecosystemId);
-
-    //check if course is part of ecosystem courses
-    if (!ecosystem.courses.includes(courseId)) {
-      return res
-        .status(404)
-        .json({ message: "Course not found in this ecosystem" });
-    }
-
-    //fetch course details
-    const course = await dimpifiedCourse.findById(courseId);
-
-    return res.status(200).json({ course });
-  } catch (error) {
-    console.error("error retrieving courses from ecosystem: ", error);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-};
 
 const getMyEcosystem = async (req, res) => {
   try {
@@ -265,6 +237,6 @@ module.exports = {
   aboutEcosystem,
   ecosystemDelete,
   allEcosystemCourses,
-  getAnEcosystemCourseDetails,
+  
   getMyEcosystem,
 };
