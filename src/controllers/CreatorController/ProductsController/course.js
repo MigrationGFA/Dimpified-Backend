@@ -67,16 +67,15 @@ const createCourse = async (req, res) => {
       });
     }
 
-  
     let imageLink;
     if (req.file) {
-       imageLink = `https://dimpified-backend-development.azurewebsites.net/${req.file.path}`;
+      imageLink = `https://dimpified-backend-development.azurewebsites.net/${req.file.path}`;
     }
 
     // Create the course
     const course = await Course.create({
       creatorId,
-     ecosystemId,
+      ecosystemId,
       title,
       category,
       level,
@@ -111,11 +110,12 @@ const createCourse = async (req, res) => {
         category: course.category,
         hour: course.hour,
       });
-      return res.status(201).json({ message: "Course created successfully", course });
+      return res
+        .status(201)
+        .json({ message: "Course created successfully", course });
     } else {
-       return res.status(404).json({ message: "Creator account not found" });
+      return res.status(404).json({ message: "Creator account not found" });
     }
-
   } catch (error) {
     console.error("Error creating course:", error);
     res.status(500).json({ message: "Internal server error", error });
@@ -124,22 +124,66 @@ const createCourse = async (req, res) => {
 
 const getEcosystemCourse = async (req, res) => {
   const ecosystemDomain = req.params.ecosystemDomain;
-  if(!ecosystemDomain){
-     return res.status(404).json({ message: "Ecosystem domain is required" });
+  if (!ecosystemDomain) {
+    return res.status(404).json({ message: "Ecosystem domain is required" });
   }
   try {
-      const ecosystem = await Ecosystem.findOne({ecosystemDomain:ecosystemDomain});
-      if (!ecosystem) {
-        return res.status(401).json({ message: "Ecosystem not found" });
-      }
-      const getAllCourse = await Course.find({ ecosystemId: ecosystem._id}).sort({ createdAt: -1 });
-       return res.status(200).json({ courses: getAllCourse });
+    const ecosystem = await Ecosystem.findOne({
+      ecosystemDomain: ecosystemDomain,
+    });
+    if (!ecosystem) {
+      return res.status(401).json({ message: "Ecosystem not found" });
+    }
+    const getAllCourse = await Course.find({ ecosystemId: ecosystem._id }).sort(
+      { createdAt: -1 }
+    );
+    return res.status(200).json({ courses: getAllCourse });
   } catch (error) {
-     console.error("Error creating course:", error);
-     res.status(500).json({ message: "Internal server error", error });
+    console.error("Error creating course:", error);
+    res.status(500).json({ message: "Internal server error", error });
   }
-}
+};
 
+//get a single course
+
+const singleCourse = async (req, res) => {
+  const ecosystemDomain = req.params.ecosystemDomain;
+  const { courseId } = req.body;
+
+  if (!ecosystemDomain) {
+    return res.status(400).json({ message: "Ecosystem domain is required" });
+  }
+
+  if (!courseId) {
+    return res.status(400).json({ message: "Course ID is required" });
+  }
+
+  try {
+    const ecosystem = await Ecosystem.findOne({ ecosystemDomain }).populate(
+      "courses"
+    );
+
+    if (!ecosystem) {
+      return res.status(404).json({ message: "Ecosystem not found" });
+    }
+
+    // Find the specific course within the ecosystem
+    const course = ecosystem.courses.find(
+      (course) => course._id.toString() === courseId
+    );
+
+    if (!course) {
+      return res
+        .status(404)
+        .json({ message: "Course not found in this ecosystem" });
+    }
+
+    res.status(200).json(course);
+  } catch (error) {
+    console.error("Error fetching course:", error);
+    res.status(500).json({ message: "Internal server error", error });
+  }
+};
 // service product
 
-module.exports = {createCourse, getEcosystemCourse};
+module.exports = { createCourse, getEcosystemCourse, singleCourse };
