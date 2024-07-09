@@ -68,6 +68,7 @@ const aboutEcosystem = async (req, res) => {
         ecosystemDomain,
         targetAudienceSector,
         mainObjective,
+        steps: 1,
         expectedAudienceNumber,
         experience,
         ecosystemDescription,

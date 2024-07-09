@@ -31,6 +31,7 @@ router.get(
   getAnEcosystemCourseDetails
 );
 
+// service creation endpoint
 router.post(
   "/create-service",
   backgroundUpload.array("backgroundCover"),
@@ -38,5 +39,8 @@ router.post(
 );
 router.get("/get-all-services/:ecosystemDomain", getAllServices);
 router.get("/get-a-service/:serviceId", getAService);
+
+
+// creator overview dashboard
 
 module.exports = router;
