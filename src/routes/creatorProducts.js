@@ -5,8 +5,11 @@ const {
   getEcosystemCourse,
   singleCourse,
 } = require("../controllers/CreatorController/ProductsController/course");
-const { storageCourse } = require("../helper/multerUpload");
+const { storageCourse, backgroundStorage } = require("../helper/multerUpload");
 const multer = require("multer");
+const {
+  createService,
+} = require("../controllers/CreatorController/ProductsController/Service");
 
 const upload = multer({
   storage: storageCourse,
@@ -14,11 +17,19 @@ const upload = multer({
     fileSize: 104857600, // 100MB
   },
 });
+
+const backgroundUpload = multer({ storage: backgroundStorage });
 // Course creation endpoint
 router.post("/create-course", upload.single("image"), createCourse);
 router.get("/ecosystem-courses/:ecosystemDomain", getEcosystemCourse);
 
 // Get single Course
 router.post("/ecosystem/:ecosystemDomain/course", singleCourse);
+
+router.post(
+  "/create-service",
+  backgroundUpload.array("backgroundCover"),
+  createService
+);
 
 module.exports = router;

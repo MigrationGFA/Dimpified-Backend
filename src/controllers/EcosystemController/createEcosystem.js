@@ -267,4 +267,6 @@ module.exports = {
   allEcosystemCourses,
   getAnEcosystemCourseDetails,
   getMyEcosystem,
+  creatorEcosystemDashboardOverview,
+  creatorEcosystemSummary,
 };

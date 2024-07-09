@@ -21,7 +21,7 @@ const upload = multer({ storage });
 router.post("/ecosystem/aboutDetails", aboutEcosystem);
 
 // router.post("/ecosystem/course", upload.single("image"), ecosystemCourse);
-router.post("/ecosystem/integration", ecosystemIntegration);
+// router.post("/ecosystem/integration", ecosystemIntegration);
 // router.post("/ecosystem/course", upload.single("image"), ecosystemCourse);
 router.put("/ecosystem/delete", ecosystemDelete);
 
@@ -29,7 +29,7 @@ router.put("/ecosystem/delete", ecosystemDelete);
 router.get("/ecosystem/get-all-courses/:ecosystemId", allEcosystemCourses);
 
 //Route to get all ecosystem templates
-router.get("/ecosystem/get-all-templates/:ecosystemId", allEcosystemTemplates);
+// router.get("/ecosystem/get-all-templates/:ecosystemId", allEcosystemTemplates);
 
 // to get creator ecosystems
 router.get("/creator-ecosystems/:userId", getMyEcosystem);
