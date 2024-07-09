@@ -107,4 +107,4 @@ const developerSignup = async (req, res) => {
 //   }
 // };
 
-module.exports = { developerSignup, developerLogin };
+module.exports = { developerSignup };
