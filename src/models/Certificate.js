@@ -18,6 +18,11 @@ const CertificateSchema = new mongoose.Schema({
         ref: 'dimpifiedCourse',
         required: true,
     },
+    ecosystemId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Ecosystem',
+        required: true,
+    },
     description: {
         type: String,
         required: true
@@ -31,9 +36,9 @@ const CertificateSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    skills: [{
-        type: String,
-    }],
+    skills: [
+
+    ],
     issuerName: {
         type: String,
         required: true,

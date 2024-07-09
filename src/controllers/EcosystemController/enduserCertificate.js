@@ -1,9 +1,13 @@
 const Certificate = require("../../models/Certificate");
 //const Course = require("../../models/Course");
 const EndUserCertificate = require("../../models/EndUserCertificate");
+const generatePDF = require("../../utils/pdfGenerator");
+const sendUserCertificate = require("../../utils/sendUserCertficateEmail");
+//const generateCertificate = require("../../utils/generateCertificate")
 
 
 const generateUserCertificate = async (req, res) => {
+
     try {
         const {
 
@@ -13,14 +17,14 @@ const generateUserCertificate = async (req, res) => {
             recipientEmail,
             ecosystemId
         } = req.body
-
+        const startTime = Date.now();
 
         const requiredFields = [
             "userid",
             "courseId",
             "recipientName",
             "recipientEmail",
-            "ecosystem"
+            "ecosystemId"
         ];
 
         for (const field of requiredFields) {
@@ -41,7 +45,7 @@ const generateUserCertificate = async (req, res) => {
         };
 
         const userCertificate = new EndUserCertificate({
-            certificateNumber: uuidv4(),
+            certificateNumber: ecosystemCertificate.certificateNumber,
             userid,
             ecosystemId,
             title: ecosystemCertificate.title,
@@ -58,10 +62,24 @@ const generateUserCertificate = async (req, res) => {
         });
 
         await userCertificate.save()
+
+        const pdfData = {
+            title: ecosystemCertificate.title,
+            recipientName,
+            certificateNumber: ecosystemCertificate.certificateNumber,
+            skills: ecosystemCertificate.skills,
+            Date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+        };
+
+        const pdfBuffer = await generatePDF(pdfData);
+
+        await sendUserCertificate({ recipientName, recipientEmail, pdfBuffer });
+
+        await sendUserCertificate({ recipientName, recipientEmail, pdfBuffer });
         res.status(201).json({ userCertificate })
     } catch (error) {
-        console.error('Error creating certificate:', error);
-        res.status(500).send({ error: 'An error occurred while creating certificate' })
+        console.error('Error generating certificate:', error);
+        res.status(500).send({ error: 'An error occurred while generating certificate' })
     }
 }
 

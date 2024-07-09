@@ -1,14 +1,6 @@
 const Certificate = require("../../models/Certificate");
 const Course = require("../../models/Course");
-//const cloudinary = require("cloudinary").v2;
-
-// cloudinary.config({
-//     cloud_name: process.env.CLOUD_NAME,
-//     api_key: process.env.API_KEY,
-//     api_secret: process.env.API_SECRET,
-//     secure: true,
-// });
-
+const path = require("path")
 
 const createEcoCertificate = async (req, res) => {
     try {
@@ -16,12 +8,15 @@ const createEcoCertificate = async (req, res) => {
             certificateNumber,
             title,
             courseId,
+            ecosystemId,
             description,
             summary,
             signature,
             skills,
             issuerName,
             issuerTitle,
+            // logoUrl,
+            // backgroundImageUrl,
         } = req.body
 
 
@@ -29,6 +24,7 @@ const createEcoCertificate = async (req, res) => {
             "certificateNumber",
             "title",
             "courseId",
+            "ecosystemId",
             "description",
             "summary",
             "signature",
@@ -43,28 +39,22 @@ const createEcoCertificate = async (req, res) => {
         }
 
 
-        // let logoUrl, backgroundImageUrl;
-        // if (req.file) {
-        //     const fileUpload = await cloudinary.uploader.upload(req.file.path, {
-        //         resource_type: "auto",
-        //     });
-        //     logoUrl = fileUpload.secure_url;
-        //     backgroundImageUrl = fileUpload.secure_url;
-        // }
-
-
         //Check if course exist
         const course = await Course.findById(courseId);
         if (!course) {
             return res.status(404).json({ message: "Course not found" })
         };
 
+        // Get the file paths from Multer
+        const logoUrl = req.files['logoUrl'] ? req.files['logoUrl'][0].path : null;
+        const backgroundImageUrl = req.files['backgroundImageUrl'] ? req.files['backgroundImageUrl'][0].path : null;
 
 
         const newCertificate = await Certificate.create({
             certificateNumber,
             title,
             courseId,
+            ecosystemId,
             description,
             summary,
             signature,
