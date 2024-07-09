@@ -2,8 +2,6 @@ const Ecosystem = require("../../models/Ecosystem");
 const Creator = require("../../models/Creator");
 const dimpifiedCourse = require("../../models/Course");
 const Template = require("../../models/Templates");
-const path = require("path");
-const CreatorSupport = require("../../models/Support");
 
 const aboutEcosystem = async (req, res) => {
   const {
@@ -87,24 +85,23 @@ const aboutEcosystem = async (req, res) => {
   }
 };
 
-// Endpoint to handle ecosystem integration information
-const ecosystemIntegration = async (req, res) => {
-  const { ecosystemId, integration } = req.body;
+// Endpoint to handle ecosystem completion
+const ecosystemDelete = async (req, res) => {
+  const { ecosystemId } = req.body;
 
   try {
-    const ecosystem = await Ecosystem.findByIdAndUpdate(
-      ecosystemId,
-      {
-        integration,
-        status: "draft",
-        updatedAt: Date.now(),
-      },
-      { new: true }
-    );
+    const ecosystem = await Ecosystem.findById(ecosystemId);
 
-    res.status(200).json({ message: "Integration saved", ecosystem });
+    if (!ecosystem) {
+      return res.status(404).json({ message: "Ecosystem not found" });
+    }
+    ecosystem.status = "private";
+    ecosystem.updatedAt = Date.now();
+    await ecosystem.save();
+
+    res.status(200).json({ message: "Ecosystem completed", ecosystem });
   } catch (error) {
-    console.error("Error saving integration:", error);
+    console.error("Error completing ecosystem:", error);
     res.status(500).json({ message: "Internal server error", error });
   }
 };
@@ -133,7 +130,7 @@ const allEcosystemCourses = async (req, res) => {
 };
 
 //Endpoint to get a particular course
-const getAnEcosystemCourse = async (req, res) => {
+const getAnEcosystemCourseDetails = async (req, res) => {
   try {
     const { ecosystemId, courseId } = req.params;
     if (!ecosystemId || !courseId) {
@@ -179,7 +176,8 @@ const getMyEcosystem = async (req, res) => {
 
         const templateLogos = templates.map((template) => ({
           templateId: template._id,
-          logoPath: `https://dimpified-backend-development.azurewebsites.net/${template.navbar.logo}`,
+          templateNumber: template.templateNumber,
+          logoPath: template.navbar.logo,
         }));
         return {
           ...ecosystem.toObject(),
@@ -190,62 +188,6 @@ const getMyEcosystem = async (req, res) => {
     return res.status(200).json({ ecosystem: ecosystemLogo });
   } catch (error) {
     console.error("error retrieving courses from ecosystem: ", error);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-};
-
-const allEcosystemTemplates = async (req, res) => {
-  try {
-    const { ecosystemId } = req.params;
-    if (!ecosystemId) {
-      return res.status(400).json({ message: "Ecosystem ID is required" });
-    }
-
-    const ecosystem = await Ecosystem.findById(ecosystemId).populate(
-      "templates"
-    );
-
-    if (!ecosystem) {
-      return res.status(404).json({ message: "Ecosystem not found" });
-    }
-
-    res.status(200).json({ ecosystemTemplates: ecosystem.templates });
-  } catch (error) {
-    console.error("Error retrieving all ecosystem templates:", error);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-};
-
-const getAnEcosystemTemplate = async (req, res) => {
-  try {
-    const { ecosystemId, templateId } = req.params;
-    if (!ecosystemId || !templateId) {
-      return res
-        .status(400)
-        .json({ message: "Ecosystem ID and template ID are required" });
-    }
-
-    const ecosystem = await Ecosystem.findById(ecosystemId);
-
-    if (!ecosystem) {
-      return res.status(404).json({ message: "Ecosystem not found" });
-    }
-
-    if (!ecosystem.templates.includes(templateId)) {
-      return res
-        .status(404)
-        .json({ message: "Template not found in this ecosystem" });
-    }
-
-    const template = await Template.findById(templateId);
-
-    if (!template) {
-      return res.status(404).json({ message: "Template not found" });
-    }
-
-    return res.status(200).json({ template });
-  } catch (error) {
-    console.error("Error retrieving template from ecosystem: ", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -321,15 +263,8 @@ const creatorEcosystemSummary = async (req, res) => {
 
 module.exports = {
   aboutEcosystem,
-  // ecosystemTemplate,
-  // ecosystemForm,
-  ecosystemIntegration,
-  // ecosystemCompleted,
+  ecosystemDelete,
   allEcosystemCourses,
-  getAnEcosystemCourse,
+  getAnEcosystemCourseDetails,
   getMyEcosystem,
-  allEcosystemTemplates,
-  getAnEcosystemTemplate,
-  creatorEcosystemDashboardOverview,
-  creatorEcosystemSummary,
 };

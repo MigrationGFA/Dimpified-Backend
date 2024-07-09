@@ -36,20 +36,20 @@ const createForm = async (req, res) => {
     // Set file paths in formData
     if (req.files) {
       if (req.files["sidebar.image"]) {
-        const sidebarImage = `https://dimpified-backend-development.azurewebsites.net/${req.files["sidebar.image"][0]}`;
+        const sidebarImage = req.files["sidebar.image"][0];
         if (!isValidFile(sidebarImage)) {
           return res
             .status(400)
             .json({ message: "Invalid sidebar image file" });
         }
-        formData.sidebar.image = sidebarImage.path;
+        formData.sidebar.image = `https://dimpified-backend-development.azurewebsites.net/${sidebarImage.path}`;
       }
       if (req.files["logo.image"]) {
-        const logoImage = `https://dimpified-backend-development.azurewebsites.net/${req.files["logo.image"][0]}`;
+        const logoImage = req.files["logo.image"][0];
         if (!isValidFile(logoImage)) {
           return res.status(400).json({ message: "Invalid logo image file" });
         }
-        formData.logo.image = logoImage.path;
+        formData.logo.image = `https://dimpified-backend-development.azurewebsites.net/${logoImage.path}`;
       }
     }
 
@@ -59,6 +59,7 @@ const createForm = async (req, res) => {
     // Set steps to 3
     ecosystem.steps = 3;
 
+    ecosystem.forms = form._id;
     await ecosystem.save();
 
     res.status(201).json({ message: "Form created successfully", form });
@@ -89,7 +90,7 @@ const getFormById = async (req, res) => {
   }
 };
 
-const allEcosystemForm = async (req, res) => {
+const EcosystemForm = async (req, res) => {
   try {
     const { ecosystemId } = req.params;
 
@@ -110,4 +111,4 @@ const allEcosystemForm = async (req, res) => {
   }
 };
 
-module.exports = { createForm, getFormById, allEcosystemForm };
+module.exports = { createForm, getFormById, EcosystemForm };

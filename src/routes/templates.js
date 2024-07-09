@@ -1,31 +1,17 @@
 const express = require("express");
 const router = express.Router();
-const createTemplates = require("../controllers/EcosystemController/createTemplate");
+const { storageTemplate } = require("../helper/multerUpload");
+
+const {
+  createTemplate,
+  getAnEcosystemTemplate,
+} = require("../controllers/EcosystemController/createTemplate");
 const multer = require("multer");
 const path = require("path");
 
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, "uploads/");
-//   },
-//   filename: function (req, file, cb) {
-//     cb(null, Date.now() + "-" + file.originalname);
-//   },
-// });
-
-// const upload = multer({
-//   storage: storage,
-//   limits: {
-//     fileSize: 10 * 1024 * 1024,
-//   },
-// });
-
-const uploadsPath = path.resolve(__dirname, "../uploads");
-// console.log("Uploads folder path:", uploadsPath);
-
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, uploadsPath);
+    cb(null, "uploads/");
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + "-" + file.originalname);
@@ -34,9 +20,9 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage: storage,
- limits: {
-    fileSize: 104857600 // 100MB
-  }
+  limits: {
+    fileSize: 10 * 1024 * 1024,
+  },
 });
 
 const imgUpload = upload.fields([
@@ -51,6 +37,8 @@ const imgUpload = upload.fields([
   { name: "footer.logo", maxCount: 1 },
 ]);
 
-router.post("/ecosystem/create-templates", imgUpload, createTemplates);
+// router.post("/ecosystem/create-templates", imgUpload, createTemplate);
+router.post("/ecosystem/create-templates", imgUpload, createTemplate);
+router.get("/getTemplate/:ecosystemName", getAnEcosystemTemplate);
 
 module.exports = router;
