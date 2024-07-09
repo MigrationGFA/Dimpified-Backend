@@ -5,8 +5,8 @@ const {
   ecosystemDelete,
   allEcosystemCourses,
   getMyEcosystem,
-  // creatorEcosystemDashboardOverview,
-  // creatorEcosystemSummary,
+  creatorEcosystemDashboardOverview,
+  creatorEcosystemSummary,
 } = require("../controllers/EcosystemController/createEcosystem");
 
 const multer = require("multer");
@@ -18,7 +18,6 @@ const upload = multer({ storage });
 router.post("/ecosystem/aboutDetails", aboutEcosystem);
 
 // router.post("/ecosystem/course", upload.single("image"), ecosystemCourse);
-
 router.put("/ecosystem/delete", ecosystemDelete);
 
 //Route to get all ecosystem courses
@@ -28,12 +27,9 @@ router.get("/ecosystem/get-all-courses/:ecosystemId", allEcosystemCourses);
 router.get("/creator-ecosystems/:userId", getMyEcosystem);
 
 // to get all the Dashboard stats
-// router.get("/creator/my-dashboard-overview", creatorEcosystemDashboardOverview);
+router.get("/creator/my-dashboard-overview", creatorEcosystemDashboardOverview);
 
 // to get he creator ecosystem summary
-// router.get("/creator/my-ecosystem-summary", creatorEcosystemSummary);
-
-// course details
-
+router.get("/creator/my-ecosystem-summary", creatorEcosystemSummary);
 
 module.exports = router;

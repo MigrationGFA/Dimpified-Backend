@@ -1,20 +1,18 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const {storageForm} = require("../helper/multerUpload")
+const { storageForm } = require("../helper/multerUpload");
 const {
   createForm,
-  ecosystemForm
+  ecosystemForm,
   // EcosystemForm,
 } = require("../controllers/EcosystemController/createForm");
-
-
 
 const upload = multer({
   storage: storageForm,
   limits: {
-    fileSize: 104857600 // 100MB
-  }
+    fileSize: 104857600, // 100MB
+  },
 });
 
 const imgUpload = upload.fields([
