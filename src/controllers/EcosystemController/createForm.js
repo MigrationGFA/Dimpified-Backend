@@ -54,7 +54,7 @@ const createForm = async (req, res) => {
     }
 
     const form = await Form.create(formData);
-    ecosystem.forms.push(form._id);
+    ecosystem.forms = form._id;
 
     // Set steps to 3
     ecosystem.steps = 3;
