@@ -18,7 +18,9 @@ const upload = multer({
   },
 });
 
-const backgroundUpload = multer({ storage: backgroundStorage });
+const backgroundUpload = multer({ storage: backgroundStorage,  limits: {
+    fileSize: 104857600, // 100MB
+  }, });
 // Course creation endpoint
 router.post("/create-course", upload.single("image"), createCourse);
 router.get("/ecosystem-courses/:ecosystemDomain", getEcosystemCourse);

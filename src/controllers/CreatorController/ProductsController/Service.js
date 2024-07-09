@@ -48,7 +48,7 @@ const createService = async (req, res) => {
 
     if (req.files && req.files.length > 0) {
       backgroundCover = req.files.map((file) => {
-        return `/uploads/background-cover/${file.filename}`;
+         return `https://dimpified-backend-development.azurewebsites.net/uploads/background-cover/${file.filename}`;
       });
     }
 
@@ -69,7 +69,7 @@ const createService = async (req, res) => {
     });
 
     await service.save();
-    res.status(200).json({ message: "Service created succesfully" });
+    res.status(200).json({ message: "Service created succesfully", service });
   } catch (error) {
     console.log("error:", error);
     res.status(500).json({ error: error.message });
