@@ -6,7 +6,8 @@ const {
   ecosystemDelete,
   allEcosystemCourses,
   getMyEcosystem,
-  getAnEcosystemCourseDetails,
+  creatorEcosystemDashboardOverview,
+  creatorEcosystemSummary,
 } = require("../controllers/EcosystemController/createEcosystem");
 
 
@@ -43,12 +44,12 @@ const cpUpload = upload.fields([
 ]);
 
 router.post("/ecosystem/aboutDetails", aboutEcosystem);
+
 // router.post("/ecosystem/course", upload.single("image"), ecosystemCourse);
 router.put("/ecosystem/delete", ecosystemDelete);
 
 //Route to get all ecosystem courses
-router.get("/ecosystem/get-all-courses/:ecosystemId", allEcosystemCourses)
-
+router.get("/ecosystem/get-all-courses/:ecosystemId", allEcosystemCourses);
 
 // to get creator ecosystems
 router.get("/creator-ecosystems/:userId", getMyEcosystem);
@@ -59,5 +60,10 @@ router.post("/create-ecosystem-certificate", cpUpload, createEcoCertificate)
 
 //To Create End-User Certificate
 router.post("/generate-user-certificate", generateUserCertificate)
+// to get all the Dashboard stats
+router.get("/creator/my-dashboard-overview", creatorEcosystemDashboardOverview);
+
+// to get he creator ecosystem summary
+router.get("/creator/my-ecosystem-summary", creatorEcosystemSummary);
 
 module.exports = router;

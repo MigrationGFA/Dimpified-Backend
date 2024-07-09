@@ -6,16 +6,13 @@ const createTemplate = async (req, res) => {
   try {
     const { creatorId, ecosystemId, templateNumber } = req.body;
 
-   const details = [
-            "creatorId",
-            "ecosystemId",
-            "templateNumber",
-        ]
-        for (const detail of details) {
-            if (!req.body[detail]) {
-                return res.status(400).json({ message: `${detail} is required` });
-            }
-        }
+    const details = ["creatorId", "ecosystemId", "templateNumber"];
+
+    for (const detail of details) {
+      if (!req.body[detail]) {
+        return res.status(400).json({ message: `${detail} is required` });
+      }
+    }
 
     const creator = await Creator.findByPk(creatorId);
     if (!creator) {
@@ -27,7 +24,8 @@ const createTemplate = async (req, res) => {
       return res.status(404).json({ message: "Ecosystem not found" });
     }
 
-    console.log("i can see this part first")
+    console.log("I can see this part first");
+
     const templateData = {
       creatorId,
       ecosystemId,
@@ -43,7 +41,8 @@ const createTemplate = async (req, res) => {
       faq: JSON.parse(req.body.faq),
       footer: JSON.parse(req.body.footer),
     };
-    console.log("the error is here for the templateDate")
+
+    console.log("The error is here for the templateData");
 
     // Set file paths in templateData
     if (req.files) {
@@ -51,8 +50,7 @@ const createTemplate = async (req, res) => {
         templateData.navbar.logo = `https://dimpified-backend-development.azurewebsites.net/${req.files["navbar.logo"][0].path}`;
       }
       if (req.files["hero.backgroundImage"]) {
-        templateData.hero.backgroundImage =
-          `https://dimpified-backend-development.azurewebsites.net/${req.files["hero.backgroundImage"][0].path}`;
+        templateData.hero.backgroundImage = `https://dimpified-backend-development.azurewebsites.net/${req.files["hero.backgroundImage"][0].path}`;
       }
       if (req.files["Vision.image"]) {
         templateData.vision.image = `https://dimpified-backend-development.azurewebsites.net/${req.files["Vision.image"][0].path}`;
@@ -78,8 +76,13 @@ const createTemplate = async (req, res) => {
     }
 
     const template = await Template.create(templateData);
+    ecosystem.templates.push(template._id);
+
+    // Set steps to 2
+    ecosystem.steps = 2;
     ecosystem.templates = template._id;
     await ecosystem.save();
+
     res
       .status(201)
       .json({ message: "Template created successfully", template });
@@ -91,22 +94,21 @@ const createTemplate = async (req, res) => {
 
 const getAnEcosystemTemplate = async (req, res) => {
   try {
-    const { ecosystemName, } = req.params;
-    if (!ecosystemName ) {
+    const { ecosystemDomain, } = req.params;
+    if (!ecosystemDomain ) {
       return res
         .status(400)
-        .json({ message: "Ecosystem name  is required" });
+        .json({ message: "ecosystemDomain name  is required" });
     }
 
-    const ecosystem = await Ecosystem.findOne({ecosystemName: ecosystemName});
+    const ecosystem = await Ecosystem.findOne({ecosystemDomain: ecosystemDomain});
 
     if (!ecosystem) {
       return res.status(404).json({ message: "Ecosystem not found" });
     }
 
-    
-    const template = await Template.findOne({_id: ecosystem.templates});
-    console.log("this is template", template)
+    const template = await Template.findOne({ _id: ecosystem.templates });
+    console.log("this is template", template);
 
     if (!template) {
       return res.status(404).json({ message: "Template not found" });
@@ -119,4 +121,4 @@ const getAnEcosystemTemplate = async (req, res) => {
   }
 };
 
-module.exports = {createTemplate, getAnEcosystemTemplate};
+module.exports = { createTemplate, getAnEcosystemTemplate };

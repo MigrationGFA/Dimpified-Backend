@@ -1,20 +1,17 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/dbConnect");
 
-const EndUser = sequelize.define(
-  "EndUser",
+const EcosystemUser = sequelize.define(
+  "EcosystemUser",
   {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    ecosystemId: {
+    ecosystemDomain: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
     },
     username: {
       type: DataTypes.STRING,
@@ -35,6 +32,34 @@ const EndUser = sequelize.define(
         notEmpty: true,
       },
     },
+     firstName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+     lastName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    phoneNumber: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    address: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    zipCode: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    city: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    country: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     isVerified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
@@ -45,8 +70,8 @@ const EndUser = sequelize.define(
     verificationToken: DataTypes.STRING,
   },
   {
-    tableName: "EndUser",
+    tableName: "EcosystemUser",
   }
 );
 
-module.exports = EndUser;
+module.exports = EcosystemUser;
