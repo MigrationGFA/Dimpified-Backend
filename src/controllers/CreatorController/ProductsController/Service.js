@@ -78,14 +78,15 @@ const createService = async (req, res) => {
 
 const getAllServices = async (req, res) => {
   try {
-    const ecosystemId = req.params.ecosystemId;
+    const ecosystemDomain = req.params.ecosystemDomain;
 
-    const ecosystem = await Ecosystem.findById(ecosystemId);
+    const ecosystem = await Ecosystem.findOne({ecosystemDomain: ecosystemDomain});
     if (!ecosystem) {
-      return res.status(404).json({ message: "Invalid ecosystemId" });
+      return res.status(404).json({ message: "Invalid ecosystem name" });
     }
 
-    const services = await Service.find({ ecosystemId });
+    const services = await Service.find({ ecosystemId: ecosystem._id }).sort(
+      { createdAt: -1 });
 
     if (services.length === 0) {
       return res
@@ -102,9 +103,9 @@ const getAllServices = async (req, res) => {
 
 const getAService = async (req, res) => {
   try {
-    const { serviceId, ecosystemId } = req.body;
+    const { serviceId } = req.params;
 
-    const service = await Service.findOne({ _id: serviceId, ecosystemId });
+    const service = await Service.findOne({ _id: serviceId });
     if (!service) {
       return res.status(404).json({ message: "Service not found" });
     }

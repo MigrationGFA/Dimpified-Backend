@@ -36,7 +36,7 @@ router.post(
   backgroundUpload.array("backgroundCover"),
   createService
 );
-router.get("/get-all-services/:ecosystemId", getAllServices);
-router.get("/get-a-service", getAService);
+router.get("/get-all-services/:ecosystemDomain", getAllServices);
+router.get("/get-a-service/:serviceId", getAService);
 
 module.exports = router;
