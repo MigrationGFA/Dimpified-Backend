@@ -57,5 +57,16 @@ const storageForm = multer.diskStorage({
   }
 });
 
+const backgroundStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadPath = path.join( 'uploads','background-cover');
+    
+    fs.mkdirSync(uploadPath, { recursive: true });
+    cb(null, uploadPath);
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+});
 
-module.exports = {storageCourse, storageTemplate, storageForm}
+module.exports = {storageCourse, storageTemplate, storageForm, backgroundStorage}
