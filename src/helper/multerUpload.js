@@ -69,4 +69,4 @@ const backgroundStorage = multer.diskStorage({
   }
 });
 
-module.exports = {storageCourse, storageTemplate, storageForm,backgroundStorage}
+module.exports = {storageCourse, storageTemplate, storageForm, backgroundStorage}
