@@ -1,83 +1,15 @@
-const Admin = require("../../../models/GfaAdmin");
-const EndUser = require("../../../models/EndUser");
-const Creator = require("../../../models/Creator");
+const EcosystemUser = require("../../../models/EcosystemUser");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const sendVerificationUser = require("../../../utils/sendVerificationUser");
+const Ecosystem = require("../../../models/Ecosystem");
 
-// const registerUser = async (req, res) => {
-//   try {
-//     await EndUser.sync();
-//     const { username, email, password, ecosystemId } = req.body;
-//     const details = ["username", "ecosystemId", "email", "password"];
-
-//     for (const detail of details) {
-//       if (!req.body[detail]) {
-//         return res.status(400).json({ msg: `${detail} is required` });
-//       }
-//     }
-
-//     const duplicateUser = await EndUser.findOne({ where: { email: email } });
-//     if (duplicateUser) {
-//       if (!duplicateUser.isVerified) {
-//         const hashedPassword = await bcrypt.hash(password, 10);
-//         const verificationToken = crypto.randomBytes(40).toString("hex");
-
-//         await duplicateUser.update({
-//           username,
-//           password: hashedPassword,
-//           ecosystemId,
-//           verificationToken,
-//         });
-
-//         await sendVerificationUser({
-//           username: duplicateUser.username,
-//           email: duplicateUser.email,
-//           verificationToken: duplicateUser.verificationToken,
-//           origin: process.env.ORIGIN,
-//         });
-
-//         return res
-//           .status(201)
-//           .json({ message: "Verification email resent successfully" });
-//       } else {
-//         return res
-//           .status(409)
-//           .json({ message: "Email address is associated with an account" });
-//       }
-//     } else {
-//       const hashedPassword = await bcrypt.hash(password, 10);
-//       const verificationToken = crypto.randomBytes(40).toString("hex");
-
-//       const newUser = await EndUser.create({
-//         username,
-//         email,
-//         password: hashedPassword,
-//         verificationToken,
-//         ecosystemId,
-//         isVerified: false,
-//       });
-
-//       await sendVerificationUser({
-//         username: newUser.username,
-//         email: newUser.email,
-//         verificationToken: newUser.verificationToken,
-//         origin: process.env.ORIGIN,
-//       });
-
-//       return res.status(201).json({ message: "User created successfully" });
-//     }
-//   } catch (error) {
-//     console.error("Error:", error);
-//     res.status(500).json({ message: "Internal Server Error", detail: error });
-//   }
-// };
 
 const registerUser = async (req, res) => {
   try {
-    await EndUser.sync();
-    const { username, email, password, ecosystemId } = req.body;
-    const details = ["username", "ecosystemId", "email", "password"];
+    await EcosystemUser.sync();
+    const { username, email, password, ecosystemDomain, firstName,  lastName, phoneNumber, address, zipCode, city, country,  } = req.body;
+    const details = ["username", "ecosystemDomain", "firstName",  "lastName", "phoneNumber", "address", "zipCode", "city", "country", "email", "password"];
 
     // Check for required details
     for (const detail of details) {
@@ -85,10 +17,14 @@ const registerUser = async (req, res) => {
         return res.status(400).json({ msg: `${detail} is required` });
       }
     }
-
-    // Check if the combination of email and ecosystemId is unique
-    const duplicateUser = await EndUser.findOne({
-      where: { email, ecosystemId },
+    // check ecosystem 
+    const ecoDetails = await Ecosystem.findOne({ecosystemDomain: ecosystemDomain})
+    if (!ecoDetails) {
+      return res.status(200).json({ msg: "Ecosystem Not found" });
+    }
+    // Check if the combination of email and ecosystemDomain is unique
+    const duplicateUser = await EcosystemUser.findOne({
+      where: { email, ecosystemDomain },
     });
     if (duplicateUser) {
       if (!duplicateUser.isVerified) {
@@ -98,6 +34,13 @@ const registerUser = async (req, res) => {
         await duplicateUser.update({
           username,
           password: hashedPassword,
+          firstName,  
+          lastName, 
+          phoneNumber, 
+          address, 
+          zipCode, 
+          city, 
+          country,
           verificationToken,
         });
 
@@ -106,6 +49,7 @@ const registerUser = async (req, res) => {
           email: duplicateUser.email,
           verificationToken: duplicateUser.verificationToken,
           origin: process.env.ORIGIN,
+          ecosystemName: ecoDetails.ecosystemName
         });
 
         return res
@@ -116,19 +60,26 @@ const registerUser = async (req, res) => {
           .status(409)
           .json({
             message:
-              "An account with this email and ecosystemId already exists",
+              "An account with this email already exists",
           });
       }
     } else {
       const hashedPassword = await bcrypt.hash(password, 10);
       const verificationToken = crypto.randomBytes(40).toString("hex");
 
-      const newUser = await EndUser.create({
+      const newUser = await EcosystemUser.create({
         username,
         email,
         password: hashedPassword,
         verificationToken,
-        ecosystemId,
+        ecosystemDomain,
+         firstName,  
+          lastName, 
+          phoneNumber, 
+          address, 
+          zipCode, 
+          city, 
+          country,
         isVerified: false,
       });
 
@@ -137,6 +88,7 @@ const registerUser = async (req, res) => {
         email: newUser.email,
         verificationToken: newUser.verificationToken,
         origin: process.env.ORIGIN,
+        ecosystemName: ecoDetails.ecosystemName
       });
 
       return res.status(201).json({ message: "User created successfully" });

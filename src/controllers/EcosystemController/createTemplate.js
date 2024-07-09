@@ -91,14 +91,14 @@ const createTemplate = async (req, res) => {
 
 const getAnEcosystemTemplate = async (req, res) => {
   try {
-    const { ecosystemName, } = req.params;
-    if (!ecosystemName ) {
+    const { ecosystemDomain, } = req.params;
+    if (!ecosystemDomain ) {
       return res
         .status(400)
-        .json({ message: "Ecosystem name  is required" });
+        .json({ message: "ecosystemDomain name  is required" });
     }
 
-    const ecosystem = await Ecosystem.findOne({ecosystemName: ecosystemName});
+    const ecosystem = await Ecosystem.findOne({ecosystemDomain: ecosystemDomain});
 
     if (!ecosystem) {
       return res.status(404).json({ message: "Ecosystem not found" });

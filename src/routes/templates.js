@@ -40,6 +40,6 @@ router.post("/ecosystem/create-templates", (req, res, next) => {
     next();
   });
 }, createTemplate);
-router.get("/getTemplate/:ecosystemName", getAnEcosystemTemplate)
+router.get("/getTemplate/:ecosystemDomain", getAnEcosystemTemplate)
 
 module.exports = router;

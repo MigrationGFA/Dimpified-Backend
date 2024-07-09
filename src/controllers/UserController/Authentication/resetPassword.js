@@ -1,6 +1,4 @@
-const Admin = require("../../../models/GfaAdmin");
-const EndUser = require("../../../models/EndUser");
-const Creator = require("../../../models/Creator");
+const EcosystemUser = require("../../../models/EcosystemUser");
 const sendResetPasswordAlert = require("../../../utils/userResetPassword");
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
@@ -20,7 +18,7 @@ const resetPasswordUser = async (req, res) => {
       .createHash("sha256")
       .update(resetToken)
       .digest("hex");
-    const user = await EndUser.findOne({ where: { email: email } });
+    const user = await EcosystemUser.findOne({ where: { email: email } });
     if (!user) {
       return res.status(400).json({ message: "User not found" });
     }

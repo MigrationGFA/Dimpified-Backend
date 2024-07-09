@@ -17,14 +17,14 @@ const creatorRegister = require("../controllers/CreatorController/Authentication
 const creatorResetPassword = require("../controllers/CreatorController/Authentication/resetPassword");
 const onBoarding = require("../controllers/CreatorController/Authentication/onBoarding");
 
-// User endpoints
-router.post("/user/register", Register);
-router.post("/user/verify-email", verifyEmail);
-router.post("/user/resend-email", resendEmail);
-router.post("/user/login", Login);
-router.post("/user/forgot-password", forgotPassword);
-router.post("/user/reset-password", resetPassword);
-router.delete("/user/logout/:userId", logout);
+// Ecosystem user endpoints
+router.post("/ecosystem-user/register", Register);
+router.post("/ecosystem-user/verify-email", verifyEmail);
+router.post("/ecosystem-user/resend-email", resendEmail);
+router.post("/ecosystem-user/login", Login);
+router.post("/ecosystem-user/forgot-password", forgotPassword);
+router.post("/ecosystem-user/reset-password", resetPassword);
+router.delete("/ecosystem-user/logout/:userId", logout);
 
 // creator endpoints
 router.post("/creator/register", creatorRegister);

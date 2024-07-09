@@ -5,6 +5,7 @@ const sendVerificationEmailUser = async ({
   email,
   verificationToken,
   origin,
+  ecosystemName
 }) => {
   const verifyEmailUrl = `${origin}/user/verify-email?token=${verificationToken}&email=${email}`;
 
@@ -13,7 +14,7 @@ const sendVerificationEmailUser = async ({
 
   return sendEmail({
     to: email,
-    subject: "Dimpified Email Confirmation",
+    subject: `${ecosystemName} Email Confirmation`,
     html: `<h4>Hello, ${username}</h4>
       ${message}`,
   });

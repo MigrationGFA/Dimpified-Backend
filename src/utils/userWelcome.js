@@ -1,6 +1,6 @@
 const sendEmail = require("./sendEmail");
 
-const userWelcomeEmail = ({ username, email }) => {
+const userWelcomeEmail = ({ username, email, ecosystemName,  logo, login }) => {
   const message = `
       <!DOCTYPE html>
       <html lang="en">
@@ -177,52 +177,21 @@ const userWelcomeEmail = ({ username, email }) => {
         <body>
           <main class="container">
             <header class="header">
-              <img src="./images/remsana-logo.png" alt="logo" />
+              <img src=${logo} alt="logo" />
             </header>
             <section class="section-content">
               <div class="experince">
-                <p>Welcome to Dimpified!</p>
-                <img src="./images/person.png" alt="person" />
+                <p>Welcome to ${ecosystemName}!</p>
+                // <img src="./images/person.png" alt="person" />
               </div>
               <p>Hello ${username},</p>
               <p>
-                Welcome to <span>Dimpified</span>! You are now part of the <span>${organizationName}</span> organization and the <span>${ecosystemName}</span> ecosystem. We're excited to have you join our community.
+                Welcome to <span>${ecosystemName}</span>! You are now part of the <span>${ecosystemName}</span> community. We're excited to have you join our community.
               </p>
-              <div class="gettingStarted">
-                <ul>
-                  <li>
-                    At Dimpified, we understand the importance of knowledge sharing
-                    and are dedicated to providing you with the tools to create
-                    comprehensive educational ecosystems. Whether it's training your
-                    team, educating your organization, or sharing information with the
-                    public, our platform has got you covered.
-                  </li>
-                  <li>
-                    Dimpified offers a seamless experience for you to create your
-                    ecosystem, onboard users, and train your ecosystem users.
-                  </li>
-                  <li>
-                    Dimpified offers a seamless experience to create and share
-                    educational content in various formats. Our intuitive platform
-                    allows you to upload videos, documents, and audio files, ensuring
-                    you can deliver information in the most effective way possible.
-                  </li>
-                  <li>
-                    More than just a content-sharing platform, Dimpified is a vibrant
-                    community of educators and learners. Engage with others, share
-                    insights, and grow together with our supportive community.
-                  </li>
-                </ul>
-                <p>
-                  Whether you're starting a new educational initiative or enhancing
-                  your current training programs, Dimpified is here to support you
-                  every step of the way. Begin your journey today by exploring our
-                  features and connecting with our community.
-                </p>
-              </div>
+
               <div class="click">
                 <a
-                  href="https://dimpified.com/"
+                  href=${login}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -230,70 +199,11 @@ const userWelcomeEmail = ({ username, email }) => {
                 </a>
               </div>
               <p class="last">Welcome aboard,</p>
-              <p>The <span>Dimpified</span> Team.</p>
+              <p>The <span>${ecosystemName}</span> Team.</p>
             </section>
             <footer>
-              <div class="wrapper">
-                <h2>Follow us</h2>
-                <div class="social-media">
-                  <a
-                    href="https://web.facebook.com/dimpified"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg"
-                      alt="facebook"
-                      style="cursor: pointer; height: 30px"
-                    />
-                  </a>
-                  <a
-                    href="https://instagram.com/dimpified"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png"
-                      alt="instagram"
-                      style="cursor: pointer; height: 30px"
-                    />
-                  </a>
-                  <a
-                    href="https://twitter.com/dimpified"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/6/6f/Logo_of_Twitter.svg"
-                      alt="twitter"
-                      style="cursor: pointer; height: 30px"
-                    />
-                  </a>
-                  <a
-                    href="https://www.linkedin.com/company/dimpified"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/0/01/LinkedIn_Logo.svg"
-                      alt="linkedin"
-                      style="cursor: pointer; height: 30px"
-                    />
-                  </a>
-                  <a
-                    href="https://www.youtube.com/dimpified"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/4/42/YouTube_icon_%282013-2017%29.png"
-                      alt="youtube"
-                      style="cursor: pointer; height: 30px; margin-left: 15px"
-                    />
-                  </a>
-                </div>
                 <p class="copyright">
-                  <span>&copy;</span> 2024 Dimpified. All rights reserved.
+                  <span>&copy;</span> 2024 ${ecosystemName}. All rights reserved.
                 </p>
               </div>
             </footer>

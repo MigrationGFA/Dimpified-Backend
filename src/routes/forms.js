@@ -4,8 +4,8 @@ const multer = require("multer");
 const {storageForm} = require("../helper/multerUpload")
 const {
   createForm,
-  getFormById,
-  EcosystemForm,
+  ecosystemForm
+  // EcosystemForm,
 } = require("../controllers/EcosystemController/createForm");
 
 // const storage = multer.diskStorage({
@@ -30,7 +30,7 @@ const imgUpload = upload.fields([
 ]);
 
 router.post("/ecosystem/create-form", imgUpload, createForm);
-router.get("/get-forms/:formId", getFormById);
-router.get("/ecosystem/forms/:ecosystemId", EcosystemForm);
+router.get("/ecosytemForm-forms/:ecosystemDomain", ecosystemForm);
+// router.get("/ecosystem/forms/:ecosystemId", EcosystemForm);
 
 module.exports = router;
