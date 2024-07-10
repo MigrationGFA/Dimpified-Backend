@@ -12,7 +12,7 @@ const {
 
 
 const multer = require("multer");
-const createEcoCertificate = require("../controllers/EcosystemController/ecosystemCertificate");
+const { createEcoCertificate, updateEcoCertificate } = require("../controllers/EcosystemController/ecosystemCertificate");
 const generateUserCertificate = require("../controllers/EcosystemController/enduserCertificate");
 
 // Set up multer for handling multipart/form-data
@@ -57,6 +57,7 @@ router.get("/creator-ecosystems/:userId", getMyEcosystem);
 
 //To create ecosystem certificate
 router.post("/create-ecosystem-certificate", cpUpload, createEcoCertificate)
+router.put("/update-ecosystem-certificate/:id", cpUpload, updateEcoCertificate)
 
 //To Create End-User Certificate
 router.post("/generate-user-certificate", generateUserCertificate)
