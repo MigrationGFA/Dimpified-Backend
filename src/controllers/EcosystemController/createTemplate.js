@@ -76,7 +76,7 @@ const createTemplate = async (req, res) => {
     }
 
     const template = await Template.create(templateData);
-    ecosystem.templates.push(template._id);
+    ecosystem.templates = template._id;
 
     // Set steps to 2
     ecosystem.steps = 2;
