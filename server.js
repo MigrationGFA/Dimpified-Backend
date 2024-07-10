@@ -34,6 +34,7 @@ app.use("/api/v1/", require("./src/routes/domainCheck"));
 app.use("/api/v1/", require("./src/routes/templates"));
 app.use("/api/v1/", require("./src/routes/forms"));
 app.use("/api/v1/", require("./src/routes/developer"));
+app.use("/api/v1/", require("./src/routes/creatorDashboard"));
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

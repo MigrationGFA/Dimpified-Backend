@@ -62,9 +62,9 @@ router.put("/update-ecosystem-certificate/:id", cpUpload, updateEcoCertificate)
 //To Create End-User Certificate
 router.post("/generate-user-certificate", generateUserCertificate)
 // to get all the Dashboard stats
-router.get("/creator/my-dashboard-overview", creatorEcosystemDashboardOverview);
+router.get("/creator/my-dashboard-overview/:creatorId", creatorEcosystemDashboardOverview);
 
 // to get he creator ecosystem summary
-router.get("/creator/my-ecosystem-summary", creatorEcosystemSummary);
+router.get("/creator/my-ecosystem/:creatorId", creatorEcosystemSummary);
 
 module.exports = router;

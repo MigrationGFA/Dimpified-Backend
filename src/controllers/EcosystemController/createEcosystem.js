@@ -2,6 +2,8 @@ const Ecosystem = require("../../models/Ecosystem");
 const Creator = require("../../models/Creator");
 const dimpifiedCourse = require("../../models/Course");
 const Template = require("../../models/Templates");
+const CreatorSupport = require("../../models/Support");
+
 
 const aboutEcosystem = async (req, res) => {
   const {
@@ -68,6 +70,7 @@ const aboutEcosystem = async (req, res) => {
         ecosystemDomain,
         targetAudienceSector,
         mainObjective,
+        steps: 1,
         expectedAudienceNumber,
         experience,
         ecosystemDescription,
@@ -165,7 +168,7 @@ const getMyEcosystem = async (req, res) => {
 };
 
 const creatorEcosystemDashboardOverview = async (req, res) => {
-  const { creatorId } = req.body;
+  const { creatorId } = req.params;
 
   if (!creatorId) {
     return res.status(400).json({ message: "creatorId is required" });
@@ -200,7 +203,7 @@ const creatorEcosystemDashboardOverview = async (req, res) => {
 };
 
 const creatorEcosystemSummary = async (req, res) => {
-  const { creatorId } = req.body;
+  const { creatorId } = req.params;
 
   if (!creatorId) {
     return res.status(400).json({ message: "creatorId is required" });

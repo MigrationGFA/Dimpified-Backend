@@ -18,7 +18,7 @@ const registerUser = async (req, res) => {
       }
     }
     // check ecosystem 
-    const ecoDetails = await Ecosystem.findOne({ecosystemDomain: ecosystemDomain})
+    let ecoDetails = await Ecosystem.findOne({ecosystemDomain: ecosystemDomain})
     if (!ecoDetails) {
       return res.status(200).json({ msg: "Ecosystem Not found" });
     }
@@ -83,6 +83,8 @@ const registerUser = async (req, res) => {
         isVerified: false,
       });
 
+      ecoDetails.users += 1
+      await ecoDetails.save()
       await sendVerificationUser({
         username: newUser.username,
         email: newUser.email,
