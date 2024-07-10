@@ -28,12 +28,12 @@ const upload = multer({
 const imgUpload = upload.fields([
   { name: "navbar.logo", maxCount: 1 },
   { name: "hero.backgroundImage", maxCount: 1 },
-  { name: "vision.image", maxCount: 1 },
-  { name: "audience.image1", maxCount: 1 },
-  { name: "audience.image2", maxCount: 1 },
-  { name: "audience.image3", maxCount: 1 },
-  { name: "audience.image4", maxCount: 1 },
-  { name: "cta.image", maxCount: 1 },
+  { name: "Vision.image", maxCount: 1 },
+  { name: "Audience.image1", maxCount: 1 },
+  { name: "Audience.image2", maxCount: 1 },
+  { name: "Audience.image3", maxCount: 1 },
+  { name: "Audience.image4", maxCount: 1 },
+  { name: "CTA.image", maxCount: 1 },
   { name: "footer.logo", maxCount: 1 },
 ]);
 

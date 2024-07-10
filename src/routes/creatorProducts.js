@@ -9,6 +9,8 @@ const { storageCourse, backgroundStorage } = require("../helper/multerUpload");
 const multer = require("multer");
 const {
   createService,
+  getAllServices,
+  getAService,
 } = require("../controllers/CreatorController/ProductsController/Service");
 
 const upload = multer({
@@ -18,7 +20,9 @@ const upload = multer({
   },
 });
 
-const backgroundUpload = multer({ storage: backgroundStorage });
+const backgroundUpload = multer({ storage: backgroundStorage,  limits: {
+    fileSize: 104857600, // 100MB
+  }, });
 // Course creation endpoint
 router.post("/create-course", upload.single("image"), createCourse);
 router.get("/ecosystem-courses/:ecosystemDomain", getEcosystemCourse);
@@ -27,10 +31,16 @@ router.get(
   getAnEcosystemCourseDetails
 );
 
+// service creation endpoint
 router.post(
   "/create-service",
   backgroundUpload.array("backgroundCover"),
   createService
 );
+router.get("/get-all-services/:ecosystemDomain", getAllServices);
+router.get("/get-a-service/:serviceId", getAService);
+
+
+// creator overview dashboard
 
 module.exports = router;
