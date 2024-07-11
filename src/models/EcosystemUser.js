@@ -32,11 +32,11 @@ const EcosystemUser = sequelize.define(
         notEmpty: true,
       },
     },
-     firstName: {
+    firstName: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-     lastName: {
+    lastName: {
       type: DataTypes.STRING,
       allowNull: false,
     },
