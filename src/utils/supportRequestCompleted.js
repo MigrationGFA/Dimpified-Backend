@@ -125,7 +125,7 @@ const sendSupportRequestCompletedEmail = async ({
                     "
                   >
                     <p style="color: #333">
-                      Warm regards,<br />The Unleashified Team
+                      Warm regards,<br />The ${ecosystemName} Team
                     </p>
                   </div>
                 </div>
@@ -151,10 +151,10 @@ const sendSupportRequestCompletedEmail = async ({
                 "
               >
                 <p style="margin-bottom: 2px">
-                  Thank you for choosing Unleashified as your job platform.
+                  Thank you for choosing ${ecosystemName}.
                 </p>
                 <p style="margin-bottom: 2px">
-                  &copy; 2024 Unleashified. All rights Reserved.
+                  &copy; 2024 ${ecosystemName}. All rights Reserved.
                 </p>
               </td>
             </tr>
