@@ -1,10 +1,11 @@
 const express = require("express");
-const { createEcosystemUserResolution, getAllResolutionRequest, getMyResolutionRequest } = require("../controllers/CustomerCareController/Resolution");
+const { createEcosystemUserResolution, getEcosystemResolutionRequest, getMyResolutionRequest, getCreatorResolutionRequest } = require("../controllers/CustomerCareController/Resolution");
 const router = express.Router()
 
 router.post("/create-resolution-request", createEcosystemUserResolution);
-router.get("/all-resolution-requests", getAllResolutionRequest)
+router.get("/ecosystem-resolution-request", getEcosystemResolutionRequest)
 router.get("/my-resolution-request/:userId", getMyResolutionRequest)
+router.get("/creator-resolution-request/:creatorId", getCreatorResolutionRequest)
 
 
 
