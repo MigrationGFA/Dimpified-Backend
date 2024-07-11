@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/dbConnect");
 const User = require("../models/EcosystemUser");
-const Creator = require("../models/CreatorProfile");
+const Creator = require("../models/Creator");
 
 const Transaction = sequelize.define("Transaction", {
   id: {
@@ -27,10 +27,18 @@ const Transaction = sequelize.define("Transaction", {
   userId: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    references: {
+      model: User, // This should be the actual model, not a string
+      key: "id",
+    },
   },
   creatorId: {
     type: DataTypes.INTEGER,
     allowNull: true,
+    references: {
+      model: Creator,
+      key: "id",
+    },
   },
   amount: {
     type: DataTypes.DECIMAL(10, 2),

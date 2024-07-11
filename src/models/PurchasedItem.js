@@ -9,8 +9,12 @@ const PurchasedItem = sequelize.define("PurchasedItem", {
     autoIncrement: true,
   },
   userId: {
-    type: DataTypes.STRING,
+    type: DataTypes.INTEGER,
     allowNull: false,
+    references: {
+      model: User,
+      key: "id",
+    },
   },
   itemType: {
     type: DataTypes.STRING,
@@ -30,6 +34,9 @@ const PurchasedItem = sequelize.define("PurchasedItem", {
   },
 });
 
-PurchasedItem.belongsTo(User, { foreignKey: "userId", targetKey: "id" });
+PurchasedItem.belongsTo(User, {
+  foreignKey: "userId",
+  targetKey: "id",
+});
 
 module.exports = PurchasedItem;
