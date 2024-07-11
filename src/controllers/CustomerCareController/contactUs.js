@@ -94,11 +94,11 @@ const sendContactUsFeedback = async (req, res) => {
     const contactUs = await ContactUs.findByPk(id)
 
 
-    const { firstName: username, email, reason } = contactUs;
-    console.log({ username, email, subject, reason, message });
+    const { firstName, email, reason } = contactUs;
+
 
     await sendContactUsFeedbackEmail({
-      username,
+      firstName,
       email,
       subject,
       reason,

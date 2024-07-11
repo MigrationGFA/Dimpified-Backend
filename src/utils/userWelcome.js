@@ -1,6 +1,6 @@
 const sendEmail = require("./sendEmail");
 
-const userWelcomeEmail = ({ username, email, ecosystemName,  logo, login }) => {
+const userWelcomeEmail = ({ username, email, ecosystemName, logo, login }) => {
   const message = `
       <!DOCTYPE html>
       <html lang="en">
@@ -214,7 +214,7 @@ const userWelcomeEmail = ({ username, email, ecosystemName,  logo, login }) => {
 
   return sendEmail({
     to: email,
-    subject: "Welcome To UNLEASHIFIED",
+    subject: `Welcome To ${ecosystemName}`,
     html: message,
   });
 };
