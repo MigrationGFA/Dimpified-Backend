@@ -4,11 +4,11 @@ const PurchasedItem = require("../../models/PurchasedItem");
 const Course = require("../../models/Course");
 const Product = require("../../models/Product");
 const Service = require("../../models/Service");
-const sendCoursePurchaseEmail = require("../../utils/sendCoursePurchase");
+// const sendCoursePurchaseEmail = require("../../utils/sendCoursePurchase");
 const CreatorEarning = require("../../models/CreatorEarning");
 const Ecosystem = require("../../models/Ecosystem");
 const { sequelize } = require("../../config/dbConnect");
-const User = require("../../models/Users");
+const User = require("../../models/EcosystemUser");
 
 const verifyPayment = async (reference, provider) => {
   let options;
@@ -67,6 +67,7 @@ const VerifyPayment = async (req, res) => {
   try {
     await Transaction.sync();
     await CreatorEarning.sync();
+    await PurchasedItem.sync();
 
     const {
       provider,
@@ -75,7 +76,7 @@ const VerifyPayment = async (req, res) => {
       itemId,
       itemType,
       userId,
-      ecosystemId,
+      ecosystemDomain,
     } = req.body;
     const details = [
       "provider",
@@ -84,7 +85,7 @@ const VerifyPayment = async (req, res) => {
       "itemId",
       "itemType",
       "userId",
-      "ecosystemId",
+      "ecosystemDomain",
     ];
 
     for (const detail of details) {
@@ -94,14 +95,10 @@ const VerifyPayment = async (req, res) => {
     }
 
     const responseData = await verifyPayment(reference, provider);
-    console.log(responseData);
-
     if (!responseData || !responseData.data) {
-      return res
-        .status(400)
-        .json({
-          message: "Payment verification failed, invalid response data",
-        });
+      return res.status(400).json({
+        message: "Payment verification failed, invalid response data",
+      });
     }
 
     let item;
@@ -111,9 +108,9 @@ const VerifyPayment = async (req, res) => {
     let creatorId = null;
 
     if (itemType === "Course") {
-      const ecosystem = await Ecosystem.findById(ecosystemId).populate(
-        "courses"
-      );
+      const ecosystem = await Ecosystem.findOne({
+        ecosystemDomain: ecosystemDomain,
+      }).populate("courses");
       if (!ecosystem) {
         return res.status(404).json({ message: "Ecosystem not found" });
       }
@@ -124,13 +121,13 @@ const VerifyPayment = async (req, res) => {
       if (!item) {
         return res
           .status(400)
-          .json({ message: `Course does not exist in this ecosystem` });
+          .json({ message: "Course does not exist in this ecosystem" });
       }
 
       amount = parseInt(item.price, 10);
       itemTitle = item.title;
       itemPrice = item.price;
-      creatorId = item.Agent ? item.Agent.creatorId : null;
+      creatorId = item.creatorId;
       await Course.findByIdAndUpdate(itemId, {
         $inc: { totalNumberOfEnrolledStudent: 1 },
       });
@@ -159,11 +156,6 @@ const VerifyPayment = async (req, res) => {
     }
 
     const currency = responseData.data.currency;
-
-    console.log("Provider:", provider);
-    console.log("Response Status:", responseData.data.status);
-    console.log("Response Amount:", responseData.data.amount);
-    console.log("Item Amount:", amount);
 
     if (provider === "paystack") {
       const convertAmount = responseData.data.amount / 100;
@@ -204,7 +196,10 @@ const VerifyPayment = async (req, res) => {
     });
 
     if (itemType === "Course") {
-      await Ecosystem.findByIdAndUpdate(ecosystemId, { $inc: { users: 1 } });
+      await Ecosystem.updateOne(
+        { ecosystemDomain: ecosystemDomain },
+        { $inc: { users: 1 } }
+      );
     }
 
     if (creatorId) {
@@ -228,7 +223,7 @@ const VerifyPayment = async (req, res) => {
           creatorEarning.Dollar += amount;
           break;
         default:
-          return res.status(400).json({ message: `Unsupported currency` });
+          return res.status(400).json({ message: "Unsupported currency" });
       }
 
       await creatorEarning.save();
@@ -236,17 +231,17 @@ const VerifyPayment = async (req, res) => {
 
     const user = await User.findByPk(userId);
     if (!user) {
-      return res.status(400).json({ message: `User does not exist` });
+      return res.status(400).json({ message: "User does not exist" });
     }
 
-    await sendCoursePurchaseEmail({
-      username: user.username,
-      email: email,
-      title: itemTitle,
-      price: itemPrice,
-      category: item.category,
-      hour: item.hour,
-    });
+    // await sendCoursePurchaseEmail({
+    //   username: user.username,
+    //   email: email,
+    //   title: itemTitle,
+    //   price: itemPrice,
+    //   category: item.category,
+    //   hour: item.hour,
+    // });
 
     return res.status(201).json({
       message: "Item Purchased Successfully",
