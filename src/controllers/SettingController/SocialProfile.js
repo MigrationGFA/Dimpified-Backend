@@ -1,9 +1,11 @@
 const SocialProfile = require("../../models/SocialProfile");
-const User = require("../../models/EcosystemUser");
+const EcosystemUser = require("../../models/EcosystemUser");
 
 const socialProfile = async (req, res) => {
   try {
+    await EcosystemUser.sync();
     await SocialProfile.sync();
+
     const { userId, twitter, youtube, instagram, facebook, LinkedIn } =
       req.body;
 
@@ -12,22 +14,24 @@ const socialProfile = async (req, res) => {
         .status(400)
         .json({ message: "At least one social profile is required" });
     }
-    const userExist = await User.findOne({
+
+    const userExist = await EcosystemUser.findOne({
       where: {
         id: userId,
       },
     });
 
     if (!userExist) {
-      return res.status(400).json({ message: `user does not exist` });
+      return res.status(400).json({ message: `User does not exist` });
     }
-    const user = await SocialProfile.findOne({
+
+    const userProfile = await SocialProfile.findOne({
       where: {
         userId: userId,
       },
     });
 
-    if (user) {
+    if (userProfile) {
       const updatedSocialProfile = await SocialProfile.update(
         {
           twitter,
@@ -42,14 +46,12 @@ const socialProfile = async (req, res) => {
           },
         }
       );
-      return res
-        .status(200)
-        .json({
-          message: "Social Updated Successfully",
-          data: updatedSocialProfile,
-        });
+      return res.status(200).json({
+        message: "Social profile updated successfully",
+        data: updatedSocialProfile,
+      });
     } else {
-      const Social = await SocialProfile.create({
+      const newSocialProfile = await SocialProfile.create({
         userId,
         twitter,
         youtube,
@@ -57,12 +59,13 @@ const socialProfile = async (req, res) => {
         facebook,
         LinkedIn,
       });
-      return res
-        .status(201)
-        .json({ message: "Social created successfully", data: Social });
+      return res.status(201).json({
+        message: "Social profile created successfully",
+        data: newSocialProfile,
+      });
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res
       .status(500)
       .json({ message: "Internal Server Error", detail: error });

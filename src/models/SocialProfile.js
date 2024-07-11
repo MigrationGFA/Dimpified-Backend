@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/dbConnect");
-const User = require("../models/EcosystemUser");
+const EcosystemUser = require("./EcosystemUser");
 
 const SocialProfile = sequelize.define(
   "DimpifiedSocialProfile",
@@ -14,7 +14,7 @@ const SocialProfile = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "User",
+        model: EcosystemUser,
         key: "id",
       },
     },
@@ -44,6 +44,6 @@ const SocialProfile = sequelize.define(
   }
 );
 
-SocialProfile.belongsTo(User, { foreignKey: "userId" });
+SocialProfile.belongsTo(EcosystemUser, { foreignKey: "userId" });
 
 module.exports = SocialProfile;
