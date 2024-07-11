@@ -13,7 +13,7 @@ const sendCourseCreationEmail = async ({
   <head>
     <meta charset="UTF-8" />
     <title>
-      {{Congratulations! Your New Course is Now Live on Remsana Platform}}
+      {{Congratulations! Your New Course is Now Live on ${ecosystemName} Platform}}
     </title>
     <style>
       @import url("https://fonts.googleapis.com/css?family=Nunito+Sans:400,700&display=swap");
@@ -161,7 +161,7 @@ const sendCourseCreationEmail = async ({
                   Thank you for choosing Dimpifed as your e-learning platform.
                 </p>
                 <p style="margin-bottom: 2px">
-                  &copy; 2024 Remsana. All rights Reserved.
+                  &copy; 2024 Dimpified. All rights Reserved.
                 </p>
               </td>
             </tr>

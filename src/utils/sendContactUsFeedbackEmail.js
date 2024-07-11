@@ -3,8 +3,7 @@ const sendEmail = require("./sendEmail");
 
 
 const sendContactUsFeedbackEmail = async ({
-    //requestId,
-    username,
+    firstName,
     subject,
     //organizationName,
     email,
@@ -19,7 +18,7 @@ const sendContactUsFeedbackEmail = async ({
 
 <head>
     <meta charset="UTF-8" />
-    <title>{{Help Request Feedback}}</title>
+    <title>{{Contact Us Feedback}}</title>
     <style>
         @import url("https://fonts.googleapis.com/css?family=Nunito+Sans:400,700&display=swap");
 
@@ -83,7 +82,7 @@ const sendContactUsFeedbackEmail = async ({
                       line-height: 30px;
                     ">
                                     <p style="margin-bottom: 2px; color: #333; font-weight: 600">
-                                    <p>Hello ${username},</p>
+                                    <p>Hello ${firstName},</p>
                                     </p>
                                     <p style="margin-bottom: 2px; color: #333">
 
@@ -93,7 +92,7 @@ const sendContactUsFeedbackEmail = async ({
 
                                         <br />
 
-                                        <strong>Your Request Report:</strong>
+                                        <strong>Your Request:</strong>
                                         <br>
                                         ${reason}
                                     </p>
@@ -139,7 +138,7 @@ const sendContactUsFeedbackEmail = async ({
                   color: #7e8299;
                 ">
                             <p style="margin-bottom: 2px">
-                                Thank you for choosing Dinmpified.
+                                Thank you for choosing Dimpified.
                             </p>
                             <p style="margin-bottom: 2px">
                                 &copy; 2024 Dimpified. All rights Reserved.
