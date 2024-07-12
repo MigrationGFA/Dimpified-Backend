@@ -5,7 +5,7 @@ const router = express.Router()
 router.post("/create-resolution-request", createEcosystemUserResolution);
 router.get("/ecosystem-resolution-request", getEcosystemResolutionRequest)
 router.get("/my-resolution-request/:userId", getMyResolutionRequest)
-router.get("/creator-resolution-request/:creatorId", getCreatorResolutionRequest)
+router.get("/creator-resolution-request/:ecosystemDomain", getCreatorResolutionRequest)
 
 
 
