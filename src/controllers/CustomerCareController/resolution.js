@@ -9,14 +9,12 @@ const createEcosystemUserResolution = async (req, res) => {
             userId,
             reason,
             message,
-            creatorId,
             ecosystemDomain
         } = req.body;
         const details = [
             "userId",
             "reason",
             "message",
-            "creatorId",
             "ecosystemDomain"
         ]
         for (const detail of details) {
@@ -35,6 +33,7 @@ const createEcosystemUserResolution = async (req, res) => {
         if (!domainName) {
             return res.status(404).json({ message: "No Ecosystem with that domain name" })
         }
+        const creatorId = domainName.creatorId;
         // Submit a resolution request
         const submitResolutionRequest = await EcosystemResolution.create({
             userId,
@@ -93,37 +92,69 @@ const getEcosystemResolutionRequest = async (req, res) => {
     }
 };
 
+
 const getCreatorResolutionRequest = async (req, res) => {
     try {
+        const { ecosystemDomain } = req.params;
 
-        const creatorId = req.params.creatorId
+        if (!ecosystemDomain) {
+            return res.status(400).json({ error: "ecosystemDomain is required" });
+        }
 
-        if (!creatorId) {
-            return res.status(400).json({ error: "creatorId is required" });
-        };
+        // Fetch creatorId from the Ecosystem collection using ecosystemDomain
+        const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
+
+        if (!ecosystem) {
+            return res.status(404).json({ error: "Ecosystem not found" });
+        }
+
+        const creatorId = ecosystem.creatorId;
 
         const creatorResolutionRequests = await EcosystemResolution.findAll({
             where: {
                 creatorId: creatorId
             },
-
-            order: [["CreatedAt", "DESC"]],
-
+            order: [["createdAt", "DESC"]],
             include: [{ model: EcosystemUser, attributes: ["username", "email"] }]
         });
 
-        res.status(200).json({ creatorResolutionRequests })
+        res.status(200).json({ creatorResolutionRequests });
     } catch (error) {
         console.error("Error fetching creator resolution requests:", error);
-        res.status(500).json({ error: "Internal server error" })
+        res.status(500).json({ error: "Internal server error" });
     }
 };
+
 
 
 module.exports = { createEcosystemUserResolution, getEcosystemResolutionRequest, getMyResolutionRequest, getCreatorResolutionRequest }
 
 
+// const getCreatorResolutionRequest = async (req, res) => {
+//     try {
 
+//         const creatorId = req.params.creatorId
+
+//         if (!creatorId) {
+//             return res.status(400).json({ error: "creatorId is required" });
+//         };
+
+//         const creatorResolutionRequests = await EcosystemResolution.findAll({
+//             where: {
+//                 creatorId: creatorId
+//             },
+
+//             order: [["CreatedAt", "DESC"]],
+
+//             include: [{ model: EcosystemUser, attributes: ["username", "email"] }]
+//         });
+
+//         res.status(200).json({ creatorResolutionRequests })
+//     } catch (error) {
+//         console.error("Error fetching creator resolution requests:", error);
+//         res.status(500).json({ error: "Internal server error" })
+//     }
+// };
 
 
 
