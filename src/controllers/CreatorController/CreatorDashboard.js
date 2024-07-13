@@ -116,4 +116,38 @@ const usersPerEcosystem = async (req, res) => {
   }
 };
 
-module.exports = { popularEcosystems, allEcosystemUsers, usersPerEcosystem };
+
+const lastFourEcosystems = async (req, res) => {
+  try {
+    const creatorId = req.params.creatorId;
+
+    const lastcreated = await Ecosystem.find({ creatorId })
+      .sort({
+      createdAt: -1,
+    })
+      .limit(4);
+
+    if (lastcreated.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "User has no created ecosystems" });
+    }
+
+    const lastFourWithLogos = await Promise.all(
+      lastcreated.map(async (ecosystem) => {
+        const template = await Template.findOne({ ecosystemId: ecosystem._id });
+        return {
+          ...ecosystem.toObject(),
+          logo: template ? template.navbar.logo : null,
+        };
+      })
+    );
+
+    res.status(200).json({ lastFourWithLogos });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error", detail: error });
+  }
+};
+
+module.exports = { popularEcosystems, allEcosystemUsers, usersPerEcosystem, lastFourEcosystems };

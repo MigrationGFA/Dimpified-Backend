@@ -167,6 +167,7 @@ const loginCreator = async (req, res) => {
         userAgent,
         accessTokenExpiration,
         refreshTokenExpiration,
+        type: "Creator"
       });
     }
 
