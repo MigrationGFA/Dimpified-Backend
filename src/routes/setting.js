@@ -30,19 +30,11 @@ const upload = multer({
   },
 });
 
-//Get a social profile
-router.get("/get-social-profile/:userId", getSocial);
-
-// Update or create a Social profile
-router.post("/update-social", socialProfile);
-
-// Delete user Account
+// Ecosystem User Settings
+router.get("/get-ecosystemUser-social-profile/:userId", getSocial);
+router.post("/ecosystem-update-social", socialProfile);
 router.delete("/user/:userId", DeleteAccount);
-
-// Edit a User Profile
 router.put("/profile/:userId", upload.single("image"), updateProfile);
-
-// Get a User Profile
 router.get("/profile/:userId", getUserData);
 
 router.get("/all-users", getAllUsers);
