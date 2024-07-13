@@ -34,7 +34,7 @@ const upload = multer({
 router.get("/get-ecosystemUser-social-profile/:userId", getSocial);
 router.post("/ecosystem-update-social", socialProfile);
 router.delete("/user/:userId", DeleteAccount);
-router.put("/profile/:userId", upload.single("image"), updateProfile);
+router.put("/ecosystemUser-profile/:userId", upload.single("image"), updateProfile);
 router.get("/profile/:userId", getUserData);
 
 router.get("/all-users", getAllUsers);
