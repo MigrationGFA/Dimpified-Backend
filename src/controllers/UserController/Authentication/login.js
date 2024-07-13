@@ -64,14 +64,10 @@ const loginUser = async (req, res) => {
         userAgent,
         accessTokenExpiration,
         refreshTokenExpiration,
+        type: "Ecosystem-User"
       });
     }
 
-    // Determine if user has interests
-    const hasInterests = enduser.categoryInterest ? "yes" : "no";
-
-    // Assuming setProfile is determined by certain fields being non-null
-    let setProfile = enduser.username ? true : false;
 
     const userSubset = {
       UserId: enduser.id,
@@ -79,8 +75,6 @@ const loginUser = async (req, res) => {
       email: enduser.email,
       role: enduser.role,
       image: enduser.imageUrl,
-      interest: hasInterests,
-      profile: setProfile,
     };
 
     return res.status(200).json({
