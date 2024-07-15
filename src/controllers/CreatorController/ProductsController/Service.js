@@ -10,7 +10,7 @@ const createService = async (req, res) => {
       header,
       description,
       creatorId,
-      ecosystemId,
+      ecosystemDomain,
       format,
       currency,
       services,
@@ -21,7 +21,7 @@ const createService = async (req, res) => {
       "category",
       "subCategory",
       "creatorId",
-      "ecosystemId",
+      "ecosystemDomain",
       "description",
       "format",
       "services",
@@ -38,13 +38,12 @@ const createService = async (req, res) => {
       return res.status(400).json({ message: "Please onboard as a creator" });
     }
 
-    const ecosystem = await Ecosystem.findById(ecosystemId);
+    const ecosystem = await Ecosystem.findOne({ecosystemDomain});
     if (!ecosystem) {
       return res.status(400).json({ message: "Invalid ecosystem Id" });
     }
 
     let backgroundCover = [];
-    console.log("req.files:", req.files);
 
     if (req.files && req.files.length > 0) {
       backgroundCover = req.files.map((file) => {
@@ -61,7 +60,7 @@ const createService = async (req, res) => {
       header,
       description,
       creatorId,
-      ecosystemId,
+      ecosystemDomain,
       format,
       currency,
       services: parsedServices,
@@ -78,14 +77,9 @@ const createService = async (req, res) => {
 
 const getAllServices = async (req, res) => {
   try {
-    const ecosystemDomain = req.params.ecosystemDomain;
+     const ecosystemDomain = req.params.ecosystemDomain;
 
-    const ecosystem = await Ecosystem.findOne({ecosystemDomain: ecosystemDomain});
-    if (!ecosystem) {
-      return res.status(404).json({ message: "Invalid ecosystem name" });
-    }
-
-    const services = await Service.find({ ecosystemId: ecosystem._id }).sort(
+    const services = await Service.find({ ecosystemDomain }).sort(
       { createdAt: -1 });
 
     if (services.length === 0) {
@@ -103,7 +97,7 @@ const getAllServices = async (req, res) => {
 
 const getAService = async (req, res) => {
   try {
-    const { serviceId } = req.params;
+    const serviceId  = req.params.serviceId;
 
     const service = await Service.findOne({ _id: serviceId });
     if (!service) {
