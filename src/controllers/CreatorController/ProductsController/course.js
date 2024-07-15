@@ -42,6 +42,13 @@ const createCourse = async (req, res) => {
       }
     }
 
+     // Add the course to the ecosystem
+    const ecoId = new mongoose.Types.ObjectId(ecosystemId);
+    const ecosystem = await Ecosystem.findById(ecoId);
+    if (!ecosystem) {
+      return res.status(404).json({ message: "Ecosystem not found" });
+    }
+
     // Parsing JSON fields
     let curriculumData, requirementData, whatisIncludedData;
     curriculumData = JSON.parse(curriculum);
@@ -90,12 +97,7 @@ const createCourse = async (req, res) => {
       image: imageLink,
     });
 
-    // Add the course to the ecosystem
-    const ecoId = new mongoose.Types.ObjectId(ecosystemId);
-    const ecosystem = await Ecosystem.findById(ecoId);
-    if (!ecosystem) {
-      return res.status(404).json({ message: "Ecosystem not found" });
-    }
+   
     ecosystem.courses.push(course._id);
     await ecosystem.save();
 
@@ -128,13 +130,8 @@ const getEcosystemCourse = async (req, res) => {
     return res.status(404).json({ message: "Ecosystem domain is required" });
   }
   try {
-    const ecosystem = await Ecosystem.findOne({
-      ecosystemDomain: ecosystemDomain,
-    });
-    if (!ecosystem) {
-      return res.status(401).json({ message: "Ecosystem not found" });
-    }
-    const getAllCourse = await Course.find({ ecosystemId: ecosystem._id }).sort(
+
+    const getAllCourse = await Course.find({ ecosystemDomain: ecosystemDomain }).sort(
       { createdAt: -1 }
     );
     return res.status(200).json({ courses: getAllCourse });

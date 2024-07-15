@@ -24,8 +24,6 @@ const createTemplate = async (req, res) => {
       return res.status(404).json({ message: "Ecosystem not found" });
     }
 
-    console.log("I can see this part first");
-
     const templateData = {
       creatorId,
       ecosystemId,
