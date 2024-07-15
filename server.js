@@ -18,7 +18,7 @@ app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: false }));
 
 // build in middleware for json
-app.use(express.json({ limit: '20mb' }));
+app.use(express.json({ limit: "20mb" }));
 
 // Set the static folder for serving HTML, CSS, JS, etc.
 app.use(express.static(path.join(__dirname, "src")));
@@ -35,7 +35,10 @@ app.use("/api/v1/", require("./src/routes/templates"));
 app.use("/api/v1/", require("./src/routes/forms"));
 app.use("/api/v1/", require("./src/routes/developer"));
 app.use("/api/v1/", require("./src/routes/creatorDashboard"));
-app.use("/api/v1/", require("./src/routes/EcosystemConflictResolution.js"))
+app.use("/api/v1/", require("./src/routes/EcosystemConflictResolution.js"));
+app.use("/api/v1/", require("./src/routes/payment"));
+app.use("/api/v1/", require("./src/routes/setting"));
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

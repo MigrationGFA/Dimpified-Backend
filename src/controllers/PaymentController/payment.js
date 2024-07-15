@@ -1,15 +1,14 @@
 const https = require("https");
 const Transaction = require("../../models/Transaction");
-const UserSubscribtion = require("../../models/UserSubscribtion");
+const PurchasedItem = require("../../models/PurchasedItem");
 const Course = require("../../models/Course");
-const sendCoursePurchaseEmail = require("../../utils/sendCoursePurchase");
-const CreatorEarning = require("../../models/InstructorPaymentRecords");
+const Product = require("../../models/Product");
+const Service = require("../../models/Service");
+// const sendCoursePurchaseEmail = require("../../utils/sendCoursePurchase");
+const CreatorEarning = require("../../models/CreatorEarning");
 const Ecosystem = require("../../models/Ecosystem");
 const { sequelize } = require("../../config/dbConnect");
-const PaymentRequest = require("../../models/InstructorPaymentRequest");
-const User = require("../../models/Users");
-const sendInstructorWithdrawalEmail = require("../../utils/sendInstructorWithdrawalRequest");
-const Account = require("../../models/Account");
+const User = require("../../models/EcosystemUser");
 
 const verifyPayment = async (reference, provider) => {
   let options;
@@ -64,21 +63,29 @@ const verifyPayment = async (reference, provider) => {
   }
 };
 
-const VerifyCoursePayment = async (req, res) => {
+const VerifyPayment = async (req, res) => {
   try {
-    await UserSubscribtion.sync();
     await Transaction.sync();
     await CreatorEarning.sync();
+    await PurchasedItem.sync();
 
-    const { provider, reference, email, courseId, userId, ecosystemId } =
-      req.body;
+    const {
+      provider,
+      reference,
+      email,
+      itemId,
+      itemType,
+      userId,
+      ecosystemDomain,
+    } = req.body;
     const details = [
       "provider",
       "reference",
       "email",
-      "courseId",
+      "itemId",
+      "itemType",
       "userId",
-      "ecosystemId",
+      "ecosystemDomain",
     ];
 
     for (const detail of details) {
@@ -88,35 +95,67 @@ const VerifyCoursePayment = async (req, res) => {
     }
 
     const responseData = await verifyPayment(reference, provider);
-    console.log(responseData);
-
     if (!responseData || !responseData.data) {
       return res.status(400).json({
         message: "Payment verification failed, invalid response data",
       });
     }
 
-    const ecosystem = await Ecosystem.findById(ecosystemId).populate("courses");
-    if (!ecosystem) {
-      return res.status(404).json({ message: "Ecosystem not found" });
+    let item;
+    let amount;
+    let itemTitle;
+    let itemPrice;
+    let creatorId = null;
+
+    if (itemType === "Course") {
+      const ecosystem = await Ecosystem.findOne({
+        ecosystemDomain: ecosystemDomain,
+      }).populate("courses");
+      if (!ecosystem) {
+        return res.status(404).json({ message: "Ecosystem not found" });
+      }
+
+      item = ecosystem.courses.find(
+        (course) => course._id.toString() === itemId
+      );
+      if (!item) {
+        return res
+          .status(400)
+          .json({ message: "Course does not exist in this ecosystem" });
+      }
+
+      amount = parseInt(item.price, 10);
+      itemTitle = item.title;
+      itemPrice = item.price;
+      creatorId = item.creatorId;
+      await Course.findByIdAndUpdate(itemId, {
+        $inc: { totalNumberOfEnrolledStudent: 1 },
+      });
+    } else if (itemType === "Product") {
+      item = await Product.findById(itemId);
+      if (!item) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      amount = parseInt(item.price, 10);
+      itemTitle = item.title;
+      itemPrice = item.price;
+      creatorId = item.creatorId;
+    } else if (itemType === "Service") {
+      item = await Service.findById(itemId);
+      if (!item) {
+        return res.status(404).json({ message: "Service not found" });
+      }
+
+      amount = parseInt(item.price, 10);
+      itemTitle = item.title;
+      itemPrice = item.price;
+      creatorId = item.creatorId;
+    } else {
+      return res.status(400).json({ message: "Unsupported item type" });
     }
 
-    const getCourse = ecosystem.courses.find(
-      (course) => course._id.toString() === courseId
-    );
-    if (!getCourse) {
-      return res
-        .status(400)
-        .json({ message: `Course does not exist in this ecosystem` });
-    }
-
-    const amount = parseInt(getCourse.price, 10);
     const currency = responseData.data.currency;
-
-    console.log("Provider:", provider);
-    console.log("Response Status:", responseData.data.status);
-    console.log("Response Amount:", responseData.data.amount);
-    console.log("Course Amount:", amount);
 
     if (provider === "paystack") {
       const convertAmount = responseData.data.amount / 100;
@@ -136,85 +175,79 @@ const VerifyCoursePayment = async (req, res) => {
 
     const userTransaction = await Transaction.create({
       email,
-      courseId,
+      itemId,
+      itemType,
       amount: responseData.data.amount,
       paymentMethod:
         responseData.data.channel || responseData.data.payment_type,
       transactionDate: responseData.data.paid_at,
-      course_title: getCourse.title,
+      itemTitle,
       userId,
-      creatorId: getCourse.Agent.creatorId,
+      creatorId,
       status: responseData.data.status,
       currency,
     });
 
-    const subscription = await UserSubscription.create({
+    const purchasedItem = await PurchasedItem.create({
       userId,
-      courseId,
-      startDate: new Date(),
+      itemType,
+      itemId,
+      purchaseDate: new Date(),
     });
 
-    await Course.findByIdAndUpdate(courseId, {
-      $inc: { totalNumberOfEnrolledStudent: 1 },
-    });
+    if (itemType === "Course") {
+      await Ecosystem.updateOne(
+        { ecosystemDomain: ecosystemDomain },
+        { $inc: { users: 1 } }
+      );
+    }
 
-    await Ecosystem.findByIdAndUpdate(ecosystemId, {
-      $inc: { users: 1 },
-    });
-
-    const creatorId = getCourse.Agent.creatorId;
-    let creatorEarning = await CreatorEarning.findOne({
-      where: { userId: creatorId },
-    });
-
-    if (!creatorEarning) {
-      creatorEarning = await CreatorEarning.create({
-        userId: creatorId,
-        Naira: 0,
-        Dollar: 0,
-        Euros: 0,
-        Pounds: 0,
+    if (creatorId) {
+      let creatorEarning = await CreatorEarning.findOne({
+        where: { userId: creatorId },
       });
-    }
 
-    switch (currency) {
-      case "NGN":
-        creatorEarning.Naira += amount;
-        break;
-      case "USD":
-        creatorEarning.Dollar += amount;
-        break;
-      case "EUR":
-        creatorEarning.Euros += amount;
-        break;
-      case "GBP":
-        creatorEarning.Pounds += amount;
-        break;
-      default:
-        return res.status(400).json({ message: `Unsupported currency` });
-    }
+      if (!creatorEarning) {
+        creatorEarning = await CreatorEarning.create({
+          userId: creatorId,
+          Naira: 0,
+          Dollar: 0,
+        });
+      }
 
-    await creatorEarning.save();
+      switch (currency) {
+        case "NGN":
+          creatorEarning.Naira += amount;
+          break;
+        case "USD":
+          creatorEarning.Dollar += amount;
+          break;
+        default:
+          return res.status(400).json({ message: "Unsupported currency" });
+      }
+
+      await creatorEarning.save();
+    }
 
     const user = await User.findByPk(userId);
     if (!user) {
-      return res.status(400).json({ message: `User does not exist` });
+      return res.status(400).json({ message: "User does not exist" });
     }
 
-    await sendCoursePurchaseEmail({
-      username: user.username,
-      email: email,
-      title: getCourse.title,
-      price: getCourse.price,
-      category: getCourse.category,
-      hour: getCourse.hour,
-    });
+    // await sendCoursePurchaseEmail({
+    //   username: user.username,
+    //   email: email,
+    //   title: itemTitle,
+    //   price: itemPrice,
+    //   category: item.category,
+    //   hour: item.hour,
+    // });
 
     return res.status(201).json({
-      message: "Course Purchased Successfully",
+      message: "Item Purchased Successfully",
       responseData,
       userTransaction,
-      subscription,
+      purchasedItem,
       currency,
     });
   } catch (error) {
@@ -225,4 +258,4 @@ const VerifyCoursePayment = async (req, res) => {
   }
 };
 
-module.exports = VerifyCoursePayment;
+module.exports = VerifyPayment;

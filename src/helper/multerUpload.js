@@ -1,11 +1,10 @@
-const path = require('path');
-const fs = require('fs');
+const path = require("path");
+const fs = require("fs");
 const multer = require("multer");
-
 
 const storageCourse = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = path.join( 'uploads', 'Courses');
+    const uploadPath = path.join("uploads", "Courses");
 
     // Check if the directory structure exists. If not, create it recursively.
     fs.access(uploadPath, fs.constants.F_OK, (err) => {
@@ -18,12 +17,12 @@ const storageCourse = multer.diskStorage({
   filename: (req, file, cb) => {
     // Generate a unique filename to prevent conflicts
     cb(null, `${Date.now()}-${file.originalname}`);
-  }
+  },
 });
 
 const storageTemplate = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = path.join( 'uploads', 'template');
+    const uploadPath = path.join("uploads", "template");
 
     // Check if the directory structure exists. If not, create it recursively.
     fs.access(uploadPath, fs.constants.F_OK, (err) => {
@@ -36,12 +35,12 @@ const storageTemplate = multer.diskStorage({
   filename: (req, file, cb) => {
     // Generate a unique filename to prevent conflicts
     cb(null, `${Date.now()}-${file.originalname}`);
-  }
+  },
 });
 
 const storageForm = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = path.join( 'uploads', 'form');
+    const uploadPath = path.join("uploads", "form");
 
     // Check if the directory structure exists. If not, create it recursively.
     fs.access(uploadPath, fs.constants.F_OK, (err) => {
@@ -54,19 +53,37 @@ const storageForm = multer.diskStorage({
   filename: (req, file, cb) => {
     // Generate a unique filename to prevent conflicts
     cb(null, `${Date.now()}-${file.originalname}`);
-  }
+  },
 });
 
 const backgroundStorage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const uploadPath = path.join( 'uploads','background-cover');
-    
+    const uploadPath = path.join("uploads", "background-cover");
+
     fs.mkdirSync(uploadPath, { recursive: true });
     cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname);
-  }
+    cb(null, Date.now() + "-" + file.originalname);
+  },
 });
 
-module.exports = {storageCourse, storageTemplate, storageForm, backgroundStorage}
+const UserStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadPath = path.join("uploads", "UserImage");
+
+    fs.mkdirSync(uploadPath, { recursive: true });
+    cb(null, uploadPath);
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+module.exports = {
+  storageCourse,
+  storageTemplate,
+  storageForm,
+  backgroundStorage,
+  UserStorage,
+};
