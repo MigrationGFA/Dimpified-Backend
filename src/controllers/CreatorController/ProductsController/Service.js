@@ -40,7 +40,7 @@ const createService = async (req, res) => {
 
     const ecosystem = await Ecosystem.findOne({ecosystemDomain});
     if (!ecosystem) {
-      return res.status(400).json({ message: "Invalid ecosystem Id" });
+      return res.status(400).json({ message: "Invalid ecosystem domain name" });
     }
 
     let backgroundCover = [];

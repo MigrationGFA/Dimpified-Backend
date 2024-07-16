@@ -3,13 +3,14 @@ const { sequelize } = require("../config/dbConnect");
 const EcosystemUser = require("./EcosystemUser");
 
 const SocialProfile = sequelize.define(
-  "DimpifiedSocialProfile",
+  "EcosystemSocialProfile",
   {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
+    ecosystemDomain: { type: DataTypes.STRING, required: true },
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -40,7 +41,7 @@ const SocialProfile = sequelize.define(
     },
   },
   {
-    tableName: "DimpifiedSocialProfiles",
+    tableName: "EcosystemSocialProfile",
   }
 );
 

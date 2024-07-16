@@ -1,6 +1,7 @@
 const User = require("../../models/EcosystemUser");
 const path = require("path");
 const fs = require("fs");
+const { isValidFile } = require("../../helper/multerUpload");
 
 const updateProfile = async (req, res) => {
   try {
@@ -46,15 +47,15 @@ const updateProfile = async (req, res) => {
       }
     }
 
-    let imageLink = user.imageUrl;
-    if (req.file) {
-      const imagePath = path.join("uploads", req.file.filename);
-      if (user.imageUrl && fs.existsSync(user.imageUrl)) {
-        // Remove the old image if it exists
-        fs.unlinkSync(user.imageUrl);
+    let imageLink;
+
+     if (req.file) {
+        const newImage = req.file;
+        if (!isValidFile(newImage)) {
+          return res.status(400).json({ message: "Invalid image file" });
+        }
+        imageLink = `https://dimpified-backend-development.azurewebsites.net/${newImage.path}`;
       }
-      imageLink = imagePath; // Update image link
-    }
 
     await user.update({
       username,

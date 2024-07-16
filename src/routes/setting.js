@@ -14,19 +14,12 @@ const {
   getAllUsers,
 } = require("../controllers/SettingController/EditProfile");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
+
 
 const upload = multer({
   storage: UserStorage,
   limits: {
-    fileSize: 10 * 1024 * 1024,
+    fileSize: 104857600,
   },
 });
 
@@ -35,8 +28,7 @@ router.get("/get-ecosystemUser-social-profile/:userId", getSocial);
 router.post("/ecosystem-update-social", socialProfile);
 router.delete("/user/:userId", DeleteAccount);
 router.put("/ecosystemUser-profile/:userId", upload.single("image"), updateProfile);
-router.get("/profile/:userId", getUserData);
-
+router.get("/ecosystem-profile/:userId", getUserData);
 router.get("/all-users", getAllUsers);
 
 module.exports = router;
