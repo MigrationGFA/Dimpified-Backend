@@ -1,12 +1,11 @@
 const mongoose = require("mongoose");
 
-// const packageSchema = new mongoose.Schema({
-//   name: { type: String, required: true },
-//   shortDescription: { type: String, required: true },
-//   price: { type: Number, required: true },
-//   deliveryTime: { type: String, required: true },
-//   priceFormat: { type: String, required: true },
-// });
+const packageSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  fileType: [{ type: String, required: true }],
+  price: { type: Number, required: true },
+  downloadUrl: { type: String },
+});
 
 const digitalProductSchema = new mongoose.Schema(
   {
@@ -17,12 +16,10 @@ const digitalProductSchema = new mongoose.Schema(
     description: { type: String, required: true },
     creatorId: { type: String, required: true },
     ecosystemDomain: { type: String, required: true },
-    fileType: [{ type: String, required: true }],
     backgroundCover: [{ type: String, required: true }],
     likes: { type: Number, default: 0 },
-    downloadUrl: { type: String },
     currency: { type: String, required: true },
-    price: { type: Number, required: true },
+    package: [packageSchema],
   },
   {
     timestamps: true,

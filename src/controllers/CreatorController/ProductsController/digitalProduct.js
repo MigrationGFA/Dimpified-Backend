@@ -12,10 +12,8 @@ const createDigitalProduct = async (req, res) => {
       description,
       creatorId,
       ecosystemDomain,
-      fileType,
-      downloadUrl,
       currency,
-      price,
+      package,
     } = req.body;
 
     const details = [
@@ -26,9 +24,8 @@ const createDigitalProduct = async (req, res) => {
       "description",
       "productName",
       "productType",
-      "fileType",
-      "price",
       "currency",
+      "package",
     ];
     for (const detail of details) {
       if (!req.body[detail]) {
@@ -55,6 +52,8 @@ const createDigitalProduct = async (req, res) => {
       });
     }
 
+const parsedPackages = JSON.parse(package)
+
     const digitalProduct = new DigitalProduct({
       category,
       subCategory,
@@ -64,10 +63,8 @@ const createDigitalProduct = async (req, res) => {
       creatorId,
       ecosystemDomain,
       backgroundCover,
-      fileType,
-      downloadUrl: downloadUrl ? downloadUrl : "",
       currency,
-      price,
+      package:parsedPackages
     });
 
     await digitalProduct.save();
