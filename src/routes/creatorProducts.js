@@ -12,6 +12,7 @@ const {
   getAllServices,
   getAService,
 } = require("../controllers/CreatorController/ProductsController/Service");
+const { createDigitalProduct, getAllDigitalProducts, getADigitalProduct } = require("../controllers/CreatorController/ProductsController/digitalProduct");
 
 const upload = multer({
   storage: storageCourse,
@@ -40,6 +41,10 @@ router.post(
 router.get("/get-all-services/:ecosystemDomain", getAllServices);
 router.get("/get-a-service/:serviceId", getAService);
 
+// digital product endpoints
+router.post("/create-digital-product",  backgroundUpload.array("backgroundCover"),createDigitalProduct)
+router.get("/get-all-digital-products/:creatorId", getAllDigitalProducts);
+router.get("/digital-product/:digitalProductId", getADigitalProduct);
 
 // creator overview dashboard
 
