@@ -17,7 +17,7 @@ const ecosystemServiceSchema = new mongoose.Schema(
     header: { type: String, required: true },
     description: { type: String, required: true },
     creatorId: { type: String, required: true },
-    ecosystemId: { type: String, required: true },
+    ecosystemDomain: { type: String, required: true },
     backgroundCover: [{ type: String, required: true }],
     likes: { type: Number, default: 0 },
     format: { type: String, required: true },
