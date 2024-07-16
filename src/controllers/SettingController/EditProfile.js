@@ -53,7 +53,7 @@ const updateProfile = async (req, res) => {
         // Remove the old image if it exists
         fs.unlinkSync(user.imageUrl);
       }
-      imageLink = imagePath; // Update image link
+      imageLink = `https://dimpified-backend-development.azurewebsites.net/${imagePath}`; // Update image link
     }
 
     await user.update({
