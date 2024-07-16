@@ -10,16 +10,17 @@ const {
 const loginUser = async (req, res) => {
   try {
     await Token.sync();
-    const { email, password } = req.body;
+    const { email, password, domainName } = req.body;
 
-    const details = ["password", "email"];
+    const details = ["password", "email", "domainName"];
+
     for (const detail of details) {
       if (!req.body[detail]) {
         return res.status(400).json({ message: `${detail} is required` });
       }
     }
 
-    const enduser = await EcosystemUser.findOne({ where: { email: email } });
+    const enduser = await EcosystemUser.findOne({ where: { email: email, ecosystemDomain: domainName  } });
     if (!enduser) {
       return res.status(404).json({ message: "Invalid email credential" });
     }
