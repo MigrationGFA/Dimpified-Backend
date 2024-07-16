@@ -100,21 +100,20 @@ const getUserData = async (req, res) => {
       return res.status(400).json({ message: "User ID is required" });
     }
 
-    const user = await User.findByPk(userId);
+    const userDetails = await User.findByPk(userId, { attributes: { 
+        exclude: [
+          'password', 
+          'passwordToken', 
+          'passwordTokenExpirationDate', 
+          'verificationToken',
+          "createdAt",
+          "updatedAt"
+        ]
+      }});
 
-    if (!user) {
+    if (!userDetails) {
       return res.status(404).json({ message: "User does not exist" });
     }
-
-    const userDetails = {
-      ecosystemDomain: user.ecosystemDomain,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      city: user.city,
-      country: user.country,
-      zipcode: user.zipcode,
-      image: user.imageUrl,
-    };
 
     return res.status(200).json({ userDetails });
   } catch (error) {
