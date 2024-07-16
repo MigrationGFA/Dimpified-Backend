@@ -1,0 +1,118 @@
+const Creator = require("../../../models/Creator");
+const DigitalProduct = require("../../../models/DigitalProduct");
+const Ecosystem = require("../../../models/Ecosystem");
+
+const createDigitalProduct = async (req, res) => {
+  try {
+    const {
+      category,
+      subCategory,
+      productName,
+      productType,
+      description,
+      creatorId,
+      ecosystemDomain,
+      currency,
+      package,
+    } = req.body;
+
+    const details = [
+      "category",
+      "subCategory",
+      "creatorId",
+      "ecosystemDomain",
+      "description",
+      "productName",
+      "productType",
+      "currency",
+      "package",
+    ];
+    for (const detail of details) {
+      if (!req.body[detail]) {
+        return res.status(400).json({ msg: `${detail} is required` });
+      }
+    }
+
+    const creator = await Creator.findByPk(creatorId);
+    if (!creator) {
+      return res.status(400).json({ message: "Please onboard as a creator" });
+    }
+
+    const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
+    if (!ecosystem) {
+      return res.status(400).json({ message: "Invalid ecosystem Domain" });
+    }
+
+    let backgroundCover = [];
+    // console.log("req.files:", req.files);
+
+    if (req.files && req.files.length > 0) {
+      backgroundCover = req.files.map((file) => {
+        return `https://dimpified-backend-development.azurewebsites.net/uploads/background-cover/${file.filename}`;
+      });
+    }
+
+const parsedPackages = JSON.parse(package)
+
+    const digitalProduct = new DigitalProduct({
+      category,
+      subCategory,
+      productName,
+      productType,
+      description,
+      creatorId,
+      ecosystemDomain,
+      backgroundCover,
+      currency,
+      package:parsedPackages
+    });
+
+    await digitalProduct.save();
+    res
+      .status(200)
+      .json({ message: "Digital Product created succesfully", digitalProduct });
+  } catch (error) {
+    console.log("error:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const getADigitalProduct = async (req, res) => {
+  try {
+    const digitalProductId = req.params.digitalProductId;
+
+    const digitalProduct = await DigitalProduct.findById(digitalProductId);
+    if (!digitalProduct) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.status(200).json({ digitalProduct });
+  } catch (error) {
+    console.log("error:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const getAllDigitalProducts = async (req, res) => {
+  try {
+    const creatorId = req.params.creatorId;
+
+    const digitalProducts = await DigitalProduct.find({ creatorId }).sort({
+      createdAt: -1,
+    });
+    if (digitalProducts.length == 0) {
+      return res.status(404).json({ message: "You have no didgital products" });
+    }
+
+    res.status(200).json({ digitalProducts });
+  } catch (error) {
+    console.log("error:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = {
+  createDigitalProduct,
+  getADigitalProduct,
+  getAllDigitalProducts,
+};

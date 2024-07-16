@@ -3,16 +3,15 @@ const EcosystemUser = require("../../models/EcosystemUser");
 
 const socialProfile = async (req, res) => {
   try {
-    await EcosystemUser.sync();
     await SocialProfile.sync();
 
-    const { userId, twitter, youtube, instagram, facebook, LinkedIn } =
+    const { userId, twitter, youtube, instagram, facebook, LinkedIn, ecosystemDomain } =
       req.body;
 
-    if (!(twitter || youtube || instagram || facebook || LinkedIn)) {
+    if (!(twitter || youtube || instagram || facebook || LinkedIn, ecosystemDomain)) {
       return res
         .status(400)
-        .json({ message: "At least one social profile is required" });
+        .json({ message: "Social Profile information not complete" });
     }
 
     const userExist = await EcosystemUser.findOne({
@@ -39,6 +38,7 @@ const socialProfile = async (req, res) => {
           instagram,
           facebook,
           LinkedIn,
+          ecosystemDomain
         },
         {
           where: {
@@ -48,7 +48,7 @@ const socialProfile = async (req, res) => {
       );
       return res.status(200).json({
         message: "Social profile updated successfully",
-        data: updatedSocialProfile,
+        
       });
     } else {
       const newSocialProfile = await SocialProfile.create({
@@ -58,6 +58,7 @@ const socialProfile = async (req, res) => {
         instagram,
         facebook,
         LinkedIn,
+        ecosystemDomain
       });
       return res.status(201).json({
         message: "Social profile created successfully",
