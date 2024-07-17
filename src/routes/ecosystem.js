@@ -14,7 +14,7 @@ const {
 const multer = require("multer");
 const { createEcoCertificate, updateEcoCertificate } = require("../controllers/EcosystemController/ecosystemCertificate");
 const generateUserCertificate = require("../controllers/EcosystemController/enduserCertificate");
-const { getAllEcosystemData, getAllEcosystemStudent } = require("../controllers/EcosystemController/ecosystemDashboard");
+const { getAllEcosystemProduct, getAllEcosystemStudent } = require("../controllers/EcosystemController/ecosystemDashboard");
 
 
 // Set up multer for handling multipart/form-data
@@ -70,8 +70,8 @@ router.get("/creator/my-dashboard-overview/:creatorId", creatorEcosystemDashboar
 router.get("/creator/my-ecosystem/:creatorId", creatorEcosystemSummary);
 
 //get ecosystem dashboard data
-router.get("/ecosystem-dashboard/:ecosystemId", getAllEcosystemData);
-router.get("/ecosystem-students/:ecosystemId", getAllEcosystemStudent)
+router.get("/ecosystem-dashboard/:ecosystemDomain", getAllEcosystemProduct);
+router.get("/ecosystem-students/:ecosystemDomain", getAllEcosystemStudent)
 
 
 module.exports = router;
