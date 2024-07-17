@@ -48,7 +48,7 @@ const socialProfile = async (req, res) => {
       );
       return res.status(200).json({
         message: "Social profile updated successfully",
-        
+
       });
     } else {
       const newSocialProfile = await SocialProfile.create({
@@ -97,6 +97,8 @@ const getSocial = async (req, res) => {
       .json({ message: "Internal Server Error", detail: error });
   }
 };
+
+
 
 module.exports = {
   socialProfile,
