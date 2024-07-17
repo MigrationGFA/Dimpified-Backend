@@ -3,25 +3,25 @@ const Ecosystem = require("../../models/Ecosystem");
 const EcosystemUser = require("../../models/EcosystemUser");
 const Service = require("../../models/Service");
 
-const getAllEcosystemData = async (req, res) => {
-    const ecosystemId = req.params.ecosystemId
+const getAllEcosystemProduct = async (req, res) => {
+    const ecosystemDomain = req.params.ecosystemDomain
 
     try {
-        const ecosystemData = await Ecosystem.findOne({ _id: ecosystemId, })
+        const ecosystemProduct = await Ecosystem.findOne({ ecosystemDomain })
 
 
-        if (!ecosystemData) {
+        if (!ecosystemProduct) {
             return res.status(404).json({ message: "Ecosystem not found" })
         }
 
-        const courses = await Course.find({ ecosystemId }).sort({ createdAt: -1 });
+        const courses = await Course.find({ ecosystemDomain }).sort({ createdAt: -1 });
 
-        const services = await Service.find({ ecosystemId }).sort({ createdAt: -1 });
+        const services = await Service.find({ ecosystemDomain }).sort({ createdAt: -1 });
 
 
         res.json({
-            ecosystem: ecosystemData.ecosystemName,
-            domain: ecosystemData.ecosystemDomain,
+            ecosystem: ecosystemProduct.ecosystemName,
+            domain: ecosystemProduct.ecosystemDomain,
             courses,
             services
         });
@@ -33,12 +33,12 @@ const getAllEcosystemData = async (req, res) => {
 };
 
 const getAllEcosystemStudent = async (req, res) => {
-    const ecosystemId = req.params.ecosystemId
-    const { ecosystemDomain } = req.body;
-    try {
-        const ecosystemData = await Ecosystem.findOne({ _id: ecosystemId })
+    const ecosystemDomain = req.params.ecosystemDomain
 
-        if (!ecosystemData) {
+    try {
+        const ecosystemStudent = await Ecosystem.findOne({ ecosystemDomain })
+
+        if (!ecosystemStudent) {
             return res.status(404).json({ message: "Ecosystem not found" })
         }
 
@@ -56,5 +56,5 @@ const getAllEcosystemStudent = async (req, res) => {
 
 }
 
-module.exports = { getAllEcosystemData, getAllEcosystemStudent }
+module.exports = { getAllEcosystemProduct, getAllEcosystemStudent }
 
