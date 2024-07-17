@@ -187,7 +187,7 @@ const updateCreator = async (req, res) => {
       return res.status(404).json({ error: "Creator not found" })
     };
 
-    await Creator.update(updateData);
+    await creator.update(updateData);
     return res.status(200).json({ message: "Creator updated successfully" });
 
   } catch (error) {
