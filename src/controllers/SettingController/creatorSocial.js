@@ -13,7 +13,6 @@ const createCreatorSocialProfile = async (req, res) => {
             instagram,
             facebook,
             LinkedIn,
-            ecosystemDomain
         } = req.body
 
         if (!(twitter || youtube || instagram || facebook || LinkedIn)) {
@@ -44,7 +43,6 @@ const createCreatorSocialProfile = async (req, res) => {
                     instagram,
                     facebook,
                     LinkedIn,
-                    ecosystemDomain
                 },
                 {
                     where: {
@@ -61,7 +59,7 @@ const createCreatorSocialProfile = async (req, res) => {
                 instagram,
                 facebook,
                 LinkedIn,
-                ecosystemDomain
+
             });
             return res.status(201).json({ message: "Social created successfully", data: Social })
         }
