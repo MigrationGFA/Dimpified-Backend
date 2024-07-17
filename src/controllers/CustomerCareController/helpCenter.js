@@ -114,26 +114,68 @@ const helpRequestCompleted = async (req, res) => {
     }
 };
 
+const getAnEcosystemUserHelpRequest = async (req, res) => {
+    try {
+        const { userId, ecosystemDomain } = req.params
+
+        if (!(userId || ecosystemDomain)) {
+            return res.status(404).json({ message: "Ecosystem domain and userId needed" })
+        }
+        const ecosystemUserHelpRequest = await HelpCenter.findAll({
+            where: {
+                userId: userId,
+                ecosystemDomain: ecosystemDomain
+
+            },
+            order: [["createdAt", "DESC"]],
+        })
+        res.status(200).json({ ecosystemUserHelpRequest })
+    } catch (error) {
+        console.error("Error fetching ecosystem user help requests:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
 const getHelpRequestByEcosystem = async (req, res) => {
     try {
-        const ecosystemId = req.params.ecosystemId;
+        const ecosystemDomain = req.params.ecosystemDomain;
 
-        if (!ecosystemId) {
-            return res.status(400).json({ message: "Missing Ecosystem ID" });
+        if (!ecosystemDomain) {
+            return res.status(400).json({ message: "Missing Ecosystem domain" });
         }
-
         const helpRequestByEcosystem = await HelpCenter.findAll({
             where: {
-                ecosystemId: ecosystemId,
+                ecosystemDomain: ecosystemDomain,
             },
             order: [["createdAt", "DESC"]],
         })
         res.status(200).json({ helpRequestByEcosystem })
     } catch (error) {
-        console.error("Error fetching ecosystems:", error);
+        console.error("Error fetching ecosystem help requests:", error);
         res.status(500).json({ error: "Internal server error" });
     }
-}
+};
+
+const getCreatorHelpRequest = async (req, res) => {
+    try {
+        const creatorId = req.params.creatorId;
+
+        if (!creatorId) {
+            return res.status(400).json({ message: "Missing Creator ID" });
+        };
+        const creatorHelpRequest = await HelpCenter.findAll({
+            where: {
+                creatorId: creatorId
+            }
+        });
+        res.status(200).json({ creatorHelpRequest });
+
+    } catch (error) {
+        console.error("Error fetching creator help requests:", error);
+        res.status(500).json({ error: "Internal server error" });
+    };
+};
+
 
 const sendFeedback = async (req, res) => {
     try {
@@ -189,5 +231,7 @@ module.exports = {
     getAllHelpRequest,
     helpRequestCompleted,
     getHelpRequestByEcosystem,
-    sendFeedback
+    sendFeedback,
+    getCreatorHelpRequest,
+    getAnEcosystemUserHelpRequest
 }
