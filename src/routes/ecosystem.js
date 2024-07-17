@@ -69,8 +69,8 @@ router.get("/creator/my-dashboard-overview/:creatorId", creatorEcosystemDashboar
 // to get he creator ecosystem summary
 router.get("/creator/my-ecosystem/:creatorId", creatorEcosystemSummary);
 
-//get ecosystem dashboard data
-router.get("/ecosystem-dashboard/:ecosystemDomain", getAllEcosystemProduct);
+//get ecosystem dashboard
+router.get("/ecosystem-products/:ecosystemDomain", getAllEcosystemProduct);
 router.get("/ecosystem-students/:ecosystemDomain", getAllEcosystemStudent)
 
 
