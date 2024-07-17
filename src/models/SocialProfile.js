@@ -1,8 +1,6 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/dbConnect");
 const EcosystemUser = require("./EcosystemUser");
-const Creator = require("./Creator");
-
 
 const SocialProfile = sequelize.define(
   "EcosystemSocialProfile",
@@ -15,17 +13,9 @@ const SocialProfile = sequelize.define(
     ecosystemDomain: { type: DataTypes.STRING, required: true },
     userId: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: false,
       references: {
         model: EcosystemUser,
-        key: "id",
-      },
-    },
-    creatorId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: Creator,
         key: "id",
       },
     },
@@ -56,7 +46,5 @@ const SocialProfile = sequelize.define(
 );
 
 SocialProfile.belongsTo(EcosystemUser, { foreignKey: "userId" });
-SocialProfile.belongsTo(Creator, { foreignKey: "creatorId", targetKey: "id" });
-
 
 module.exports = SocialProfile;
