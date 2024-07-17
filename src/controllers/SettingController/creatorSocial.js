@@ -1,17 +1,19 @@
 const Creator = require("../../models/Creator");
-const SocialProfile = require("../../models/SocialProfile");
+const CreatorSocialProfile = require("../../models/CreatorSocialProfile");
 
 
-const createSocialProfile = async (req, res) => {
+
+const createCreatorSocialProfile = async (req, res) => {
     try {
-        await SocialProfile.sync();
+        await CreatorSocialProfile.sync();
         const {
-            creatorId,
+            userId,
             twitter,
             youtube,
             instagram,
             facebook,
-            LinkedIn
+            LinkedIn,
+            ecosystemDomain
         } = req.body
 
         if (!(twitter || youtube || instagram || facebook || LinkedIn)) {
@@ -21,7 +23,7 @@ const createSocialProfile = async (req, res) => {
         //check if creator exist in the database.
         const creator = await Creator.findOne({
             where: {
-                id: creatorId
+                id: userId
             }
         })
         if (!creator) {
@@ -29,35 +31,37 @@ const createSocialProfile = async (req, res) => {
         }
 
         //check if the creator has uploaded their social profile
-        const creatorSocialProfile = await SocialProfile.findOne({
+        const creatorSocialProfile = await CreatorSocialProfile.findOne({
             where: {
-                creatorId: creatorId
+                userId: userId
             }
         })
         if (creatorSocialProfile) {
-            const updatedSocialProfile = await SocialProfile.update(
+            const updatedSocialProfile = await CreatorSocialProfile.update(
                 {
                     twitter,
                     youtube,
                     instagram,
                     facebook,
-                    LinkedIn
+                    LinkedIn,
+                    ecosystemDomain
                 },
                 {
                     where: {
-                        creatorId: creatorId
+                        userId: userId
                     }
                 }
             );
             return res.status(200).json({ message: "Social Updated Successfully", data: updatedSocialProfile })
         } else {
-            const Social = await SocialProfile.create({
-                creatorId,
+            const Social = await CreatorSocialProfile.create({
+                userId,
                 twitter,
                 youtube,
                 instagram,
                 facebook,
-                LinkedIn
+                LinkedIn,
+                ecosystemDomain
             });
             return res.status(201).json({ message: "Social created successfully", data: Social })
         }
@@ -70,14 +74,14 @@ const createSocialProfile = async (req, res) => {
 
 const getCreatorSocialProfile = async (req, res) => {
     try {
-        const creatorId = req.params.creatorId;
-        if (!creatorId) {
-            return res.status(400).json({ message: `creatorId id is required` });
+        const userId = req.params.userId;
+        if (!userId) {
+            return res.status(400).json({ message: `userId id is required` });
         };
 
-        const creator = await SocialProfile.findOne({
+        const creator = await CreatorSocialProfile.findOne({
             where: {
-                creatorId: creatorId,
+                userId: userId,
             },
         });
         if (creator) {
@@ -94,4 +98,4 @@ const getCreatorSocialProfile = async (req, res) => {
     };
 };
 
-module.exports = { createSocialProfile, getCreatorSocialProfile }
+module.exports = { createCreatorSocialProfile, getCreatorSocialProfile }
