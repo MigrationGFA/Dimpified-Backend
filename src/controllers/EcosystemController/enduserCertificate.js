@@ -75,7 +75,7 @@ const generateUserCertificate = async (req, res) => {
 
         await sendUserCertificate({ recipientName, recipientEmail, pdfBuffer });
 
-        await sendUserCertificate({ recipientName, recipientEmail, pdfBuffer });
+        //await sendUserCertificate({ recipientName, recipientEmail, pdfBuffer });
         res.status(201).json({ userCertificate })
     } catch (error) {
         console.error('Error generating certificate:', error);

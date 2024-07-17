@@ -1,6 +1,7 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/dbConnect");
 const EcosystemUser = require("./EcosystemUser");
+const Creator = require("./Creator")
 
 const EcosystemResolution = sequelize.define('EcosystemResolution', {
     id: {
@@ -26,10 +27,14 @@ const EcosystemResolution = sequelize.define('EcosystemResolution', {
             notEmpty: true,
         },
     },
-    // ecosystemId: {
-    //     type: DataTypes.INTEGER,
-    //     allowNull: true,
-    // },
+    creatorId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+    },
+    ecosystemDomain: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
     status: {
         type: DataTypes.ENUM("pending", "completed"),
         allowNull: false,
@@ -42,5 +47,6 @@ const EcosystemResolution = sequelize.define('EcosystemResolution', {
     }
 );
 EcosystemResolution.belongsTo(EcosystemUser, { foreignKey: "userId", targetKey: "id" });
+EcosystemResolution.belongsTo(Creator, { foreignKey: "userId", targetKey: "id" });
 
 module.exports = EcosystemResolution
