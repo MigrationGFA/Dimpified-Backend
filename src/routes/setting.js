@@ -13,7 +13,7 @@ const {
   getUserData,
   getAllUsers,
 } = require("../controllers/SettingController/EditProfile");
-const { createSocialProfile, getCreatorSocialProfile } = require("../controllers/SettingController/creatorSocial");
+const { createCreatorSocialProfile, getCreatorSocialProfile } = require("../controllers/SettingController/creatorSocial");
 
 
 
@@ -34,8 +34,8 @@ router.get("/all-users", getAllUsers);
 
 
 //creator socials handle
-router.post("/add-creator-social-profile", createSocialProfile);
-router.get("/get-creator-social-profile/:creatorId", getCreatorSocialProfile)
+router.post("/add-creator-social-profile", createCreatorSocialProfile);
+router.get("/get-creator-social-profile/:userId", getCreatorSocialProfile)
 
 
 module.exports = router;

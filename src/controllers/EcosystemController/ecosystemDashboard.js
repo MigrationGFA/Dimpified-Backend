@@ -34,8 +34,9 @@ const getAllEcosystemData = async (req, res) => {
 
 const getAllEcosystemStudent = async (req, res) => {
     const ecosystemId = req.params.ecosystemId
+    const { ecosystemDomain } = req.body;
     try {
-        const ecosystemData = await Ecosystem.findOne({ _id: ecosystemId, ecosystemDomain: domain })
+        const ecosystemData = await Ecosystem.findOne({ _id: ecosystemId })
 
         if (!ecosystemData) {
             return res.status(404).json({ message: "Ecosystem not found" })
@@ -43,7 +44,7 @@ const getAllEcosystemStudent = async (req, res) => {
 
         const ecosystemUser = await EcosystemUser.findAll({
             where: {
-                ecosystemDomain: domain
+                ecosystemDomain: ecosystemDomain
             },
             order: [["createdAt", "DESC"]],
         })
