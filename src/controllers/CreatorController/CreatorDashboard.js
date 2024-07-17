@@ -1,3 +1,4 @@
+const Creator = require("../../models/Creator");
 const Ecosystem = require("../../models/Ecosystem");
 const EcosystemUser = require("../../models/EcosystemUser");
 const Template = require("../../models/Templates");
@@ -88,7 +89,7 @@ const usersPerEcosystem = async (req, res) => {
     const isEcosystemCreator = ecosystems.find(
       (ecosystem) => ecosystem._id.toString() === ecosystemId.toString()
     );
- 
+
     if (!isEcosystemCreator) {
       return res
         .status(400)
@@ -123,8 +124,8 @@ const lastFourEcosystems = async (req, res) => {
 
     const lastcreated = await Ecosystem.find({ creatorId })
       .sort({
-      createdAt: -1,
-    })
+        createdAt: -1,
+      })
       .limit(4);
 
     if (lastcreated.length === 0) {
@@ -150,4 +151,50 @@ const lastFourEcosystems = async (req, res) => {
   }
 };
 
-module.exports = { popularEcosystems, allEcosystemUsers, usersPerEcosystem, lastFourEcosystems };
+
+
+
+
+//get creatorById
+
+const getCreatorById = async (req, res) => {
+
+  const id = req.params.id;
+  try {
+
+    const creator = await Creator.findByPk(id);
+    if (!creator) {
+      return res.status(404).json({ error: "Creator not found" })
+    };
+
+    res.status(200).json({ creator })
+
+  } catch (error) {
+    console.error("Error fetching creator: ", error);
+    return res
+      .status(500)
+      .json({ message: "Internal Server Error", detail: error });
+  }
+};
+
+const updateCreator = async (req, res) => {
+  const id = req.params.id
+  const updateData = req.body
+
+  try {
+    const creator = await Creator.findByPk(id);
+    if (!creator) {
+      return res.status(404).json({ error: "Creator not found" })
+    };
+
+    await Creator.update(updateData);
+    return res.status(200).json({ message: "Creator updated successfully" });
+
+  } catch (error) {
+    console.error("Error updating creator:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+
+}
+
+module.exports = { popularEcosystems, allEcosystemUsers, usersPerEcosystem, lastFourEcosystems, getCreatorById, updateCreator };

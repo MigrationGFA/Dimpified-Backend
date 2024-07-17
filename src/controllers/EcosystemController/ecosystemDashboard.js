@@ -5,9 +5,9 @@ const Service = require("../../models/Service");
 
 const getAllEcosystemData = async (req, res) => {
     const ecosystemId = req.params.ecosystemId
-    const { domain } = req.query;
+
     try {
-        const ecosystemData = await Ecosystem.findOne({ _id: ecosystemId, ecosystemDomain: domain })
+        const ecosystemData = await Ecosystem.findOne({ _id: ecosystemId, })
 
 
         if (!ecosystemData) {
@@ -34,7 +34,6 @@ const getAllEcosystemData = async (req, res) => {
 
 const getAllEcosystemStudent = async (req, res) => {
     const ecosystemId = req.params.ecosystemId
-    const { domain } = req.query;
     try {
         const ecosystemData = await Ecosystem.findOne({ _id: ecosystemId, ecosystemDomain: domain })
 
