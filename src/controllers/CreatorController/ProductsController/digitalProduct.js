@@ -81,6 +81,10 @@ const getADigitalProduct = async (req, res) => {
   try {
     const digitalProductId = req.params.digitalProductId;
 
+    if (!digitalProductId) {
+      return res.status(404).json({ message: "Product id is required" });
+    }
+
     const digitalProduct = await DigitalProduct.findById(digitalProductId);
     if (!digitalProduct) {
       return res.status(404).json({ message: "Product not found" });
@@ -96,6 +100,9 @@ const getADigitalProduct = async (req, res) => {
 const getAllDigitalProducts = async (req, res) => {
   try {
     const creatorId = req.params.creatorId;
+     if (!creatorId) {
+      return res.status(404).json({ message: "creatorId is required" });
+    }
 
     const digitalProducts = await DigitalProduct.find({ creatorId }).sort({
       createdAt: -1,
@@ -111,8 +118,27 @@ const getAllDigitalProducts = async (req, res) => {
   }
 };
 
+const getAllEcosystemDigitalProducts = async (req, res) => {
+  try {
+    const ecosystemDomain = req.params.ecosystemDomain;
+
+     if (!ecosystemDomain) {
+      return res.status(404).json({ message: "ecosystemDomain is required" });
+    }
+
+    const ecosystemDigitalProducts = await DigitalProduct.find({ ecosystemDomain }).sort({
+      createdAt: -1,
+    });
+    res.status(200).json({ ecosystemDigitalProducts });
+  } catch (error) {
+    console.log("error:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createDigitalProduct,
   getADigitalProduct,
   getAllDigitalProducts,
+  getAllEcosystemDigitalProducts
 };

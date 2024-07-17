@@ -57,6 +57,8 @@ const userHelpCenter = async (req, res) => {
     }
 };
 
+
+
 const getAllHelpRequest = async (req, res) => {
     try {
         const allhelpRequest = await HelpCenter.findAll({
