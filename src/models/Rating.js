@@ -16,6 +16,10 @@ const Rating = sequelize.define("Rating", {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
+    ecosystemDomain: {
+        type: String,
+        required: true,
+    },
     rating: {
         type: DataTypes.INTEGER,
         allowNull: false,
