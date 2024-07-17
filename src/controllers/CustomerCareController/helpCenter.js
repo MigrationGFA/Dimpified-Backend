@@ -1,6 +1,8 @@
 const Creator = require("../../models/Creator");
+const Ecosystem = require("../../models/Ecosystem");
 const EndUser = require("../../models/EcosystemUser");
 const HelpCenter = require("../../models/HelpCenter");
+
 const sendHelpRequestFeedback = require("../../utils/sendHelpRequestFeedback");
 
 
@@ -14,15 +16,13 @@ const userHelpCenter = async (req, res) => {
             userId,
             reason,
             message,
-            creatorId,
-            ecosystemId,
+            ecosystemDomain
         } = req.body;
         const details = [
             "userId",
             "reason",
             "message",
-            "creatorId",
-            "ecosystemId",
+            "ecosystemDomain",
         ]
         for (const detail of details) {
             if (!req.body[detail]) {
@@ -33,12 +33,18 @@ const userHelpCenter = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found" })
         }
+
+        const domainName = await Ecosystem.findOne({ ecosystemDomain })
+        if (!domainName) {
+            return res.status(404).json({ message: "No Ecosystem with that domain name" })
+        }
+        const creatorId = domainName.creatorId;
         const createHelpRequest = await HelpCenter.create({
             userId,
             reason,
             message,
             creatorId,
-            ecosystemId,
+            ecosystemDomain,
         });
         return res.status(201).json({
             message: " Your Support Request has been received",
