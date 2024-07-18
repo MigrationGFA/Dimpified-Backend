@@ -4,7 +4,6 @@ const PurchasedItem = require("../../models/PurchasedItem");
 const Course = require("../../models/Course");
 const Product = require("../../models/Product");
 const Service = require("../../models/Service");
-// const sendCoursePurchaseEmail = require("../../utils/sendCoursePurchase");
 const CreatorEarning = require("../../models/CreatorEarning");
 const Ecosystem = require("../../models/Ecosystem");
 const { sequelize } = require("../../config/dbConnect");
@@ -154,6 +153,8 @@ const VerifyPayment = async (req, res) => {
     } else {
       return res.status(400).json({ message: "Unsupported item type" });
     }
+
+    
 
     const currency = responseData.data.currency;
 
