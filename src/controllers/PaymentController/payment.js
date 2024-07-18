@@ -461,12 +461,12 @@ const VerifyPayment = async (req, res) => {
 
     if (creatorId) {
       let creatorEarning = await CreatorEarning.findOne({
-        where: { userId: creatorId },
+        where: { creatorId: creatorId },
       });
 
       if (!creatorEarning) {
         creatorEarning = await CreatorEarning.create({
-          userId: creatorId,
+          creatorId,
           Naira: 0,
           Dollar: 0,
         });
@@ -484,6 +484,7 @@ const VerifyPayment = async (req, res) => {
       }
 
       await creatorEarning.save();
+      console.log(creatorEarning);
     }
 
     const user = await User.findByPk(userId);
