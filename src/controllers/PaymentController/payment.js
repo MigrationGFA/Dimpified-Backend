@@ -392,7 +392,6 @@ const VerifyPayment = async (req, res) => {
       return res.status(400).json({ message: "Unsupported item type" });
     }
 
-
     const userTransaction = await Transaction.create({
       email,
       itemId,
@@ -413,7 +412,6 @@ const VerifyPayment = async (req, res) => {
         message: "Payment verification failed, invalid response data",
       });
     }
-
 
     const currency = responseData.data.currency;
     let verifiedAmount;
@@ -462,12 +460,12 @@ const VerifyPayment = async (req, res) => {
 
     if (creatorId) {
       let creatorEarning = await CreatorEarning.findOne({
-        where: { userId: creatorId },
+        where: { creatorId: creatorId },
       });
 
       if (!creatorEarning) {
         creatorEarning = await CreatorEarning.create({
-          userId: creatorId,
+          creatorId,
           Naira: 0,
           Dollar: 0,
         });
@@ -515,7 +513,5 @@ const VerifyPayment = async (req, res) => {
       .json({ message: "An error occurred during payment verification" });
   }
 };
-
-module.exports = VerifyPayment;
 
 module.exports = VerifyPayment;
