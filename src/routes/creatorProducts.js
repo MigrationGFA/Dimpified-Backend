@@ -49,7 +49,6 @@ router.get("/get-a-service/:serviceId", getAService);
 router.post("/create-digital-product",  backgroundUpload.array("backgroundCover"),createDigitalProduct)
 router.get("/get-all-digital-products/:creatorId", getAllDigitalProducts);
 router.get("/get-all-ecosystem-digital-products/:ecosystemDomain", getAllEcosystemDigitalProducts);
-
 router.get("/digital-product/:digitalProductId", getADigitalProduct);
 
 // creator overview dashboard
