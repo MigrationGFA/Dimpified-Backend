@@ -56,7 +56,6 @@ const userHelpCenter = async (req, res) => {
         return res.status(500).json({ message: 'Internal Server Error', detail: error })
     }
 };
-
 const getAllHelpRequest = async (req, res) => {
     try {
         const allhelpRequest = await HelpCenter.findAll({
