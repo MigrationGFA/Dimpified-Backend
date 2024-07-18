@@ -16,6 +16,10 @@ const PurchasedItem = sequelize.define("PurchasedItem", {
       key: "id",
     },
   },
+  ecosystemDomain: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   itemType: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -24,6 +28,14 @@ const PurchasedItem = sequelize.define("PurchasedItem", {
     },
   },
   itemId: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  itemAmount: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  currency: {
     type: DataTypes.STRING,
     allowNull: false,
   },
