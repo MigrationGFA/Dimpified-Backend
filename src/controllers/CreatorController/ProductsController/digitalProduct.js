@@ -13,6 +13,7 @@ const createDigitalProduct = async (req, res) => {
       creatorId,
       ecosystemDomain,
       currency,
+      author,
       package,
     } = req.body;
 
@@ -25,6 +26,7 @@ const createDigitalProduct = async (req, res) => {
       "productName",
       "productType",
       "currency",
+      "author",
       "package",
     ];
     for (const detail of details) {
@@ -60,6 +62,7 @@ const parsedPackages = JSON.parse(package)
       productName,
       productType,
       description,
+      author,
       creatorId,
       ecosystemDomain,
       backgroundCover,
