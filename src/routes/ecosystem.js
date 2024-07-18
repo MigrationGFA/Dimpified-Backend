@@ -20,7 +20,8 @@ const {
   getAllEcosystemProduct,
   getAllEcosystemStudent,
   getOrders,
-  getRevenue,
+  ecosystemDashboard,
+
 } = require("../controllers/EcosystemController/ecosystemDashboard");
 
 // Set up multer for handling multipart/form-data
@@ -83,6 +84,6 @@ router.get("/creator/my-ecosystem/:creatorId", creatorEcosystemSummary);
 router.get("/ecosystem-products/:ecosystemDomain", getAllEcosystemProduct);
 router.get("/ecosystem-students/:ecosystemDomain", getAllEcosystemStudent);
 router.get("/ecosystem-orders/:ecosystemDomain", getOrders);
-router.get("/ecosystem-dashboard/:ecosystemDomain", getRevenue);
+router.get("/ecosystem-dashboard/:ecosystemDomain", ecosystemDashboard);
 
 module.exports = router;

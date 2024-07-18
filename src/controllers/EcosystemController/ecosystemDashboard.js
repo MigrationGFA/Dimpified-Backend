@@ -6,6 +6,8 @@ const Product = require("../../models/DigitalProduct");
 const Creator = require("../../models/Creator");
 const Transaction = require("../../models/Transaction");
 const { Sequelize, Op } = require("sequelize");
+const CreatorEarning = require("../../models/CreatorEarning");
+const { sequelize } = require("../../config/dbConnect");
 
 const getAllEcosystemProduct = async (req, res) => {
   try {
@@ -64,7 +66,7 @@ const getAllEcosystemStudent = async (req, res) => {
   }
 };
 
-const getRevenue = async (req, res) => {
+const ecosystemDashboard = async (req, res) => {
   const ecosystemDomain = req.params.ecosystemDomain;
 
   try {
@@ -74,10 +76,18 @@ const getRevenue = async (req, res) => {
     }
 
     const creatorId = ecosystem.creatorId;
-    const creator = await Creator.findByPk(creatorId);
-    if (!creator) {
-      return res.status(400).json({ message: "Creator not found" });
-    }
+    const creatorEarnings = await CreatorEarning.findAll({
+      where: {
+        creatorId,
+      },
+    });
+
+    let totalNaira = 0;
+    let totalDollar = 0;
+    creatorEarnings.forEach((earning) => {
+      totalNaira += parseFloat(earning.Naira);
+      totalDollar += parseFloat(earning.Dollar);
+    });
 
     let courses = await Course.find({ ecosystemId: ecosystem._id });
 
@@ -92,8 +102,11 @@ const getRevenue = async (req, res) => {
     const totalCourses = { total: courses.length };
     const totalServices = { total: services.length };
     const totalProducts = { total: products.length };
+    const totalEarnings = { totalNaira, totalDollar };
 
-    res.status(200).json({ totalCourses, totalProducts, totalServices });
+    res
+      .status(200)
+      .json({ totalCourses, totalProducts, totalServices, totalEarnings });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -154,5 +167,5 @@ module.exports = {
   getAllEcosystemProduct,
   getAllEcosystemStudent,
   getOrders,
-  getRevenue,
+  ecosystemDashboard,
 };
