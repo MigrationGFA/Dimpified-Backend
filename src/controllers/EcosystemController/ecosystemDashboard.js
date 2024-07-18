@@ -2,11 +2,15 @@ const Course = require("../../models/Course");
 const Ecosystem = require("../../models/Ecosystem");
 const EcosystemUser = require("../../models/EcosystemUser");
 const Service = require("../../models/Service");
+const Product = require("../../models/DigitalProduct")
 
 const getAllEcosystemProduct = async (req, res) => {
-    const ecosystemDomain = req.params.ecosystemDomain
-
+    
     try {
+        const ecosystemDomain = req.params.ecosystemDomain
+        if (!ecosystemDomain) {
+            return res.status(404).json({ message: "ecosystemDomain not found" })
+        }
         const ecosystemProduct = await Ecosystem.findOne({ ecosystemDomain })
 
 
@@ -14,16 +18,15 @@ const getAllEcosystemProduct = async (req, res) => {
             return res.status(404).json({ message: "Ecosystem not found" })
         }
 
-        const courses = await Course.find({ ecosystemDomain }).sort({ createdAt: -1 });
+        const courses = await Course.find({ ecosystemId: ecosystemProduct._id  }).sort({ createdAt: -1 });
 
         const services = await Service.find({ ecosystemDomain }).sort({ createdAt: -1 });
-
+        const products = await Product.find({ ecosystemDomain }).sort({ createdAt: -1 });
 
         res.json({
-            ecosystem: ecosystemProduct.ecosystemName,
-            domain: ecosystemProduct.ecosystemDomain,
             courses,
-            services
+            services,
+            products
         });
     } catch (error) {
         console.error(error);

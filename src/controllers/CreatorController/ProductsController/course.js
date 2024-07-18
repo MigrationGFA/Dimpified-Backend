@@ -131,7 +131,12 @@ const getEcosystemCourse = async (req, res) => {
   }
   try {
 
-    const getAllCourse = await Course.find({ ecosystemDomain: ecosystemDomain }).sort(
+    const getEcosystem = await Ecosystem.findOne({ ecosystemDomain: ecosystemDomain })
+     if (!getEcosystem) {
+    return res.status(404).json({ message: "Ecosystem does not exist" });
+  }
+
+    const getAllCourse = await Course.find({ ecosystemId: getEcosystem._id }).sort(
       { createdAt: -1 }
     );
     return res.status(200).json({ courses: getAllCourse });

@@ -13,6 +13,8 @@ const {
   getAllHelpRequest,
   helpRequestCompleted,
   getHelpRequestByEcosystem,
+  getCreatorHelpRequest,
+  getAnEcosystemUserHelpRequest,
   sendFeedback } = require("../controllers/CustomerCareController/helpCenter");
 const { creatorSupport,
   getAllSupportRequest,
@@ -31,7 +33,9 @@ router.post("/send-contact-us-feedback", sendContactUsFeedback)
 router.post('/enduser-help-requests', userHelpCenter);
 router.get('/all-enduser-help-requests', getAllHelpRequest);
 router.put("/help-center/completed/:requestId", helpRequestCompleted);
-router.get("/help-request-by-ecosystem/:ecosystemId", getHelpRequestByEcosystem);
+router.get("/help-request-by-ecosystem/:ecosystemDomain", getHelpRequestByEcosystem);
+router.get("/get-creator-help-request/:creatorId", getCreatorHelpRequest);
+router.get("/get-ecoysytem-user-help-request/:userId/:ecosystemDomain", getAnEcosystemUserHelpRequest);
 router.post("/help-request-feedback", sendFeedback);
 
 //Creator Support routes
