@@ -88,9 +88,6 @@ const sendCourseCreationEmail = async ({
                       />
                     </a>
                   </div>
-                  <!--end:Logo-->
-
-                  <!--begin:Text-->
                   <div
                     style="
                       font-size: 15px;
