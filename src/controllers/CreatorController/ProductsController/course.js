@@ -111,6 +111,7 @@ const createCourse = async (req, res) => {
         price: course.price,
         category: course.category,
         hour: course.hour,
+        ecosystemName: ecosystem.ecosystemName
       });
       return res
         .status(201)

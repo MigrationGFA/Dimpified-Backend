@@ -7,6 +7,7 @@ const sendCourseCreationEmail = async ({
   price,
   category,
   hour,
+  ecosystemName
 }) => {
   const message = `<!DOCTYPE html>
 <html lang="en">
