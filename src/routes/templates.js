@@ -7,14 +7,13 @@ const {
   getAnEcosystemTemplate,
 } = require("../controllers/EcosystemController/createTemplate");
 const multer = require("multer");
-const path = require("path");
 
 
 
 const upload = multer({
   storage: storageTemplate,
   limits: {
-    fileSize: 10 * 1024 * 1024,
+    fileSize: 104857600,
   },
 });
 
