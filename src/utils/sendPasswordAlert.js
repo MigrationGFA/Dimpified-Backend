@@ -127,7 +127,6 @@ const sendResetPasswordAlert = async ({ username, email, origin }) => {
           you did not initiate this process, please contact our  <a href="${resetURL}"><span>support</span></a></p> team in
           order to help you get you account back
         </p>
-
         <p class="last">Best regards,</p>
         <p>The <span>Dimpified</span> Team.</p>
       </section>
@@ -200,7 +199,6 @@ const sendResetPasswordAlert = async ({ username, email, origin }) => {
   </body>
 </html>
 </p>`;
-
   return sendEmail({
     to: email,
     subject: "Dimpified Reset Password",
