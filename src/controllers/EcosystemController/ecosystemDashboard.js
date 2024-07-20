@@ -8,6 +8,8 @@ const Transaction = require("../../models/Transaction");
 const { Sequelize, Op } = require("sequelize");
 const CreatorEarning = require("../../models/CreatorEarning");
 const { sequelize } = require("../../config/dbConnect");
+const PurchasedItem = require("../../models/PurchasedItem");
+const DigitalProduct = require("../../models/DigitalProduct");
 
 const getAllEcosystemProduct = async (req, res) => {
   try {
@@ -76,7 +78,7 @@ const ecosystemDashboard = async (req, res) => {
     }
 
     const creatorId = ecosystem.creatorId;
-    const creatorEarnings = await CreatorEarning.findAll({
+    const transactions = await Transaction.findAll({
       where: {
         creatorId,
       },
@@ -84,48 +86,79 @@ const ecosystemDashboard = async (req, res) => {
 
     let totalNaira = 0;
     let totalDollar = 0;
-    creatorEarnings.forEach((earning) => {
-      totalNaira += parseFloat(earning.Naira);
-      totalDollar += parseFloat(earning.Dollar);
+    transactions.forEach((transaction) => {
+      if (transaction.currency === "NGN") {
+        totalNaira += parseFloat(transaction.amount);
+      } else if (transaction.currency === "USD") {
+        totalDollar += parseFloat(transaction.amount);
+      }
     });
 
+    const startOfMonth = new Date(
+      new Date().getFullYear(),
+      new Date().getMonth(),
+      1
+    );
+
     let courses = await Course.find({ ecosystemId: ecosystem._id });
+    let coursesThisMonth = await Course.find({
+      ecosystemId: ecosystem._id,
+      createdAt: { $gte: startOfMonth },
+    });
 
     let services = await Service.find({
       ecosystemDomain: ecosystem.ecosystemDomain,
+    });
+    let servicesThisMonth = await Service.find({
+      ecosystemDomain: ecosystem.ecosystemDomain,
+      createdAt: { $gte: startOfMonth },
     });
 
     let products = await Product.find({
       ecosystemDomain: ecosystem.ecosystemDomain,
     });
+    let productsThisMonth = await Product.find({
+      ecosystemDomain: ecosystem.ecosystemDomain,
+      createdAt: { $gte: startOfMonth },
+    });
 
-    const totalCourses = { total: courses.length };
-    const totalServices = { total: services.length };
-    const totalProducts = { total: products.length };
+    const transactionsThisMonth = await Transaction.findAll({
+      where: {
+        creatorId,
+        transactionDate: { [Op.gte]: startOfMonth },
+      },
+    });
+
+    let totalNairaThisMonth = 0;
+    let totalDollarThisMonth = 0;
+    transactionsThisMonth.forEach((transaction) => {
+      if (transaction.currency === "NGN") {
+        totalNairaThisMonth += parseFloat(transaction.amount);
+      } else if (transaction.currency === "USD") {
+        totalDollarThisMonth += parseFloat(transaction.amount);
+      }
+    });
+
+    const totalEarningsThisMonth = {
+      totalNaira: totalNairaThisMonth,
+      totalDollar: totalDollarThisMonth,
+    };
+    const totalCourses = {
+      total: courses.length,
+      thisMonth: coursesThisMonth.length,
+    };
+    const totalServices = {
+      total: services.length,
+      thisMonth: servicesThisMonth.length,
+    };
+    const totalProducts = {
+      total: products.length,
+      thisMonth: productsThisMonth.length,
+    };
     const totalEarnings = { totalNaira, totalDollar };
 
-    res
-      .status(200)
-      .json({ totalCourses, totalProducts, totalServices, totalEarnings });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-const getOrders = async (req, res) => {
-  const { ecosystemDomain } = req.params;
-
-  try {
-    const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
-    if (!ecosystem) {
-      return res.status(400).json({ message: "Ecosystem not found" });
-    }
-
-    const creatorId = ecosystem.creatorId;
-
-    const transactions = await Transaction.findAll({
-      where: { creatorId },
+    const productOrder = await PurchasedItem.findAll({
+      where: { ecosystemDomain },
       attributes: {
         include: [[Sequelize.fn("MONTH", Sequelize.col("createdAt")), "month"]],
       },
@@ -149,14 +182,93 @@ const getOrders = async (req, res) => {
     ];
 
     const result = months.reduce((acc, month, index) => {
-      const monthTransactions = transactions.filter(
+      const monthTransactions = productOrder.filter(
         (transaction) => transaction.month === index + 1
       );
-      acc[month] = monthTransactions;
+      acc[month] = monthTransactions.length;
       return acc;
     }, {});
 
-    res.status(200).json(result);
+    res.status(200).json({
+      totalCourses,
+      totalProducts,
+      totalServices,
+      totalEarnings,
+      totalEarningsThisMonth,
+      productOrder: result,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+const getOrders = async (req, res) => {
+  const { ecosystemDomain } = req.params;
+
+  try {
+    const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
+    if (!ecosystem) {
+      return res.status(400).json({ message: "Ecosystem not found" });
+    }
+
+    const transactions = await PurchasedItem.findAll({
+      where: { ecosystemDomain },
+      attributes: ["itemId", "itemAmount", "purchaseDate", "itemType"],
+      order: [["purchaseDate", "DESC"]],
+    });
+
+    const servicesPromises = transactions
+      .filter((transaction) => transaction.itemType === "Service")
+      .map(async (transaction) => {
+        const service = await Service.findById(transaction.itemId).select(
+          "header"
+        );
+        return {
+          itemId: transaction.itemId,
+          itemAmount: transaction.itemAmount,
+          purchaseDate: transaction.purchaseDate,
+          name: service ? service.header : "Unknown",
+        };
+      });
+
+    const productsPromises = transactions
+      .filter((transaction) => transaction.itemType === "Product")
+      .map(async (transaction) => {
+        const product = await DigitalProduct.findById(
+          transaction.itemId
+        ).select("productName");
+        return {
+          itemId: transaction.itemId,
+          itemAmount: transaction.itemAmount,
+          purchaseDate: transaction.purchaseDate,
+          name: product ? product.productName : "Unknown",
+        };
+      });
+
+    const coursesPromises = transactions
+      .filter((transaction) => transaction.itemType === "Course")
+      .map(async (transaction) => {
+        const course = await Course.findById(transaction.itemId).select(
+          "title"
+        );
+        return {
+          itemId: transaction.itemId,
+          itemAmount: transaction.itemAmount,
+          purchaseDate: transaction.purchaseDate,
+          name: course ? course.title : "Unknown",
+        };
+      });
+
+    const services = await Promise.all(servicesPromises);
+    const products = await Promise.all(productsPromises);
+    const courses = await Promise.all(coursesPromises);
+
+    res.status(200).json({
+      services,
+      products,
+      courses,
+    });
   } catch (error) {
     console.error("Error fetching orders data:", error);
     res.status(500).json({ message: "Failed to fetch orders" });
