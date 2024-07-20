@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/dbConnect");
-const User = require("../models/EcosystemUser");
+const Creator = require("../models/Creator");
 
 const CreatorEarning = sequelize.define(
   "CreatorEarning",
@@ -10,7 +10,7 @@ const CreatorEarning = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    userId: {
+    creatorId: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
@@ -31,6 +31,6 @@ const CreatorEarning = sequelize.define(
   }
 );
 
-CreatorEarning.belongsTo(User, { foreignKey: "userId", targetKey: "id" });
+CreatorEarning.belongsTo(Creator, { foreignKey: "creatorId", targetKey: "id" });
 
 module.exports = CreatorEarning;

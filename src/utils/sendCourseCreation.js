@@ -7,6 +7,7 @@ const sendCourseCreationEmail = async ({
   price,
   category,
   hour,
+  ecosystemName
 }) => {
   const message = `<!DOCTYPE html>
 <html lang="en">
@@ -81,15 +82,12 @@ const sendCourseCreationEmail = async ({
                   <div style="text-align: center; margin-bottom: 40px">
                     <a rel="noopener">
                       <img
-                        alt="Remsana Logo"
+                        alt="Dimpified Logo"
                         src="./images/remsana-logo.png"
                         style="height: 60px"
                       />
                     </a>
                   </div>
-                  <!--end:Logo-->
-
-                  <!--begin:Text-->
                   <div
                     style="
                       font-size: 15px;
@@ -105,7 +103,7 @@ const sendCourseCreationEmail = async ({
                     </p>
                     <p style="margin-bottom: 2px; color: #333">
                       We are delighted to inform you that your course creation
-                      on Remsana platform was successful!
+                      on  ${ecosystemName} Ecosystem was successful!
                     </p>
                     <p style="margin-bottom: 2px; color: #333">
                       Here are the details of your course:
@@ -158,7 +156,7 @@ const sendCourseCreationEmail = async ({
                 "
               >
                 <p style="margin-bottom: 2px">
-                  Thank you for choosing Dimpifed as your e-learning platform.
+                  Thank you for choosing Dimpifed as your Ecosystem platform.
                 </p>
                 <p style="margin-bottom: 2px">
                   &copy; 2024 Dimpified. All rights Reserved.
