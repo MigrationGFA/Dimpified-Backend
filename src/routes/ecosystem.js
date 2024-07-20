@@ -21,6 +21,7 @@ const {
   getAllEcosystemStudent,
   getOrders,
   ecosystemDashboard,
+  getProductOrder,
 
 } = require("../controllers/EcosystemController/ecosystemDashboard");
 
@@ -85,5 +86,6 @@ router.get("/ecosystem-products/:ecosystemDomain", getAllEcosystemProduct);
 router.get("/ecosystem-students/:ecosystemDomain", getAllEcosystemStudent);
 router.get("/ecosystem-orders/:ecosystemDomain", getOrders);
 router.get("/ecosystem-dashboard/:ecosystemDomain", ecosystemDashboard);
+router.get("/ecosystem-product-orders/:ecosystemDomain", getProductOrder);
 
 module.exports = router;
