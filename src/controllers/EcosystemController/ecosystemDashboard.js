@@ -122,27 +122,6 @@ const ecosystemDashboard = async (req, res) => {
       createdAt: { $gte: startOfMonth },
     });
 
-    const transactionsThisMonth = await Transaction.findAll({
-      where: {
-        creatorId,
-        transactionDate: { [Op.gte]: startOfMonth },
-      },
-    });
-
-    let totalNairaThisMonth = 0;
-    let totalDollarThisMonth = 0;
-    transactionsThisMonth.forEach((transaction) => {
-      if (transaction.currency === "NGN") {
-        totalNairaThisMonth += parseFloat(transaction.amount);
-      } else if (transaction.currency === "USD") {
-        totalDollarThisMonth += parseFloat(transaction.amount);
-      }
-    });
-
-    const totalEarningsThisMonth = {
-      totalNaira: totalNairaThisMonth,
-      totalDollar: totalDollarThisMonth,
-    };
     const totalCourses = {
       total: courses.length,
       thisMonth: coursesThisMonth.length,
@@ -157,6 +136,22 @@ const ecosystemDashboard = async (req, res) => {
     };
     const totalEarnings = { totalNaira, totalDollar };
 
+    res.status(200).json({
+      totalCourses,
+      totalProducts,
+      totalServices,
+      totalEarnings,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+const getProductOrder = async (req, res) => {
+  const ecosystemDomain = req.params.ecosystemDomain;
+
+  try {
     const productOrder = await PurchasedItem.findAll({
       where: { ecosystemDomain },
       attributes: {
@@ -190,11 +185,6 @@ const ecosystemDashboard = async (req, res) => {
     }, {});
 
     res.status(200).json({
-      totalCourses,
-      totalProducts,
-      totalServices,
-      totalEarnings,
-      totalEarningsThisMonth,
       productOrder: result,
     });
   } catch (error) {
@@ -221,42 +211,36 @@ const getOrders = async (req, res) => {
     const servicesPromises = transactions
       .filter((transaction) => transaction.itemType === "Service")
       .map(async (transaction) => {
-        const service = await Service.findById(transaction.itemId).select(
-          "header"
-        );
+        const service = await Service.findById(transaction.itemId);
         return {
           itemId: transaction.itemId,
           itemAmount: transaction.itemAmount,
           purchaseDate: transaction.purchaseDate,
-          name: service ? service.header : "Unknown",
+          service,
         };
       });
 
     const productsPromises = transactions
       .filter((transaction) => transaction.itemType === "Product")
       .map(async (transaction) => {
-        const product = await DigitalProduct.findById(
-          transaction.itemId
-        ).select("productName");
+        const product = await DigitalProduct.findById(transaction.itemId);
         return {
           itemId: transaction.itemId,
           itemAmount: transaction.itemAmount,
           purchaseDate: transaction.purchaseDate,
-          name: product ? product.productName : "Unknown",
+          product,
         };
       });
 
     const coursesPromises = transactions
       .filter((transaction) => transaction.itemType === "Course")
       .map(async (transaction) => {
-        const course = await Course.findById(transaction.itemId).select(
-          "title"
-        );
+        const course = await Course.findById(transaction.itemId);
         return {
           itemId: transaction.itemId,
           itemAmount: transaction.itemAmount,
           purchaseDate: transaction.purchaseDate,
-          name: course ? course.title : "Unknown",
+          course,
         };
       });
 
@@ -280,4 +264,5 @@ module.exports = {
   getAllEcosystemStudent,
   getOrders,
   ecosystemDashboard,
+  getProductOrder,
 };
