@@ -21,6 +21,7 @@ const {
   getAllEcosystemStudent,
   getOrders,
   ecosystemDashboard,
+  getProductOrder,
 
 } = require("../controllers/EcosystemController/ecosystemDashboard");
 const { getEcosystemUserDashboardData, getTotalPurchasedProductsPerMonth } = require("../controllers/UserController/Dashboard/EcosystemUserDashboard");
@@ -86,6 +87,7 @@ router.get("/ecosystem-products/:ecosystemDomain", getAllEcosystemProduct);
 router.get("/ecosystem-students/:ecosystemDomain", getAllEcosystemStudent);
 router.get("/ecosystem-orders/:ecosystemDomain", getOrders);
 router.get("/ecosystem-dashboard/:ecosystemDomain", ecosystemDashboard);
+router.get("/ecosystem-product-orders/:ecosystemDomain", getProductOrder);
 
 
 //Ecosystem User Dashboard
