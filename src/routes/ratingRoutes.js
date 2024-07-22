@@ -10,6 +10,7 @@ const {
   suggestFeatures,
   getAllFeatures,
   getACreatorFeature,
+  featureDashboard,
 } = require("../controllers/CustomerCareController/feature");
 const {
   createReviews,
@@ -25,6 +26,7 @@ router.get("/get-reviews-by-creator/:creatorId", getReviewsByCreator);
 router.post("/creator-suggest-feature", suggestFeatures);
 router.get("/all-creator-feature-suggestion", getAllFeatures);
 router.get("/get-a-creator-feature/:creatorId", getACreatorFeature);
+router.get("/creator/feature-dashboard/:creatorId", featureDashboard);
 
 // Ecosystem reviews
 router.post("/ecosystem/create-reviews", createReviews);
