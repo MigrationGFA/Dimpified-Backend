@@ -3,7 +3,8 @@ const Creator = require("../../models/Creator");
 const dimpifiedCourse = require("../../models/Course");
 const Template = require("../../models/Templates");
 const CreatorSupport = require("../../models/Support");
-
+const PurchasedItem = require("../../models/PurchasedItem");
+const { Op } = require("sequelize");
 
 const aboutEcosystem = async (req, res) => {
   const {
@@ -132,8 +133,6 @@ const allEcosystemCourses = async (req, res) => {
   }
 };
 
-
-
 const getMyEcosystem = async (req, res) => {
   try {
     const userId = req.params.userId;
@@ -175,6 +174,7 @@ const creatorEcosystemDashboardOverview = async (req, res) => {
   }
 
   try {
+    // Total ecosystems created by the creator
     const totalEcosystems = await Ecosystem.countDocuments({
       creatorId: creatorId,
     });
@@ -191,10 +191,25 @@ const creatorEcosystemDashboardOverview = async (req, res) => {
       where: { creatorId: creatorId },
     });
 
+    // Get ecosystem domains created by the creator
+    const ecosystemDomains = ecosystems.map((e) => e.ecosystemDomain);
+
+    // Total paid users
+    const totalPaidUsers = await PurchasedItem.count({
+      distinct: true,
+      col: "userId",
+      where: {
+        ecosystemDomain: {
+          [Op.in]: ecosystemDomains,
+        },
+      },
+    });
+
     res.status(200).json({
       totalEcosystems,
       totalUsers,
       totalSupportRequests,
+      totalPaidUsers,
     });
   } catch (error) {
     console.error("Error retrieving summary information:", error);
@@ -224,11 +239,17 @@ const creatorEcosystemSummary = async (req, res) => {
       creatorId: creatorId,
       status: "live",
     });
+    const ecosystems = await Ecosystem.find({ creatorId: creatorId });
+    const totalUsers = ecosystems.reduce(
+      (acc, ecosystem) => acc + (ecosystem.users || 0),
+      0
+    );
 
     res.status(200).json({
       totalLive,
       totalPrivate,
       totalDrafts,
+      totalUsers,
     });
   } catch (error) {
     console.error("Error retrieving ecosystem summary:", error);
@@ -240,7 +261,6 @@ module.exports = {
   aboutEcosystem,
   ecosystemDelete,
   allEcosystemCourses,
-  
   getMyEcosystem,
   creatorEcosystemDashboardOverview,
   creatorEcosystemSummary,
