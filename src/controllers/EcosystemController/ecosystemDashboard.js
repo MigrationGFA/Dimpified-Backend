@@ -361,7 +361,15 @@ const getEcosystemUsersStats = async (req, res) => {
       },
     });
 
-    res.status(200).json({ totalUsers, verifiedUsers, usersThisMonth });
+    const totalAmountPaid = await PurchasedItem.sum("itemAmount", {
+      where: {
+        ecosystemDomain: {
+          [Op.in]: ecosystemDomains,
+        },
+      },
+    });
+
+    res.status(200).json({ totalUsers, verifiedUsers, usersThisMonth, totalAmountPaid });
   } catch (error) {
     console.error("Error fetching user data:", error);
     res.status(500).json({ message: "Failed to fetch user data" });
