@@ -124,7 +124,15 @@ const productPayOut = async (req, res) => {
 
         const payOutItems = await Promise.all(productPayOutItemsPromises);
 
-        res.status(200).json(payOutItems);
+        const services = payOutItems.filter(item => item.itemType === 'Service');
+        const products = payOutItems.filter(item => item.itemType === 'Product');
+        const courses = payOutItems.filter(item => item.itemType === 'Course');
+
+        res.status(200).json({
+            services,
+            products,
+            courses
+        });
     } catch (error) {
         console.error("Error fetching and payout items:", error);
         res.status(500).json({ message: "Failed to fetch and payout items" });
