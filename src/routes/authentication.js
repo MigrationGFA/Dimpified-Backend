@@ -17,6 +17,15 @@ const creatorRegister = require("../controllers/CreatorController/Authentication
 const creatorResetPassword = require("../controllers/CreatorController/Authentication/resetPassword");
 const onBoarding = require("../controllers/CreatorController/Authentication/onBoarding");
 
+const {
+  developerSignup,
+  developerLogin,
+  verifyEmailDeveloper,
+  developerLogOut,
+  forgotPasswordDeveloper,
+  resetPasswordDeveloper,
+} = require("../controllers/DeveloperController/registration");
+
 // Ecosystem user endpoints
 router.post("/ecosystem-user/register", Register);
 router.post("/ecosystem-user/verify-email", verifyEmail);
@@ -35,5 +44,13 @@ router.post("/creator/resend-email", creatorResendEmail);
 router.post("/creator/verify-email", creatorVerifyEmail);
 router.post("/creator/forgot-password", creatorForgotPassword);
 router.post("/creator/reset-password", creatorResetPassword);
+
+//developer endpoints
+router.post("/developer/registration", developerSignup);
+router.post("/developer/login", developerLogin);
+router.post("/developer/verify-email", verifyEmailDeveloper);
+router.delete("/developer/logout/:userId", developerLogOut);
+router.post("/developer/forgot-password", forgotPasswordDeveloper);
+router.post("/developer/reset-password", resetPasswordDeveloper);
 
 module.exports = router;
