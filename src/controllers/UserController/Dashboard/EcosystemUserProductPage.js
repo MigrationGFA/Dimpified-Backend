@@ -56,11 +56,11 @@ const getMyProductPage = async (req, res) => {
         const products = await Promise.all(productsPromises);
         const courses = await Promise.all(coursesPromises);
 
-
-        const detailedInfo = [...services, ...products, ...courses];
-
-        res.status(200).json(detailedInfo);
-
+        res.status(200).json({
+            services,
+            products,
+            courses
+        });
 
     } catch (error) {
         console.error("Error fetching ecosystem user products:", error);
