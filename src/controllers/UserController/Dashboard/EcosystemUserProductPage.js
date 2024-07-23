@@ -56,11 +56,11 @@ const getMyProductPage = async (req, res) => {
         const products = await Promise.all(productsPromises);
         const courses = await Promise.all(coursesPromises);
 
-
-        const detailedInfo = [...services, ...products, ...courses];
-
-        res.status(200).json(detailedInfo);
-
+        res.status(200).json({
+            services,
+            products,
+            courses
+        });
 
     } catch (error) {
         console.error("Error fetching ecosystem user products:", error);
@@ -124,7 +124,15 @@ const productPayOut = async (req, res) => {
 
         const payOutItems = await Promise.all(productPayOutItemsPromises);
 
-        res.status(200).json(payOutItems);
+        const services = payOutItems.filter(item => item.itemType === 'Service');
+        const products = payOutItems.filter(item => item.itemType === 'Product');
+        const courses = payOutItems.filter(item => item.itemType === 'Course');
+
+        res.status(200).json({
+            services,
+            products,
+            courses
+        });
     } catch (error) {
         console.error("Error fetching and payout items:", error);
         res.status(500).json({ message: "Failed to fetch and payout items" });
