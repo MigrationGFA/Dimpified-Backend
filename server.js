@@ -33,7 +33,6 @@ app.use("/api/v1/", require("./src/routes/ratingRoutes"));
 app.use("/api/v1/", require("./src/routes/domainCheck"));
 app.use("/api/v1/", require("./src/routes/templates"));
 app.use("/api/v1/", require("./src/routes/forms"));
-app.use("/api/v1/", require("./src/routes/developer"));
 app.use("/api/v1/", require("./src/routes/creatorDashboard"));
 app.use("/api/v1/", require("./src/routes/EcosystemConflictResolution.js"));
 app.use("/api/v1/", require("./src/routes/payment"));

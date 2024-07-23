@@ -24,10 +24,22 @@ const Developer = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    isVerified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
     password: {
       type: DataTypes.STRING,
-      allowNull: false, 
+      allowNull: false,
     },
+    role: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: "developer",
+    },
+    passwordToken: DataTypes.STRING,
+    passwordTokenExpirationDate: DataTypes.STRING,
+    verificationToken: DataTypes.STRING,
   },
   {
     tableName: "Developer",
