@@ -22,7 +22,6 @@ const Feature = sequelize.define("Feature", {
 
     },
     featureDescription: {
-
         type: DataTypes.TEXT,
         allowNull: false,
     },

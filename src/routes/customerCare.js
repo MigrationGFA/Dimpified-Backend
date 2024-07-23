@@ -26,6 +26,13 @@ const {
   sendSupportFeedback,
 } = require("../controllers/CustomerCareController/support");
 
+const {
+  suggestFeatures,
+  getAllFeatures,
+  getACreatorFeature,
+  featureDashboard,
+} = require("../controllers/CustomerCareController/feature");
+
 router.post("/contact-us", userContactUs);
 router.get("/all-contact-us", allContactUs);
 router.put("/contact-us/:id/completed", contactUsCompleted);
@@ -45,6 +52,8 @@ router.get(
   getAnEcosystemUserHelpRequest
 );
 router.post("/help-request-feedback", sendFeedback);
+router.get("/creator/my-help-request/:creatorId", creatorhelpCenterDashBoard);
+
 
 //Creator Support routes
 router.post("/creator-support", creatorSupport);
@@ -58,6 +67,13 @@ router.get(
   getSupportRequestByACreator
 );
 router.post("/creator-support-request-feedback", sendSupportFeedback);
-router.get("/creator/my-help-request/:creatorId", creatorhelpCenterDashBoard);
+
+
+
+//creator features suggestion
+router.post("/creator-suggest-feature", suggestFeatures);
+router.get("/all-creator-feature-suggestion", getAllFeatures);
+router.get("/get-a-creator-feature/:creatorId", getACreatorFeature);
+router.get("/creator/feature-dashboard/:creatorId", featureDashboard);
 
 module.exports = router;
