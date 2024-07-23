@@ -2,7 +2,7 @@ const Creator = require("../../models/Creator");
 const Ecosystem = require("../../models/Ecosystem");
 const EcosystemUser = require("../../models/EcosystemUser");
 const Template = require("../../models/Templates");
-const { Op } = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 
 const popularEcosystems = async (req, res) => {
   try {
@@ -151,7 +151,62 @@ const lastFourEcosystems = async (req, res) => {
   }
 };
 
+const usersPermonth = async (req, res) => {
+  const creatorId = req.params.creatorId;
 
+  try {
+    const ecosystems = await Ecosystem.find({ creatorId });
+    if (!ecosystems || ecosystems.length === 0) {
+      return res.status(404).json({ message: "No ecosystems found" });
+    }
+
+    const ecosystemDomains = ecosystems.map((eco) => eco.ecosystemDomain);
+
+    const userRegistrations = await EcosystemUser.findAll({
+      where: {
+        ecosystemDomain: {
+          [Op.in]: ecosystemDomains,
+        },
+      },
+      attributes: [
+        [Sequelize.fn("MONTH", Sequelize.col("createdAt")), "month"],
+        [Sequelize.fn("COUNT", Sequelize.col("id")), "count"],
+      ],
+      group: [Sequelize.fn("MONTH", Sequelize.col("createdAt"))],
+      raw: true,
+    });
+
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+
+    const result = months.map((month, index) => ({
+      month,
+      totalPurchasedItems: 0
+    }));
+
+    userRegistrations.forEach((registration) => {
+      const monthIndex = registration.month - 1;
+      result[monthIndex].totalPurchasedItems = registration.count;
+    });
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Error fetching users per month:", error);
+    res.status(500).json({ message: "Failed to fetch users per month" });
+  }
+};
 
 
 
@@ -194,7 +249,66 @@ const updateCreator = async (req, res) => {
     console.error("Error updating creator:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
-
 }
 
-module.exports = { popularEcosystems, allEcosystemUsers, usersPerEcosystem, lastFourEcosystems, getCreatorById, updateCreator };
+const getEcosystemUsersStats = async (req, res) => {
+  const creatorId = req.params.creatorId;
+
+  try {
+    const ecosystems = await Ecosystem.find({ creatorId });
+    if (!ecosystems || ecosystems.length === 0) {
+      return res.status(404).json({ message: "No ecosystems found" });
+    }
+
+    const ecosystemDomains = ecosystems.map((eco) => eco.ecosystemDomain);
+
+    const totalUsers = await EcosystemUser.count({
+      where: {
+        ecosystemDomain: {
+          [Op.in]: ecosystemDomains,
+        },
+      },
+    });
+
+    const verifiedUsers = await EcosystemUser.count({
+      where: {
+        ecosystemDomain: {
+          [Op.in]: ecosystemDomains,
+        },
+        isVerified: true,
+      },
+    });
+
+    const startOfMonth = new Date(
+      new Date().getFullYear(),
+      new Date().getMonth(),
+      1
+    );
+
+    const usersThisMonth = await EcosystemUser.count({
+      where: {
+        ecosystemDomain: {
+          [Op.in]: ecosystemDomains,
+        },
+        createdAt: {
+          [Op.gte]: startOfMonth,
+        },
+      },
+    });
+
+    const totalAmountPaid = await PurchasedItem.sum("itemAmount", {
+      where: {
+        ecosystemDomain: {
+          [Op.in]: ecosystemDomains,
+        },
+      },
+    });
+
+    res.status(200).json({ totalUsers, verifiedUsers, usersThisMonth, totalAmountPaid });
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    res.status(500).json({ message: "Failed to fetch user data" });
+  }
+};
+
+module.exports = { popularEcosystems, allEcosystemUsers, usersPerEcosystem, lastFourEcosystems, getCreatorById, updateCreator, usersPermonth, getEcosystemUsersStats };

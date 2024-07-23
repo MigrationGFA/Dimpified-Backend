@@ -97,7 +97,6 @@ const getTotalPurchasedProductsPerMonth = async (req, res) => {
             return res.status(404).json({ message: "User ID and Ecosystem Domain are required" });
         }
 
-
         const purchasedItems = await PurchasedItem.findAll({
             where: {
                 userId,

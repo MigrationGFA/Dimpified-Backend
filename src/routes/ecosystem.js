@@ -22,8 +22,7 @@ const {
   getOrders,
   ecosystemDashboard,
   getProductOrder,
-  usersPermonth,
-  getEcosystemUsersStats,
+  
 
 } = require("../controllers/EcosystemController/ecosystemDashboard");
 const { getEcosystemUserDashboardData, getTotalPurchasedProductsPerMonth } = require("../controllers/UserController/Dashboard/EcosystemUserDashboard");
@@ -91,14 +90,11 @@ router.get("/ecosystem-students/:ecosystemDomain", getAllEcosystemStudent);
 router.get("/ecosystem-orders/:ecosystemDomain", getOrders);
 router.get("/ecosystem-dashboard/:ecosystemDomain", ecosystemDashboard);
 router.get("/ecosystem-product-orders/:ecosystemDomain", getProductOrder);
-router.get("/ecosystem-users-per-month/:creatorId", usersPermonth);
-router.get("/ecosystem-users-stats/:creatorId", getEcosystemUsersStats);
 
-
+//Ecosystem User Routes
 //Ecosystem User Dashboard
 router.get("/ecosystem-user-dashboard/:userId/:ecosystemDomain", getEcosystemUserDashboardData);
 router.get("/ecosystem-user-monthly-product-purchase/:userId/:ecosystemDomain", getTotalPurchasedProductsPerMonth)
-
 
 //My product page routes
 router.get("/ecosystem-user-product-page/:userId/:ecosystemDomain", getMyProductPage)
