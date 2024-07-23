@@ -128,7 +128,31 @@ const getTotalPurchasedProductsPerMonth = async (req, res) => {
         console.error("Error fetching purchased items per month:", error);
         res.status(500).json({ error: "An error occurred while fetching the data." });
     }
+};
+
+const getLastFourPurchasedProducts = async (req, res) => {
+    try {
+        const { userId, ecosystemDomain } = req.params
+
+        if (!userId || !ecosystemDomain) {
+            return res.status(400).json({ message: "User ID and Ecosystem Domain are required" });
+        }
+        const lastFourPurchasedProducts = await PurchasedItem.findAll({
+            where: {
+                userId,
+                ecosystemDomain,
+            },
+            order: [['createdAt', 'DESC']],
+            limit: 4
+        })
+
+        res.status(200).json({ lastFourPurchasedProducts })
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
 }
 
 
-module.exports = { getEcosystemUserDashboardData, getTotalPurchasedProductsPerMonth }
+module.exports = { getEcosystemUserDashboardData, getTotalPurchasedProductsPerMonth, getLastFourPurchasedProducts }
