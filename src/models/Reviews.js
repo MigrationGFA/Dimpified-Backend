@@ -14,6 +14,14 @@ const Review = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    creatorId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    ecosystemDomain: {
+      type: String,
+      required: true,
+    },
     reviewedItemId: {
       type: DataTypes.STRING,
       allowNull: false,

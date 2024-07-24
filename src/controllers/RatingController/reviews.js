@@ -3,6 +3,8 @@ const Service = require("../../models/Service");
 const Course = require("../../models/Course");
 const Review = require("../../models/Reviews");
 const Ecosystem = require("../../models/Ecosystem");
+const EcosystemUser = require("../../models/EcosystemUser");
+
 
 const createReviews = async (req, res) => {
   const {
@@ -11,12 +13,12 @@ const createReviews = async (req, res) => {
     reviewedItemType,
     rating,
     review,
-    ecosystemId,
+    ecosystemDomain,
   } = req.body;
 
   if (
     !userId ||
-    !ecosystemId ||
+    !ecosystemDomain ||
     !reviewedItemId ||
     !reviewedItemType ||
     rating === undefined
@@ -27,10 +29,13 @@ const createReviews = async (req, res) => {
     });
   }
 
-  const ecosystem = await Ecosystem.findById(ecosystemId);
+  const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
   if (!ecosystem) {
     return res.status(404).json({ message: "Ecosystem not found" });
   }
+
+  // Get the creatorId from the ecosystem
+  const creatorId = ecosystem.creatorId;
 
   if (!["Product", "Service", "Course"].includes(reviewedItemType)) {
     return res.status(400).json({ error: "Invalid reviewedItemType" });
@@ -63,6 +68,8 @@ const createReviews = async (req, res) => {
       reviewedItemType,
       rating,
       review,
+      ecosystemDomain,
+      creatorId
     });
     res.status(201).json(newReview);
   } catch (error) {
@@ -71,26 +78,79 @@ const createReviews = async (req, res) => {
 };
 
 const getReviews = async (req, res) => {
-  const { reviewedItemType } = req.query;
+  const { reviewedItemId } = req.params;
 
-  if (!["Product", "Service", "Course"].includes(reviewedItemType)) {
-    return res.status(400).json({ error: "Invalid reviewedItemType" });
+  if (reviewedItemId) {
+    return res.status(400).json({ error: "Invalid reviewedItemId" });
   }
-
   try {
-    // Fetch reviews based on the reviewedItemType
     const reviews = await Review.findAll({
-      where: { reviewedItemType },
+      where: {
+        reviewedItemId,
+        reviewedItemType: 'Product'
+      },
       order: [["createdAt", "DESC"]],
     });
 
+    if (reviews.length === 0) {
+      return res.status(404).json({ message: 'No reviews found for this product.' });
+    }
+
     res.status(200).json(reviews);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error fetching product reviews:", error);
+    res.status(500).json({ message: "Failed to fetch product reviews" });
   }
+};
+
+const getEcosystemReview = async (req, res) => {
+  try {
+
+    const ecosystemDomain = req.params.ecosystemDomain
+    if (!ecosystemDomain) {
+      return res.status(404).json({ message: "EcosystemDomain is required" })
+    }
+
+    const ecosystemReviews = await Review.findAll({
+      where: { ecosystemDomain },
+
+      order: [['createdAt', 'DESC']]
+
+    })
+    res.status(200).json({ ecosystemReviews })
+  } catch (error) {
+    console.error("Error fetching ecosystem reviews:", error);
+    res.status(500).json({ message: "Failed to fetch ecosystem reviews" });
+  };
+
+};
+
+const getAUserReview = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    if (!userId) {
+      return res.status(404).json({ message: "userId is required" })
+    }
+    const userReview = await Review.findAll({
+      where: {
+        userId
+      },
+      include: {
+        model: EcosystemUser,
+        attributes: ['username', 'imageUrl'],
+      },
+      order: [['createdAt', 'DESC']]
+    });
+    res.status(200).json({ userReview });
+  } catch (error) {
+    console.error("Error fetching user reviews:", error);
+    res.status(500).json({ message: "Failed to fetch user reviews" });
+  };
 };
 
 module.exports = {
   createReviews,
   getReviews,
+  getEcosystemReview,
+  getAUserReview
 };
