@@ -7,13 +7,16 @@ const EcosystemUser = require("../../models/EcosystemUser");
 
 
 const createReviews = async (req, res) => {
-  const {
+  await Review.sync();
+  try {
+     const {
     userId,
     reviewedItemId,
     reviewedItemType,
     rating,
     review,
     ecosystemDomain,
+    title
   } = req.body;
 
   if (
@@ -21,6 +24,7 @@ const createReviews = async (req, res) => {
     !ecosystemDomain ||
     !reviewedItemId ||
     !reviewedItemType ||
+    !title ||
     rating === undefined
   ) {
     return res.status(400).json({
@@ -60,8 +64,7 @@ const createReviews = async (req, res) => {
   if (!reviewedItem) {
     return res.status(404).json({ error: `${reviewedItemType} not found` });
   }
-  try {
-    await Review.sync();
+    
     const newReview = await Review.create({
       userId,
       reviewedItemId,
@@ -69,25 +72,29 @@ const createReviews = async (req, res) => {
       rating,
       review,
       ecosystemDomain,
-      creatorId
+      creatorId,
+      title
     });
-    res.status(201).json(newReview);
+    res.status(201).json({message: "Thanks for your feedback"});
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: "Failed to create reviews" });
   }
 };
 
 const getReviews = async (req, res) => {
   const { reviewedItemId } = req.params;
 
-  if (reviewedItemId) {
+  if (!reviewedItemId) {
     return res.status(400).json({ error: "Invalid reviewedItemId" });
   }
   try {
     const reviews = await Review.findAll({
       where: {
         reviewedItemId,
-        reviewedItemType: 'Product'
+      },
+       include: {
+        model: EcosystemUser,
+        attributes: ['username', 'imageUrl'],
       },
       order: [["createdAt", "DESC"]],
     });
@@ -113,7 +120,10 @@ const getEcosystemReview = async (req, res) => {
 
     const ecosystemReviews = await Review.findAll({
       where: { ecosystemDomain },
-
+      include: {
+        model: EcosystemUser,
+        attributes: ['username', 'imageUrl'],
+      },
       order: [['createdAt', 'DESC']]
 
     })
@@ -134,10 +144,6 @@ const getAUserReview = async (req, res) => {
     const userReview = await Review.findAll({
       where: {
         userId
-      },
-      include: {
-        model: EcosystemUser,
-        attributes: ['username', 'imageUrl'],
       },
       order: [['createdAt', 'DESC']]
     });
