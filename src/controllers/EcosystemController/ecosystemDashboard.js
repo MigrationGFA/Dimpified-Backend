@@ -157,22 +157,23 @@ const getProductOrder = async (req, res) => {
     });
 
     const purchasedItemsPerMonth = productOrder.reduce((acc, item) => {
-            const purchaseDate = new Date(item.purchaseDate);
-            const monthName = purchaseDate.toLocaleString("default", { month: "long" });
-            acc[monthName] = (acc[monthName] || 0) + 1;
-            return acc;
-        }, {});
+      const purchaseDate = new Date(item.purchaseDate);
+      const monthName = purchaseDate.toLocaleString("default", {
+        month: "long",
+      });
+      acc[monthName] = (acc[monthName] || 0) + 1;
+      return acc;
+    }, {});
 
-        const allMonths = Array.from({ length: 12 }, (_, index) => {
-            const date = new Date(0, index);
-            return date.toLocaleString("default", { month: "long" });
-        });
+    const allMonths = Array.from({ length: 12 }, (_, index) => {
+      const date = new Date(0, index);
+      return date.toLocaleString("default", { month: "long" });
+    });
 
-        const allPurchasedItemsPerMonths = allMonths.map((month) => ({
-            month,
-            totalPurchasedItems: purchasedItemsPerMonth[month] || 0,
-        }));
-
+    const allPurchasedItemsPerMonths = allMonths.map((month) => ({
+      month,
+      totalPurchasedItems: purchasedItemsPerMonth[month] || 0,
+    }));
 
     res.status(200).json({
       allPurchasedItemsPerMonths,
@@ -249,9 +250,47 @@ const getOrders = async (req, res) => {
   }
 };
 
+const bestSellingProducts = async (req, res) => {
+  try {
+    const ecosystemDomain = req.params.ecosystemDomain;
 
+    const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
+    if (!ecosystem) {
+      return res.status(404).json({ message: "Ecosystem not found" });
+    }
 
+    // Function to fetch top 4 items by itemType
+    const fetchTopItems = async (itemType) => {
+      const items = await PurchasedItem.findAll({
+        where: { ecosystemDomain, itemType },
+        attributes: [
+          "itemId",
+          "itemType",
+          [Sequelize.fn("COUNT", Sequelize.col("itemId")), "purchaseCount"]
+        ],
+        group: ["itemId", "itemType"],
+        order: [[Sequelize.literal("purchaseCount"), "DESC"]],
+        limit: 4,
+        raw: true,
+      });
+      return items;
+    };
 
+    // Fetch top 4 products, services, and courses
+    const top4Products = await fetchTopItems("Product");
+    const top4Services = await fetchTopItems("Service");
+    const top4Courses = await fetchTopItems("Course");
+
+    res.status(200).json({
+      top4Products,
+      top4Services,
+      top4Courses,
+    });
+  } catch (error) {
+    console.error("Error fetching top items:", error);
+    res.status(500).json({ message: "Failed to fetch top items" });
+  }
+};
 
 module.exports = {
   getAllEcosystemProduct,
@@ -259,4 +298,5 @@ module.exports = {
   getOrders,
   ecosystemDashboard,
   getProductOrder,
+  bestSellingProducts
 };
