@@ -29,9 +29,6 @@ const {
 const { getEcosystemUserDashboardData, getTotalPurchasedProductsPerMonth } = require("../controllers/UserController/Dashboard/EcosystemUserDashboard");
 const { getMyProductPage, productPayOut } = require("../controllers/UserController/Dashboard/EcosystemUserProductPage");
 
-// Set up multer for handling multipart/form-data
-// const storage = multer.diskStorage({});
-// const upload = multer({ storage });
 
 // Set storage engine
 const storage = multer.diskStorage({
@@ -91,7 +88,7 @@ router.get("/ecosystem-students/:ecosystemDomain", getAllEcosystemStudent);
 router.get("/ecosystem-orders/:ecosystemDomain", getOrders);
 router.get("/ecosystem-dashboard/:ecosystemDomain", ecosystemDashboard);
 router.get("/ecosystem-product-orders/:ecosystemDomain", getProductOrder);
-router.get("/best-selling-products/:ecosystemDomain", bestSellingProducts);
+router.get("/ecosystem-best-selling-products/:ecosystemDomain", bestSellingProducts);
 
 //Ecosystem User Routes
 //Ecosystem User Dashboard
