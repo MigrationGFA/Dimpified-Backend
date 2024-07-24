@@ -123,7 +123,6 @@ const getCreatorEarning = async (req, res) => {
     }
 
     res.status(200).json({
-      creatorId: creatorEarning.creatorId,
       Naira: creatorEarning.Naira,
       Dollar: creatorEarning.Dollar,
     });

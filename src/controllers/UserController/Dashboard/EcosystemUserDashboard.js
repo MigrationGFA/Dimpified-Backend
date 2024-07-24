@@ -127,7 +127,72 @@ const getTotalPurchasedProductsPerMonth = async (req, res) => {
         console.error("Error fetching purchased items per month:", error);
         res.status(500).json({ error: "An error occurred while fetching the data." });
     }
+};
+
+const getLastFourPurchasedProducts = async (req, res) => {
+    try {
+        const { userId, ecosystemDomain } = req.params
+
+        if (!userId || !ecosystemDomain) {
+            return res.status(400).json({ message: "User ID and Ecosystem Domain are required" });
+        }
+        const lastFourPurchasedProducts = await PurchasedItem.findAll({
+            where: {
+                userId,
+                ecosystemDomain,
+            },
+            order: [['purchaseDate', 'DESC']],
+            limit: 4
+        });
+
+        const lastFourPurchasedProductDetails = async (item) => {
+            let itemDetails;
+            switch (item.itemType) {
+                case 'Product':
+                    itemDetails = await DigitalProduct.findById(item.itemId);
+                    break;
+                case 'Service':
+                    itemDetails = await Service.findById(item.itemId);
+                    break;
+                case 'Course':
+                    itemDetails = await Course.findById(item.itemId);
+                    break;
+                default:
+                    throw new Error(`Unknown item type: ${item.itemType}`);
+            }
+
+            if (!itemDetails) {
+                throw new Error(`Item not found: ${item.itemId}`);
+            }
+
+            return {
+                ...item.toJSON(),
+                itemDetails: itemDetails.toJSON()
+            };
+        };
+
+        const purchasedProductDetailsPromises = lastFourPurchasedProducts.map(async (item) => {
+            try {
+                return await lastFourPurchasedProductDetails(item);
+            } catch (error) {
+                console.error(`Error enriching item ${item.id}: ${error.message}`);
+                return {
+                    ...item.toJSON(),
+                    itemDetails: null,
+                    error: error.message
+                };
+            }
+        });
+
+
+        const lastFourPurchasesItems = await Promise.all(purchasedProductDetailsPromises);
+        res.status(200).json(lastFourPurchasesItems);
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
 }
 
 
-module.exports = { getEcosystemUserDashboardData, getTotalPurchasedProductsPerMonth }
+module.exports = { getEcosystemUserDashboardData, getTotalPurchasedProductsPerMonth, getLastFourPurchasedProducts }

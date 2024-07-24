@@ -26,7 +26,7 @@ const {
   
 
 } = require("../controllers/EcosystemController/ecosystemDashboard");
-const { getEcosystemUserDashboardData, getTotalPurchasedProductsPerMonth } = require("../controllers/UserController/Dashboard/EcosystemUserDashboard");
+const { getEcosystemUserDashboardData, getTotalPurchasedProductsPerMonth, getLastFourPurchasedProducts } = require("../controllers/UserController/Dashboard/EcosystemUserDashboard");
 const { getMyProductPage, productPayOut } = require("../controllers/UserController/Dashboard/EcosystemUserProductPage");
 
 
@@ -94,11 +94,12 @@ router.get("/ecosystem-best-selling-products/:ecosystemDomain", bestSellingProdu
 //Ecosystem User Dashboard
 router.get("/ecosystem-user-dashboard/:userId/:ecosystemDomain", getEcosystemUserDashboardData);
 router.get("/ecosystem-user-monthly-product-purchase/:userId/:ecosystemDomain", getTotalPurchasedProductsPerMonth)
+router.get("/ecosystem-user-last-four-product/:userId/:ecosystemDomain", getLastFourPurchasedProducts)
 
 //My product page routes
 router.get("/ecosystem-user-product-page/:userId/:ecosystemDomain", getMyProductPage)
 //Product PayOut
-router.get("/purchase-payout/:userId/:ecosystemDomain", productPayOut)
+router.get("/ecosystem-user-purchase-payout/:userId/:ecosystemDomain", productPayOut)
 
 
 module.exports = router;

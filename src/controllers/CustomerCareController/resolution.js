@@ -127,7 +127,12 @@ const getCreatorResolutionRequest = async (req, res) => {
 
 
 
-module.exports = { createEcosystemUserResolution, getEcosystemResolutionRequest, getMyResolutionRequest, getCreatorResolutionRequest }
+module.exports = {
+    createEcosystemUserResolution,
+    getEcosystemResolutionRequest,
+    getMyResolutionRequest,
+    getCreatorResolutionRequest
+}
 
 
 // const getCreatorResolutionRequest = async (req, res) => {
