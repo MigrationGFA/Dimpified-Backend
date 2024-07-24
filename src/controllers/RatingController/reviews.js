@@ -11,12 +11,12 @@ const createReviews = async (req, res) => {
     reviewedItemType,
     rating,
     review,
-    ecosystemId,
+    ecosystemDomain,
   } = req.body;
 
   if (
     !userId ||
-    !ecosystemId ||
+    !ecosystemDomain ||
     !reviewedItemId ||
     !reviewedItemType ||
     rating === undefined
@@ -27,10 +27,13 @@ const createReviews = async (req, res) => {
     });
   }
 
-  const ecosystem = await Ecosystem.findById(ecosystemId);
+  const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
   if (!ecosystem) {
     return res.status(404).json({ message: "Ecosystem not found" });
   }
+
+  // Get the creatorId from the ecosystem
+  const creatorId = ecosystem.creatorId;
 
   if (!["Product", "Service", "Course"].includes(reviewedItemType)) {
     return res.status(400).json({ error: "Invalid reviewedItemType" });
@@ -63,6 +66,8 @@ const createReviews = async (req, res) => {
       reviewedItemType,
       rating,
       review,
+      ecosystemDomain,
+      creatorId
     });
     res.status(201).json(newReview);
   } catch (error) {

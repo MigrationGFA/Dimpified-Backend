@@ -141,11 +141,52 @@ const getLastFourPurchasedProducts = async (req, res) => {
                 userId,
                 ecosystemDomain,
             },
-            order: [['createdAt', 'DESC']],
+            order: [['purchaseDate', 'DESC']],
             limit: 4
-        })
+        });
 
-        res.status(200).json({ lastFourPurchasedProducts })
+        const lastFourPurchasedProductDetails = async (item) => {
+            let itemDetails;
+            switch (item.itemType) {
+                case 'Product':
+                    itemDetails = await DigitalProduct.findById(item.itemId);
+                    break;
+                case 'Service':
+                    itemDetails = await Service.findById(item.itemId);
+                    break;
+                case 'Course':
+                    itemDetails = await Course.findById(item.itemId);
+                    break;
+                default:
+                    throw new Error(`Unknown item type: ${item.itemType}`);
+            }
+
+            if (!itemDetails) {
+                throw new Error(`Item not found: ${item.itemId}`);
+            }
+
+            return {
+                ...item.toJSON(),
+                itemDetails: itemDetails.toJSON()
+            };
+        };
+
+        const purchasedProductDetailsPromises = lastFourPurchasedProducts.map(async (item) => {
+            try {
+                return await lastFourPurchasedProductDetails(item);
+            } catch (error) {
+                console.error(`Error enriching item ${item.id}: ${error.message}`);
+                return {
+                    ...item.toJSON(),
+                    itemDetails: null,
+                    error: error.message
+                };
+            }
+        });
+
+
+        const lastFourPurchasesItems = await Promise.all(purchasedProductDetailsPromises);
+        res.status(200).json(lastFourPurchasesItems);
 
     } catch (error) {
         console.error(error);
