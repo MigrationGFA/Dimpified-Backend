@@ -22,6 +22,7 @@ const {
   getOrders,
   ecosystemDashboard,
   getProductOrder,
+  bestSellingProducts,
   
 
 } = require("../controllers/EcosystemController/ecosystemDashboard");
@@ -90,6 +91,7 @@ router.get("/ecosystem-students/:ecosystemDomain", getAllEcosystemStudent);
 router.get("/ecosystem-orders/:ecosystemDomain", getOrders);
 router.get("/ecosystem-dashboard/:ecosystemDomain", ecosystemDashboard);
 router.get("/ecosystem-product-orders/:ecosystemDomain", getProductOrder);
+router.get("/best-selling-products/:ecosystemDomain", bestSellingProducts);
 
 //Ecosystem User Routes
 //Ecosystem User Dashboard
