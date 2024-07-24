@@ -81,7 +81,7 @@ const createCourse = async (req, res) => {
     // Create the course
     const course = await Course.create({
       creatorId,
-      ecosystemId: ecosystem.ecosystemId,
+      ecosystemId: ecosystem._id,
       ecosystemDomain,
       title,
       category,
