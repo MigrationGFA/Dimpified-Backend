@@ -3,7 +3,7 @@ const Ecosystem = require("../../models/Ecosystem");
 const EcosystemUser = require("../../models/EcosystemUser");
 const Template = require("../../models/Templates");
 const { Op, Sequelize } = require("sequelize");
-
+const PurchasedItem = require("..//../models/PurchasedItem")
 const popularEcosystems = async (req, res) => {
   try {
     const creatorId = req.params.creatorId;

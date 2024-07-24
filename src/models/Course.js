@@ -9,6 +9,10 @@ const dimpifiedCourseSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+   ecosystemDomain: {
+    type: String,
+    required: true,
+  },
   title: {
     type: String,
     required: true,

@@ -19,7 +19,7 @@ const createCourse = async (req, res) => {
       price,
       hour,
       currency,
-      ecosystemId,
+      ecosystemDomain,
     } = req.body;
 
     // Required fields validation
@@ -33,7 +33,7 @@ const createCourse = async (req, res) => {
       "price",
       "hour",
       "currency",
-      "ecosystemId",
+      "ecosystemDomain",
     ];
 
     for (const field of requiredFields) {
@@ -43,8 +43,7 @@ const createCourse = async (req, res) => {
     }
 
      // Add the course to the ecosystem
-    const ecoId = new mongoose.Types.ObjectId(ecosystemId);
-    const ecosystem = await Ecosystem.findById(ecoId);
+    const ecosystem = await Ecosystem.findOne({ ecosystemDomain: ecosystemDomain });
     if (!ecosystem) {
       return res.status(404).json({ message: "Ecosystem not found" });
     }
@@ -82,7 +81,8 @@ const createCourse = async (req, res) => {
     // Create the course
     const course = await Course.create({
       creatorId,
-      ecosystemId,
+      ecosystemId: ecosystem._id,
+      ecosystemDomain,
       title,
       category,
       level,
