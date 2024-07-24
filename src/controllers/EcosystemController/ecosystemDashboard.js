@@ -259,32 +259,41 @@ const bestSellingProducts = async (req, res) => {
       return res.status(404).json({ message: "Ecosystem not found" });
     }
 
-    // Function to fetch top 4 items by itemType
-    const fetchTopItems = async (itemType) => {
-      const items = await PurchasedItem.findAll({
-        where: { ecosystemDomain, itemType },
-        attributes: [
-          "itemId",
-          "itemType",
-          [Sequelize.fn("COUNT", Sequelize.col("itemId")), "purchaseCount"]
-        ],
-        group: ["itemId", "itemType"],
-        order: [[Sequelize.literal("purchaseCount"), "DESC"]],
-        limit: 4,
-        raw: true,
-      });
-      return items;
-    };
+    const top4Items = await PurchasedItem.findAll({
+      where: { ecosystemDomain },
+      attributes: [
+        "itemId",
+        "itemType",
+        [Sequelize.fn("COUNT", Sequelize.col("itemId")), "purchaseCount"],
+      ],
+      group: ["itemId", "itemType"],
+      order: [[Sequelize.literal("purchaseCount"), "DESC"]],
+      limit: 4,
+      raw: true,
+    });
 
-    // Fetch top 4 products, services, and courses
-    const top4Products = await fetchTopItems("Product");
-    const top4Services = await fetchTopItems("Service");
-    const top4Courses = await fetchTopItems("Course");
+    const itemDetailsPromises = top4Items.map(async (item) => {
+      let itemDetails;
+
+      if (item.itemType === "Product") {
+        itemDetails = await Product.findById(item.itemId);
+      } else if (item.itemType === "Service") {
+        itemDetails = await Service.findById(item.itemId);
+      } else if (item.itemType === "Course") {
+        itemDetails = await Course.findById(item.itemId);
+      } else {
+        throw new Error("Invalid item type");
+      }
+
+      return itemDetails
+        ? { ...itemDetails.toJSON(), purchaseCount: item.purchaseCount }
+        : null;
+    });
+
+    const detailedItems = await Promise.all(itemDetailsPromises);
 
     res.status(200).json({
-      top4Products,
-      top4Services,
-      top4Courses,
+      top4Items: detailedItems.filter((item) => item !== null),
     });
   } catch (error) {
     console.error("Error fetching top items:", error);
@@ -298,5 +307,5 @@ module.exports = {
   getOrders,
   ecosystemDashboard,
   getProductOrder,
-  bestSellingProducts
+  bestSellingProducts,
 };
