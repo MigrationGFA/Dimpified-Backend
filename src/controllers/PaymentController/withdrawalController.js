@@ -75,6 +75,7 @@ const getWithdrawalRequests = async (req, res) => {
         model: Account,
         attributes: ["accountNumber", "accountName", "bankName"],
       },
+      order: [["createdAt", "DESC"]],
     });
 
     if (!withdrawalRequests.length) {
@@ -98,6 +99,7 @@ const getMyWithdrawalRequests = async (req, res) => {
         model: Account,
         attributes: ["accountNumber", "accountName", "bankName"],
       },
+      order: [["createdAt", "DESC"]],
     });
 
     if (!withdrawalRequests.length) {
