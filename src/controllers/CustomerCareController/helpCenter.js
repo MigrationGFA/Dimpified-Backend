@@ -2,6 +2,7 @@ const Creator = require("../../models/Creator");
 const Ecosystem = require("../../models/Ecosystem");
 const EndUser = require("../../models/EcosystemUser");
 const HelpCenter = require("../../models/HelpCenter");
+const Template = require("../../models/Templates")
 
 const sendHelpRequestFeedback = require("../../utils/sendHelpRequestFeedback");
 
@@ -187,20 +188,25 @@ const sendFeedback = async (req, res) => {
         },
       ],
     });
-    if (!helpRequest || !helpRequest.EndUser || !helpRequest.EndUser.email) {
+    console.log("This is help", helpRequest)
+    if (!helpRequest || !helpRequest.EcosystemUser || !helpRequest.EcosystemUser.email) {
       return res
         .status(404)
         .send({ error: "Valid help request with email not found" });
     }
 
-    const { username } = helpRequest.EndUser;
-    const email = helpRequest.EndUser.email;
-    const { reason, message: originalMessage } = helpRequest;
+    const { username } = helpRequest.EcosystemUser;
+    const email = helpRequest.EcosystemUser.email;
+    const { reason,  } = helpRequest;
     const organizationName = helpRequest.Creator
       ? helpRequest.Creator.organizationName
       : "Your Organization";
+     const ecoDetails = await Ecosystem.findOne({ecosystemDomain: helpRequest.ecosystemDomain})
+    if (!ecoDetails) {
+      return res.status(200).json({ message: "Ecosystem Not found" });
+    }
 
-    //console.log(`Sending feedback email to: ${email}`);
+    const templateDetails = await Template.findOne({_id: ecoDetails.templates})
 
     await sendHelpRequestFeedback({
       requestId: requestId,
@@ -209,7 +215,8 @@ const sendFeedback = async (req, res) => {
       subject,
       reason,
       message,
-      organizationName,
+      organizationName: ecoDetails.ecosystemName,
+      logo: templateDetails.navbar.logo,
     });
 
     res
