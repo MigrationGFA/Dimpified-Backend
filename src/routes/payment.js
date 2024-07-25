@@ -10,6 +10,7 @@ const {
 const {
   withdrawalRequest,
   getWithdrawalRequests,
+  getMyWithdrawalRequests,
 } = require("../controllers/PaymentController/withdrawalController");
 
 router.post("/verify-payment", VerifyPayment);
@@ -23,4 +24,6 @@ router.get("/creator/earnings/:creatorId", getCreatorEarning);
 //Withdrawal routes
 router.post("/withdrawal-request", withdrawalRequest);
 router.get("/get-withdrawal-requests", getWithdrawalRequests);
+router.get("/get-my-withdrawal-requests/:creatorId", getMyWithdrawalRequests);
+
 module.exports = router;
