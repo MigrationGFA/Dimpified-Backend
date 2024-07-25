@@ -58,9 +58,9 @@ const getCreatorBankDetails = async (req, res) => {
 
 const editCreatorAccount = async (req, res) => {
   try {
-    const { accountId, creatorId, accountName, accountNumber, bankName } =
+    const { accountId, creatorId, accountName, accountNumber, bankName, currency  } =
       req.body;
-    const details = ["creatorId", "accountId"];
+    const details = ["creatorId", "accountId", "accountName", "accountNumber", "bankName", "currency"];
 
     for (const detail of details) {
       if (!req.body[detail]) {
@@ -87,6 +87,10 @@ const editCreatorAccount = async (req, res) => {
     }
     if (bankName !== undefined) {
       updateObject.bankName = bankName;
+    }
+
+    if (currency !== undefined) {
+      updateObject.currency = currency;
     }
 
     // Update the account details
