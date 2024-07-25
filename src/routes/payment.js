@@ -7,6 +7,10 @@ const {
   editCreatorAccount,
   getCreatorEarning,
 } = require("../controllers/PaymentController/AccountController");
+const {
+  withdrawalRequest,
+  getWithdrawalRequests,
+} = require("../controllers/PaymentController/withdrawalController");
 
 router.post("/verify-payment", VerifyPayment);
 
@@ -16,4 +20,7 @@ router.get("/bank-details/:creatorId", getCreatorBankDetails);
 router.put("/edit-account", editCreatorAccount);
 router.get("/creator/earnings/:creatorId", getCreatorEarning);
 
+//Withdrawal routes
+router.post("/withdrawal-request", withdrawalRequest);
+router.get("/get-withdrawal-requests", getWithdrawalRequests);
 module.exports = router;
