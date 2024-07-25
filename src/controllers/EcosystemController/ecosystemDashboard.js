@@ -70,18 +70,18 @@ const getAllEcosystemStudent = async (req, res) => {
 
 const ecosystemDashboard = async (req, res) => {
   const ecosystemDomain = req.params.ecosystemDomain;
-
+   if (!ecosystemDomain) {
+      return res.status(400).json({ message: "ecosystemDomain is required" });
+    }
   try {
     const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
     if (!ecosystem) {
       return res.status(400).json({ message: "Ecosystem not found" });
     }
 
-    const creatorId = ecosystem.creatorId;
-    const transactions = await Transaction.findAll({
+    const transactions = await PurchasedItem.findAll({
       where: {
-        creatorId,
-        status: "successful",
+        ecosystemDomain,
       },
     });
 
@@ -89,9 +89,9 @@ const ecosystemDashboard = async (req, res) => {
     let totalDollar = 0;
     transactions.forEach((transaction) => {
       if (transaction.currency === "NGN") {
-        totalNaira += parseFloat(transaction.amount);
+        totalNaira += transaction.itemAmount;
       } else if (transaction.currency === "USD") {
-        totalDollar += parseFloat(transaction.amount);
+        totalDollar += parseFloat(transaction.itemAmount);
       }
     });
 
