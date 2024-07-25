@@ -7,7 +7,8 @@ const sendHelpRequestFeedback = async ({
     organizationName,
     email,
     reason,
-    message
+    message,
+    logo
 }) => {
 
 
@@ -66,8 +67,8 @@ const sendHelpRequestFeedback = async ({
                                 <!--begin:Logo-->
                                 <div style="text-align: center; margin-bottom: 40px">
                                     <a rel="noopener">
-                                        <img alt="Unleashified Logo"
-                                            src="https://res.cloudinary.com/djhnaee9k/image/upload/v1714038296/et5gicqtnuw4u1tqujjr.png"
+                                        <img alt=${organizationName} logo
+                                            src=${logo}
                                             style="height: 60px" />
                                     </a>
                                 </div>
@@ -85,7 +86,7 @@ const sendHelpRequestFeedback = async ({
                                     </p>
                                     <p style="margin-bottom: 2px; color: #333">
 
-                                        You have received a response to your help request${requestId}. Below are the
+                                        You have received a response to your help request ID 00${requestId}. Below are the
                                         details of your request and our
                                         response:
 

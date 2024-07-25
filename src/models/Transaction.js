@@ -61,6 +61,10 @@ const Transaction = sequelize.define("Transaction", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  // ecosystemDomain: {
+  //  type: DataTypes.STRING, 
+  //   required: true 
+  // },
   currency: {
     type: DataTypes.STRING,
     allowNull: false,
