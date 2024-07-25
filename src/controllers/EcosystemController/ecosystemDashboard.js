@@ -81,6 +81,7 @@ const ecosystemDashboard = async (req, res) => {
     const transactions = await Transaction.findAll({
       where: {
         creatorId,
+        status: "successful",
       },
     });
 
