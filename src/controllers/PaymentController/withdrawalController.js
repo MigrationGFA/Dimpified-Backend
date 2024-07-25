@@ -73,7 +73,7 @@ const getWithdrawalRequests = async (req, res) => {
     const withdrawalRequests = await WithdrawalRequest.findAll({
       include: {
         model: Account,
-        attributes: ["accountNumber", "accountName", "bankName"], // Adjust attributes as needed
+        attributes: ["accountNumber", "accountName", "bankName"],
       },
     });
 
@@ -89,5 +89,32 @@ const getWithdrawalRequests = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+const getMyWithdrawalRequests = async (req, res) => {
+  const { creatorId } = req.params;
+  try {
+    const withdrawalRequests = await WithdrawalRequest.findAll({
+      where: { creatorId },
+      include: {
+        model: Account,
+        attributes: ["accountNumber", "accountName", "bankName"],
+      },
+    });
 
-module.exports = { withdrawalRequest, getWithdrawalRequests };
+    if (!withdrawalRequests.length) {
+      return res
+        .status(404)
+        .json({ message: "There are no withdrawal requests for this creator" });
+    }
+
+    res.status(200).json({ withdrawalRequests });
+  } catch (error) {
+    console.error("Error fetching withdrawal requests:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports = {
+  withdrawalRequest,
+  getWithdrawalRequests,
+  getMyWithdrawalRequests,
+};
