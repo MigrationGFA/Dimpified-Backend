@@ -40,6 +40,7 @@ app.use("/api/v1/", require("./src/routes/setting"));
 app.use("/api/v1/", require("./src/routes/serviceRequest"));
 app.use("/api/v1/", require("./src/routes/admin.js"))
 
+app.use("/api/v1/", require("./src/routes/community"));
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

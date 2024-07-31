@@ -56,6 +56,42 @@ const storageForm = multer.diskStorage({
   },
 });
 
+const communityStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = path.join("uploads","communityFiles");
+
+    // Check if the directory structure exists. If not, create it recursively.
+    fs.access(uploadPath, fs.constants.F_OK, (err) => {
+      if (err) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      cb(null, uploadPath);
+    });
+  },
+  filename: (req, file, cb) => {
+    // Generate a unique filename to prevent conflicts
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
+
+const postStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = path.join("uploads", "posts");
+
+    // Check if the directory structure exists. If not, create it recursively.
+    fs.access(uploadPath, fs.constants.F_OK, (err) => {
+      if (err) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      cb(null, uploadPath);
+    });
+  },
+  filename: (req, file, cb) => {
+    // Generate a unique filename to prevent conflicts
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
+
 const backgroundStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadPath = path.join("uploads", "background-cover");
@@ -116,7 +152,9 @@ module.exports = {
   storageCourse,
   storageTemplate,
   storageForm,
+  postStorage,
   backgroundStorage,
   UserStorage,
-  isValidFile
+  communityStorage,
+  isValidFile,
 };
