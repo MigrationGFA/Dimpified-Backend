@@ -18,12 +18,8 @@ const Review = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-     title: {
-     type: DataTypes.STRING,
-      required: true,
-    },
     ecosystemDomain: {
-     type: DataTypes.STRING,
+      type: String,
       required: true,
     },
     reviewedItemId: {
