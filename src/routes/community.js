@@ -36,14 +36,18 @@ router.post(
 );
 
 router.post("/create-post", postUpload.array("image"), createPost);
-router.get("/community/:communityId", getCommunityWithPosts);
+router.get("/community/:ecosystemDomain", getCommunityWithPosts);
 router.post("/comment", commentOnPost);
 router.get("/post-comments/:postId", getPostComments);
 router.patch(
-  "/update-backgroundCover/:communityId",
+  "/update-backgroundCover/:ecosystemDomain",
   upload.single("backgroundCover"),
   updateBackgroundCover
 );
-router.patch("/update-image/:communityId", upload.single("image"), updateImage);
+router.patch(
+  "/update-image/:ecosystemDomain",
+  upload.single("image"),
+  updateImage
+);
 
 module.exports = router;

@@ -1,21 +1,35 @@
 const { Community, Post, Comment } = require("../../../models/Community");
 const Creator = require("../../../models/Creator");
+const Ecosystem = require("../../../models/Ecosystem");
 const EcosystemUser = require("../../../models/EcosystemUser");
 
 const createCommunityHeader = async (req, res) => {
   try {
-    console.log("Body:", req.body);
-    console.log("files:", req.files);
     const { creatorId, ecosystemDomain, sectors, description, rules } =
       req.body;
 
-    if (!creatorId || !ecosystemDomain || !sectors || !description || !rules) {
-      return res.status(400).json({ message: "All fields must be filled" });
+    const requiredFields = [
+      "creatorId",
+      "ecosystemDomain",
+      "sectors",
+      "description",
+      "rules",
+    ];
+
+    for (const field of requiredFields) {
+      if (!req.body[field]) {
+        return res.status(400).json({ message: `${field} is required` });
+      }
     }
 
     const creator = await Creator.findByPk(creatorId);
     if (!creator) {
       return res.json(400).json({ message: "Invalid creator Id " });
+    }
+
+    const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
+    if (!ecosystem) {
+      return res.status(404).json({ message: "Ecosystem not found" });
     }
 
     let imageLink;
@@ -43,6 +57,11 @@ const createCommunityHeader = async (req, res) => {
     });
 
     await community.save();
+  
+    ecosystem.communityId = community.id;
+
+    await ecosystem.save();
+ 
     return res.status(200).json({ message: "Community created succesfully" });
   } catch (error) {
     console.error("Error creatring community:", error);
@@ -52,12 +71,21 @@ const createCommunityHeader = async (req, res) => {
 
 const createPost = async (req, res) => {
   try {
-    console.log("files:", req.files);
-    const { authorId, communityId, userType, ecosystemDomain, content } =
-      req.body;
+ 
+    const { authorId, userType, ecosystemDomain, content } = req.body;
 
-    if (!authorId || !communityId || !userType || !ecosystemDomain) {
-      return res.status(400).json({ message: "All fields must be filled" });
+    const requiredFields = [
+      "authorId",
+      "userType",
+      "ecosystemDomain",
+      "content",
+    ];
+
+    // Check for missing fields and return a detailed error message
+    for (const field of requiredFields) {
+      if (!req.body[field]) {
+        return res.status(400).json({ message: `${field} is required` });
+      }
     }
 
     if (!content && (!req.files || req.files.length === 0)) {
@@ -65,6 +93,27 @@ const createPost = async (req, res) => {
         message: "Either content or at least one image must be provided",
       });
     }
+    const author = await EcosystemUser.findByPk(authorId);
+    if (!author) {
+      return res.status(400).json({ message: "Author does not exist" });
+    }
+
+    const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
+    if (!ecosystem) {
+      return res.status(404).json({ message: "Ecosystem not found" });
+    }
+
+    const communityId = ecosystem.communityId;
+
+    const community = await Community.findById(communityId);
+    if (!community) {
+      return res.json(404).json({ message: "Community not found" });
+    }
+
+    community.totalPost += 1;
+
+    await community.save();
+
     const imageLinks = [];
     // If using upload.array("image")
     if (req.files && Array.isArray(req.files)) {
@@ -96,12 +145,25 @@ const createPost = async (req, res) => {
 
 const getCommunityWithPosts = async (req, res) => {
   try {
-    const { communityId } = req.params;
+    const { ecosystemDomain } = req.params;
 
-    const community = await Community.findById(communityId);
+    if (!ecosystemDomain) {
+      return res
+        .status(400)
+        .json({ message: "Please provide ecosystem domain" });
+    }
+
+    const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
+    if (!ecosystem) {
+      return res.status(404).json({ message: "Ecosystem not found" });
+    }
+
+    const community = await Community.findById(ecosystem.communityId);
     if (!community) {
       return res.status(404).json({ message: "Community not found" });
     }
+
+    const communityId = community._id;
 
     const posts = await Post.find({ communityId });
 
@@ -110,14 +172,14 @@ const getCommunityWithPosts = async (req, res) => {
       where: { id: authorIds },
       attributes: ["id", "imageUrl"],
     });
-    console.log("users:", users);
+
 
     const userImages = {};
     users.forEach((user) => {
       userImages[user.id] = user.imageUrl;
     });
 
-    console.log("userImages:", userImages);
+
     const postsWithImages = posts.map((post) => ({
       ...post.toObject(),
       userImage: userImages[post.authorId] || null,
@@ -135,14 +197,28 @@ const getCommunityWithPosts = async (req, res) => {
     return res.status(500).json({ message: "Failed to fetch community data" });
   }
 };
+
 const commentOnPost = async (req, res) => {
   try {
     const { postId, userId, ecosystemDomain, comment } = req.body;
 
-    if (!postId || !userId || !ecosystemDomain || !comment) {
-      return res.status(400).json({ message: "All fields must be filled" });
+    const requiredFields = ["postId", "userId", "comment", "ecosystemDomain"];
+
+    for (const field of requiredFields) {
+      if (!req.body[field]) {
+        return res.status(400).json({ message: `${field} is required` });
+      }
     }
 
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
+    if (!ecosystem) {
+      return res.status(404).json({ message: "Ecosystem not found" });
+    }
     const newComment = new Comment({
       postId,
       userId,
@@ -204,10 +280,19 @@ const getPostComments = async (req, res) => {
 
 const updateBackgroundCover = async (req, res) => {
   try {
-    const { communityId } = req.params;
+    const { ecosystemDomain } = req.params;
+    if (!ecosystemDomain) {
+      return res.json(400).json({ message: "Please provide ecosystem Domain" });
+    }
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
+
+    const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
+    if (!ecosystem) {
+      return res.status(404).json({ message: "Ecosystem not found" });
+    }
+    const communityId = ecosystem.communityId;
 
     const community = await Community.findById(communityId);
     if (!community) {
@@ -232,10 +317,21 @@ const updateBackgroundCover = async (req, res) => {
 
 const updateImage = async (req, res) => {
   try {
-    const { communityId } = req.params;
+    const { ecosystemDomain } = req.params;
+
+    if (!ecosystemDomain) {
+      return res.json(400).json({ message: "Please provide ecosystem Domain" });
+    }
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
+
+    const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
+    if (!ecosystem) {
+      return res.status(404).json({ message: "Ecosystem not found" });
+    }
+
+    const communityId = ecosystem.communityId;
 
     const community = await Community.findById(communityId);
     if (!community) {
