@@ -4,6 +4,7 @@ const EcosystemUser = require("../../models/EcosystemUser");
 const Template = require("../../models/Templates");
 const { Op, Sequelize } = require("sequelize");
 const PurchasedItem = require("..//../models/PurchasedItem")
+
 const popularEcosystems = async (req, res) => {
   try {
     const creatorId = req.params.creatorId;
@@ -311,4 +312,13 @@ const getEcosystemUsersStats = async (req, res) => {
   }
 };
 
-module.exports = { popularEcosystems, allEcosystemUsers, usersPerEcosystem, lastFourEcosystems, getCreatorById, updateCreator, usersPermonth, getEcosystemUsersStats };
+module.exports = {
+  popularEcosystems,
+  allEcosystemUsers,
+  usersPerEcosystem,
+  lastFourEcosystems,
+  getCreatorById,
+  updateCreator,
+  usersPermonth,
+  getEcosystemUsersStats
+};
