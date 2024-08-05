@@ -75,7 +75,9 @@ const getCompletedEcosystems = async (req, res) => {
 
 const getAllCreators = async (req, res) => {
     try {
-        const creators = await Creator.findAll()
+        const creators = await Creator.findAll({
+            order: [['createdAt', 'DESC']]
+        })
         const creatorDetails = await Promise.all(creators.map(async creator => {
 
             const [ecosystems, digitalProducts, services, courses] = await Promise.all([
@@ -83,7 +85,33 @@ const getAllCreators = async (req, res) => {
                 DigitalProduct.find({ creatorId: creator.id }),
                 Service.find({ creatorId: creator.id }),
                 Course.find({ creatorId: creator.id }),
+
             ]);
+
+            // Fetch users associated with the ecosystems of the creator
+            const userCountPromises = ecosystems.map(async ecosystem => {
+                if (ecosystem.ecosystemDomain) {
+                    const users = await EcosystemUser.findAll({
+                        where: { ecosystemDomain: ecosystem.ecosystemDomain }
+                    });
+                    return users.length;
+                }
+                return 0;
+            });
+
+            const userCounts = await Promise.all(userCountPromises);
+            const totalUserCount = userCounts.reduce((sum, count) => sum + count, 0);
+
+
+            const ecosystemsWithLogos = await Promise.all(
+                ecosystems.map(async (ecosystem) => {
+                    const template = await Template.findOne({ ecosystemId: ecosystem._id });
+                    return {
+                        ...ecosystem.toObject(),
+                        logo: template ? template.navbar.logo : null,
+                    };
+                })
+            );
 
             return {
                 id: creator.id,
@@ -98,12 +126,13 @@ const getAllCreators = async (req, res) => {
                 digitalProductCount: digitalProducts.length,
                 serviceCount: services.length,
                 courseCount: courses.length,
-                userCount: creator.userCount
+                userCount: totalUserCount,
+                ecosystems: ecosystemsWithLogos
             };
 
         }));
 
-        res.status(200).json({ creatorDetails })
+        res.status(200).json({ creators: creatorDetails })
 
     } catch (error) {
         console.error("Error retrieving all creators:", error);
@@ -114,14 +143,16 @@ const getAllCreators = async (req, res) => {
 
 const getACreatorById = async (req, res) => {
     try {
-        const { id } = req.params
+        const id = req.params.id;
 
-        const creator = await Creator.findByPk(id);
+        const creator = await Creator.findByPk(id, {
+            order: [['createdAt', 'DESC']]
+        });
 
         if (!creator) {
             return res.status(404).json({ error: 'Creator not found' });
         }
-        // Fetch all related ecosystems and products
+        // Fetch all related ecosystems and products by creator
         const [ecosystems, digitalProducts, services, courses] = await Promise.all([
             Ecosystem.find({ creatorId: id }),
             DigitalProduct.find({ creatorId: id }),
@@ -138,10 +169,11 @@ const getACreatorById = async (req, res) => {
             numberOfTargetAudience: creator.numberOfTargetAudience,
             categoryInterest: creator.categoryInterest,
             role: creator.role,
+            courses,
             ecosystems,
             digitalProducts,
             services,
-            courses
+
         });
 
     } catch (error) {
@@ -158,7 +190,7 @@ const getAllSupportRequests = async (req, res) => {
             include: [
                 {
                     model: Creator,
-                    attributes: ['organizationName', 'email']
+                    attributes: ['organizationName', 'email', 'imageUrl']
                 },
             ],
 
