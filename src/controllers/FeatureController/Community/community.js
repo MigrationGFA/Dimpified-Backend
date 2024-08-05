@@ -1,11 +1,10 @@
 const { Community, Post, Comment } = require("../../../models/Community");
 const Creator = require("../../../models/Creator");
 const EcosystemUser = require("../../../models/EcosystemUser");
+const Ecosystem = require("../../../models/Ecosystem");
 
 const createCommunityHeader = async (req, res) => {
   try {
-    console.log("Body:", req.body);
-    console.log("files:", req.files);
     const { creatorId, ecosystemDomain, sectors, description, rules } =
       req.body;
 
