@@ -88,6 +88,10 @@ const commentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    userType: {
+      type: String,
+      required: true,
+    },
     likes: {
       type: Number,
       default: 0,

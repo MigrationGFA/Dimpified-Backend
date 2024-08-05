@@ -28,10 +28,6 @@ const postUpload = multer({
 
 router.post(
   "/create-community-header",
-  upload.fields([
-    { name: "image", maxCount: 1 },
-    { name: "backgroundCover", maxCount: 1 },
-  ]),
   createCommunityHeader
 );
 

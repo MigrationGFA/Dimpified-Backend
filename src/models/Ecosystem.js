@@ -62,6 +62,11 @@ const ecosystemSchema = new mongoose.Schema({
     enum: ["draft", "private", "live"],
     default: "draft",
   },
+  communityCreated: {
+    type: String,
+    enum: ["true", "false", ],
+    default: "false",
+  },
   steps: {
     type: Number,
     default: 0,
