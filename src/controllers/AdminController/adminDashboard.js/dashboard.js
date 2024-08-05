@@ -102,17 +102,6 @@ const getAllCreators = async (req, res) => {
             const userCounts = await Promise.all(userCountPromises);
             const totalUserCount = userCounts.reduce((sum, count) => sum + count, 0);
 
-
-            const ecosystemsWithLogos = await Promise.all(
-                ecosystems.map(async (ecosystem) => {
-                    const template = await Template.findOne({ ecosystemId: ecosystem._id });
-                    return {
-                        ...ecosystem.toObject(),
-                        logo: template ? template.navbar.logo : null,
-                    };
-                })
-            );
-
             return {
                 id: creator.id,
                 organizationName: creator.organizationName,
@@ -127,7 +116,7 @@ const getAllCreators = async (req, res) => {
                 serviceCount: services.length,
                 courseCount: courses.length,
                 userCount: totalUserCount,
-                ecosystems: ecosystemsWithLogos
+                
             };
 
         }));
@@ -160,6 +149,16 @@ const getACreatorById = async (req, res) => {
             Course.find({ creatorId: id })
         ]);
 
+        const ecosystemsWithLogos = await Promise.all(
+                ecosystems.map(async (ecosystem) => {
+                    const template = await Template.findOne({ ecosystemId: ecosystem._id });
+                    return {
+                        ...ecosystem.toObject(),
+                        logo: template ? template.navbar.logo : null,
+                    };
+                })
+            );
+
         res.json({
             id: creator.id,
             organizationName: creator.organizationName,
@@ -170,10 +169,9 @@ const getACreatorById = async (req, res) => {
             categoryInterest: creator.categoryInterest,
             role: creator.role,
             courses,
-            ecosystems,
             digitalProducts,
             services,
-
+            ecosystems: ecosystemsWithLogos
         });
 
     } catch (error) {
