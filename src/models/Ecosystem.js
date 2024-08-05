@@ -28,6 +28,7 @@ const ecosystemSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  communityId: { type: mongoose.Schema.Types.ObjectId, ref: "dimpCommunity" },
   expectedAudienceNumber: {
     type: String,
     required: true,
