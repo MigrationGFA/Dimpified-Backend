@@ -28,6 +28,7 @@ const ecosystemSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  communityId: { type: mongoose.Schema.Types.ObjectId, ref: "dimpCommunity" },
   expectedAudienceNumber: {
     type: String,
     required: true,
@@ -60,6 +61,11 @@ const ecosystemSchema = new mongoose.Schema({
     type: String,
     enum: ["draft", "private", "live"],
     default: "draft",
+  },
+  communityCreated: {
+    type: String,
+    enum: ["true", "false", ],
+    default: "false",
   },
   steps: {
     type: Number,
