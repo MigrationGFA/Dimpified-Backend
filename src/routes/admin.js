@@ -7,6 +7,7 @@ const {
     getACreatorById,
     getAllSupportRequests,
     getAdminDashboardOverview } = require("../controllers/AdminController/adminDashboard.js/dashboard");
+    const createSubdomain = require("../controllers/Subdomain")
 const router = express.Router();
 
 
@@ -24,5 +25,7 @@ router.get("/admin-all-support-requests", getAllSupportRequests)
 
 //Dashboard data
 router.get("/admin-dashboard-overview", getAdminDashboardOverview)
+
+router.post("/create-domain/:subdomain", createSubdomain)
 
 module.exports = router;
