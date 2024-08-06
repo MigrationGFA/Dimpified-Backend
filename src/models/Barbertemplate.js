@@ -10,7 +10,7 @@ const testimonialSchema = new mongoose.Schema({
 const teamMemberSchema = new mongoose.Schema({
   name: { type: String, required: true },
   position: { type: String, required: true },
-  imageUrl: { type: String, required: true },
+  imageUrl: { type: String},
   socialLinks: {
     instagram: { type: String },
     facebook: { type: String },
@@ -27,6 +27,7 @@ const carouselImageSchema = new mongoose.Schema({
 // Define Schema for Navbar
 const navbarSchema = new mongoose.Schema({
   background: { type: String },
+  logo: { type: String },
   links: [
     {
       href: { type: String, required: true },
