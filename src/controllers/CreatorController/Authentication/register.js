@@ -7,8 +7,8 @@ const RegisterCreator = async (req, res) => {
   try {
     await Creator.sync();
 
-    const { organizationName, email, password } = req.body;
-    const details = ["organizationName", "email", "password"];
+    const { organizationName, email, password, role } = req.body;
+    const details = ["organizationName", "email", "password", "role"];
 
     for (const detail of details) {
       if (!req.body[detail]) {
@@ -33,6 +33,7 @@ const RegisterCreator = async (req, res) => {
           organizationName,
           password: hashedPassword,
           verificationToken,
+          role
         });
 
         // Send verification email
@@ -62,6 +63,7 @@ const RegisterCreator = async (req, res) => {
         password: hashedPassword,
         verificationToken,
         isVerified: false,
+        role
       });
 
       await sendVerificationEmailCreator({
