@@ -1,6 +1,8 @@
 const Template = require("../../models/Templates");
 const Ecosystem = require("../../models/Ecosystem");
 const Creator = require("../../models/Creator");
+const EcosystemUser = require("../../models/EcosystemUser");
+const Barbertemplate = require("../../models/Barbertemplate");
 
 const createTemplate = async (req, res) => {
   try {
@@ -92,14 +94,16 @@ const createTemplate = async (req, res) => {
 
 const getAnEcosystemTemplate = async (req, res) => {
   try {
-    const { ecosystemDomain, } = req.params;
-    if (!ecosystemDomain ) {
+    const { ecosystemDomain } = req.params;
+    if (!ecosystemDomain) {
       return res
         .status(400)
         .json({ message: "ecosystemDomain name  is required" });
     }
 
-    const ecosystem = await Ecosystem.findOne({ecosystemDomain: ecosystemDomain});
+    const ecosystem = await Ecosystem.findOne({
+      ecosystemDomain: ecosystemDomain,
+    });
 
     if (!ecosystem) {
       return res.status(404).json({ message: "Ecosystem not found" });
@@ -119,4 +123,118 @@ const getAnEcosystemTemplate = async (req, res) => {
   }
 };
 
-module.exports = { createTemplate, getAnEcosystemTemplate };
+const createBarberTemplate = async (req, res) => {
+  try {
+    const { creatorId, ecosystemDomain, templateNumber } = req.body;
+
+    const requiredFields = ["creatorId", "ecosystemDomain", "templateNumber"];
+
+    // Check if required fields are provided
+    for (const field of requiredFields) {
+      if (!req.body[field]) {
+        return res.status(400).json({ message: `${field} is required` });
+      }
+    }
+
+    // Check if the creator exists
+    const creator = await Creator.findByPk(creatorId);
+    if (!creator) {
+      return res.status(404).json({ message: "Creator not found" });
+    }
+
+    // Check if the ecosystem exists
+    const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
+    if (!ecosystem) {
+      return res.status(404).json({ message: "Ecosystem not found" });
+    }
+
+    // Prepare the template data
+    const templateData = {
+      creatorId,
+      ecosystemDomain,
+      templateNumber,
+      navbar: JSON.parse(req.body.navbar),
+      heroSection: JSON.parse(req.body.heroSection),
+      aboutSection: JSON.parse(req.body.aboutSection),
+      carouselImages: JSON.parse(req.body.carouselImages),
+      testimonials: JSON.parse(req.body.testimonials),
+      team: JSON.parse(req.body.team),
+      contactInfo: JSON.parse(req.body.contactInfo),
+      footer: JSON.parse(req.body.footer),
+    };
+
+    // Set file paths in templateData
+    if (req.files) {
+      // Navbar logo
+      if (req.files["navbar.logo"]) {
+        templateData.navbar.logo = `https://dimpified-backend-development.azurewebsites.net/${req.files["navbar.logo"][0].path}`;
+      }
+
+      // Hero section background image
+      if (req.files["heroSection.backgroundImage"]) {
+        templateData.heroSection.backgroundImage = `https://dimpified-backend-development.azurewebsites.net/${req.files["heroSection.backgroundImage"][0].path}`;
+      }
+
+      // About section images
+      if (req.files["aboutSection.images"]) {
+        templateData.aboutSection.images = req.files["aboutSection.images"].map(
+          (file) => ({
+            src: `https://dimpified-backend-development.azurewebsites.net/${file.path}`,
+            style: {
+              backgroundImage: `url(https://dimpified-backend-development.azurewebsites.net/${file.path})`,
+            },
+          })
+        );
+      }
+
+      // Carousel images
+      if (req.files["carouselImages"]) {
+        templateData.carouselImages = req.files["carouselImages"].map(
+          (file) => ({
+            src: `https://dimpified-backend-development.azurewebsites.net/${file.path}`,
+            alt: file.originalname,
+          })
+        );
+      }
+
+      // Footer logo
+      if (req.files["footer.logo"]) {
+        templateData.footer.logo = `https://dimpified-backend-development.azurewebsites.net/${req.files["footer.logo"][0].path}`;
+      }
+
+      // Team member images
+      if (req.files["team.images"]) {
+        // Assuming team.images is an array of files and each file corresponds to a team member
+        templateData.team = templateData.team.map((member, index) => {
+          if (req.files["team.images"][index]) {
+            return {
+              ...member,
+              imageUrl: `https://dimpified-backend-development.azurewebsites.net/${req.files["team.images"][index].path}`,
+            };
+          }
+          return member;
+        });
+      }
+    }
+    // Create the template
+    const template = await Barbertemplate.create(templateData);
+
+    // Update ecosystem with the new template
+    ecosystem.steps = 2;
+    ecosystem.templates = template._id;
+    await ecosystem.save();
+
+    res
+      .status(201)
+      .json({ message: "Template created successfully", template });
+  } catch (error) {
+    console.error("Error creating template:", error);
+    res.status(500).json({ message: "Internal server error", error });
+  }
+};
+
+module.exports = {
+  createTemplate,
+  getAnEcosystemTemplate,
+  createBarberTemplate,
+};
