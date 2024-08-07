@@ -9,8 +9,31 @@ const Template = require("../../../models/Templates");
 
 //const PurchasedItem = require("../../../models/PurchasedItem");
 
+//Admin ecosystem overview
+const getAdminDashboardEcosystemOverview = async (req, res) => {
+    try {
+        const totalEcosystem = await Ecosystem.countDocuments()
 
+        const totalDratfEcoystems = await Ecosystem.countDocuments({ status: 'draft' })
 
+        const totalLiveEcosystems = await Ecosystem.countDocuments({ status: 'live' })
+
+        const totalPrivateEcosystems = await Ecosystem.countDocuments({ status: 'private' })
+
+        const dashboardData = {
+            totalEcosystem,
+            totalDratfEcoystems,
+            totalLiveEcosystems,
+            totalPrivateEcosystems
+        };
+        res.status(200).json({ dashboardData });
+    } catch (error) {
+        console.error("Error retrieving ecosystem overview:", error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+//Get all ecosystem by admin
 const getAdminAllEcosystem = async (req, res) => {
     try {
         const ecosystems = await Ecosystem.find().sort({ createdAt: -1 });
@@ -53,6 +76,38 @@ const getPendingEcosystems = async (req, res) => {
     }
 };
 
+//Get last four ecosystems
+const getAdminLastFourEcosystems = async (req, res) => {
+    try {
+        const lastcreated = await Ecosystem.find()
+            .sort({
+                createdAt: -1,
+            })
+            .limit(4);
+
+        if (lastcreated.length === 0) {
+            return res
+                .status(404)
+                .json({ message: "User has no created ecosystems" });
+        }
+
+        const lastFourEcosystemWithLogos = await Promise.all(
+            lastcreated.map(async (ecosystem) => {
+                const template = await Template.findOne({ ecosystemId: ecosystem._id });
+                return {
+                    ...ecosystem.toObject(),
+                    logo: template ? template.navbar.logo : null,
+                };
+            })
+        );
+
+        res.status(200).json({ lastFourEcosystemWithLogos });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal Server Error", detail: error });
+    }
+};
+
 // Get completed (live) ecosystems
 const getCompletedEcosystems = async (req, res) => {
     try {
@@ -73,6 +128,57 @@ const getCompletedEcosystems = async (req, res) => {
     }
 };
 
+const getAdminLastFourProducts = async (req, res) => {
+    try {
+        const lastFourCourses = await Course.find().sort({ createdAt: -1 }).limit(4);
+        const lastFourDigitalProducts = await DigitalProduct.find().sort({ createdAt: -1 }).limit(4);
+        const lastFourServices = await Service.find().sort({ createdAt: -1 }).limit(4);
+
+        const products = [
+            ...lastFourCourses,
+            ...lastFourDigitalProducts,
+            ...lastFourServices
+        ].flatMap(product => {
+            if (product.schema.path('title')) return { ...product.toObject(), type: 'course' };
+            if (product.schema.path('productName')) return { ...product.toObject(), type: 'digitalProduct' };
+            if (product.schema.path('header')) return { ...product.toObject(), type: 'service' };
+        });
+
+        products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        res.status(200).json(products.slice(0, 4));
+    } catch (error) {
+        console.error("Error getting last four products:", error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+
+//Creator Overviews
+const getAdminDashboardCreatorOverview = async (req, res) => {
+    try {
+        const totalCreators = await Creator.count();
+
+        const totalVerifiedCreators = await Creator.count({ where: { isVerified: true } });
+        const totalUnverifiedCreators = await Creator.count({ where: { isVerified: false } });
+
+        // Get creators that have ecosystems
+        const creatorsWithEcosystem = await Ecosystem.distinct('creatorId');
+        const totalCreatorsWithEcosystem = creatorsWithEcosystem.length;
+
+        const dashboardData = {
+            totalCreators,
+            totalVerifiedCreators,
+            totalUnverifiedCreators,
+            totalCreatorsWithEcosystem,
+        };
+        res.status(200).json({ dashboardData });
+    } catch (error) {
+        console.error("Error retrieving creator dashboard error:", error);
+        res.status(500).json({ message: 'Oops I think the server is down' });
+    }
+}
+//Get all creators
 const getAllCreators = async (req, res) => {
     try {
         const creators = await Creator.findAll({
@@ -116,7 +222,7 @@ const getAllCreators = async (req, res) => {
                 serviceCount: services.length,
                 courseCount: courses.length,
                 userCount: totalUserCount,
-                
+
             };
 
         }));
@@ -129,7 +235,7 @@ const getAllCreators = async (req, res) => {
     };
 };
 
-
+//Get a creator
 const getACreatorById = async (req, res) => {
     try {
         const id = req.params.id;
@@ -150,14 +256,14 @@ const getACreatorById = async (req, res) => {
         ]);
 
         const ecosystemsWithLogos = await Promise.all(
-                ecosystems.map(async (ecosystem) => {
-                    const template = await Template.findOne({ ecosystemId: ecosystem._id });
-                    return {
-                        ...ecosystem.toObject(),
-                        logo: template ? template.navbar.logo : null,
-                    };
-                })
-            );
+            ecosystems.map(async (ecosystem) => {
+                const template = await Template.findOne({ ecosystemId: ecosystem._id });
+                return {
+                    ...ecosystem.toObject(),
+                    logo: template ? template.navbar.logo : null,
+                };
+            })
+        );
 
         res.json({
             id: creator.id,
@@ -180,6 +286,40 @@ const getACreatorById = async (req, res) => {
     }
 };
 
+
+//Get last four creator
+const getAdminLastFourCreators = async (req, res) => {
+    try {
+        const lastFourCreator = await Creator.findAll({
+            order: [['createdAt', 'DESC']],
+            limit: 4
+        })
+
+
+        if (lastFourCreator.length === 0) {
+            return res
+                .status(404)
+                .json({ message: "User has no created ecosystems" });
+        }
+
+        const lastFourCreatorWithLogos = await Promise.all(
+            lastFourCreator.map(async (ecosystem) => {
+                const template = await Template.findOne({ ecosystemId: ecosystem._id });
+                return {
+                    ...ecosystem.get({ plain: true }),
+                    logo: template ? template.navbar.logo : null,
+                };
+            })
+        );
+
+        res.status(200).json({ lastFourCreatorWithLogos });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal Server Error", detail: error });
+    }
+};
+
+//Get all support Request
 const getAllSupportRequests = async (req, res) => {
     try {
         const allSupportRequests = await CreatorSupport.findAll({
@@ -193,7 +333,6 @@ const getAllSupportRequests = async (req, res) => {
             ],
 
         })
-
         res.status(200).json({
             success: true,
             data: allSupportRequests,
@@ -204,6 +343,39 @@ const getAllSupportRequests = async (req, res) => {
     }
 };
 
+// get admin support overview
+const getAdminDashboardSupportOverview = async (req, res) => {
+    try {
+        const totalSupportRequests = await CreatorSupport.count();
+
+        // const totalDratfEcoystems = await CreatorSupport.count({ status: 'draft' })
+
+        const totalPendingSupportRequests = await CreatorSupport.count({
+            where: {
+                status: 'pending'
+            }
+        });
+        const totalCompletedSupports = await CreatorSupport.count({
+            where: {
+                status: 'completed'
+            }
+
+        })
+
+        const dashboardData = {
+            totalSupportRequests,
+            totalPendingSupportRequests,
+            totalCompletedSupports,
+            //totalPrivateEcosystems
+        };
+        res.status(200).json({ dashboardData });
+    } catch (error) {
+        console.error("Error retrieving ecosystem overview:", error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+//Get Admin Dashboard Overview
 const getAdminDashboardOverview = async (req, res) => {
     try {
         const totalEcosystem = await Ecosystem.countDocuments()
@@ -226,11 +398,17 @@ const getAdminDashboardOverview = async (req, res) => {
 
 
 module.exports = {
+    getAdminDashboardEcosystemOverview,
     getAdminAllEcosystem,
     getPendingEcosystems,
     getCompletedEcosystems,
+    getAdminLastFourEcosystems,
+    getAdminLastFourProducts,
+    getAdminDashboardCreatorOverview,
     getAllCreators,
     getACreatorById,
+    getAdminLastFourCreators,
     getAllSupportRequests,
+    getAdminDashboardSupportOverview,
     getAdminDashboardOverview
 };

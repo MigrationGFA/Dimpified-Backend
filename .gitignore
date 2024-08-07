@@ -1,3 +1,5 @@
 node_modules
 .env
 samo.js
+AdminAuthentication
+sample.js
