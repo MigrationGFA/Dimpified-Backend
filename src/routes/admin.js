@@ -6,6 +6,7 @@ const {
     getCompletedEcosystems,
     getAdminLastFourEcosystems,
     getAdminLastFourProducts,
+    getEcosystemSingle,
     getAllCreators,
     getACreatorById,
     getAdminLastFourCreators,
@@ -23,6 +24,7 @@ router.get("/admin-completed-ecosystems", getCompletedEcosystems);
 router.get("/admin-last-four-ecosystems", getAdminLastFourEcosystems);
 router.get("/admin-ecosystem-dashboard-overview", getAdminDashboardEcosystemOverview);
 router.get("/admin-last-four-products", getAdminLastFourProducts);
+router.get("/admin-get-an-ecosystem/:id", getEcosystemSingle,)
 
 //Admin Creators endpoint
 router.get("/admin-all-creators", getAllCreators);
