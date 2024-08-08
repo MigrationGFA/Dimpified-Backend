@@ -1,5 +1,3 @@
-// const { DefaultAzureCredential } = require("@azure/identity");
-// const { DnsManagementClient } = require("@azure/arm-dns");
 const { ClientSecretCredential } = require("@azure/identity");
 const { DnsManagementClient } = require("@azure/arm-dns");
 
