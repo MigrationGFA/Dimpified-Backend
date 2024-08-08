@@ -168,6 +168,7 @@ const getEcosystemSingle = async (req, res) => {
     }
 }
 
+
 //Get last four products
 const getAdminLastFourProducts = async (req, res) => {
     try {
@@ -332,6 +333,7 @@ const getACreatorById = async (req, res) => {
 const getAdminLastFourCreators = async (req, res) => {
     try {
         const lastFourCreator = await Creator.findAll({
+            attributes: { exclude: ['password', 'passwordToken', 'verificationToken', 'passwordTokenExpirationDate'] },
             order: [['createdAt', 'DESC']],
             limit: 4
         })
