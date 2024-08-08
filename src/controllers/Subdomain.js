@@ -3,9 +3,9 @@
 const { ClientSecretCredential } = require("@azure/identity");
 const { DnsManagementClient } = require("@azure/arm-dns");
 
-const subscriptionId = "25d8e50c-30be-465f-887d-78a72103aaf4";
-const resourceGroupName = "GFA-WEMA";
-const zoneName = "dimpified.com";
+const subscriptionId = process.env.AZURE_SUBSCRIPTION_ID;
+const resourceGroupName = process.env.AZURE_RESOURCE_GROUP;
+const zoneName = process.env.AZURE_ZONE_NAME;
 
 const createSubdomain = async (req, res) => {
     try {
@@ -20,7 +20,7 @@ const createSubdomain = async (req, res) => {
 
         const parameters = {
             ttl: 3600,
-            aRecords: [{ ipv4Address: "13.80.179.118" }]
+            aRecords: [{ ipv4Address: process.env.AZURE_IP_ADDRESS }]
         };
 
         await client.recordSets.createOrUpdate(
