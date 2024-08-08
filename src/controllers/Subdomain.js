@@ -5,6 +5,7 @@ const subscriptionId = process.env.AZURE_SUBSCRIPTION_ID;
 const resourceGroupName = process.env.AZURE_RESOURCE_GROUP;
 const zoneName = process.env.AZURE_ZONE_NAME;
 
+// to fix domain creation
 const createSubdomain = async (req, res) => {
     try {
         const subdomain = req.params.subdomain;
