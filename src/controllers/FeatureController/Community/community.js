@@ -3,12 +3,11 @@ const Creator = require("../../../models/Creator");
 const Ecosystem = require("../../../models/Ecosystem");
 const EcosystemUser = require("../../../models/EcosystemUser");
 
-
 const createCommunityHeader = async (req, res) => {
   try {
     const { creatorId, ecosystemDomain, sectors, description, rules } =
       req.body;
-
+    console.log("body:", req.body);
     const requiredFields = [
       "creatorId",
       "ecosystemDomain",
@@ -42,12 +41,12 @@ const createCommunityHeader = async (req, res) => {
     });
 
     await community.save();
-  
+
     ecosystem.communityId = community.id;
     ecosystem.communityCreated = "true";
 
     await ecosystem.save();
- 
+
     return res.status(200).json({ message: "Community created succesfully" });
   } catch (error) {
     console.error("Error creatring community:", error);
@@ -57,7 +56,6 @@ const createCommunityHeader = async (req, res) => {
 
 const createPost = async (req, res) => {
   try {
- 
     const { authorId, userType, ecosystemDomain, content } = req.body;
 
     const requiredFields = [
@@ -93,7 +91,7 @@ const createPost = async (req, res) => {
 
     const community = await Community.findById(communityId);
     if (!community) {
-      return res.json(404).json({ message: "Community not found" });
+      return res.status(404).json({ message: "Community not found" });
     }
 
     community.totalPost += 1;
@@ -109,11 +107,16 @@ const createPost = async (req, res) => {
         );
       });
     }
-    console.log("Links:", imageLinks);
+
+    let status = "pending";
+    if (userType === "creator") {
+      status = "live";
+    }
 
     const post = new Post({
       authorId,
       communityId,
+      status,
       userType,
       ecosystemDomain,
       content: content || "",
@@ -149,47 +152,61 @@ const getCommunityWithPosts = async (req, res) => {
       return res.status(404).json({ message: "Community not found" });
     }
     const communityId = community._id;
-    const posts = await Post.find({ communityId }).sort({ createdAt: -1 });
-   // Extract unique author IDs and user types
-  const authorData = posts.map((post) => ({ id: post.authorId, type: post.userType }));
-  const uniqueAuthors = Array.from(new Set(authorData.map(JSON.stringify))).map(JSON.parse);
 
-  const creatorIds = uniqueAuthors.filter(author => author.type === 'creator').map(author => author.id);
-  const ecosystemUserIds = uniqueAuthors.filter(author => author.type === 'user').map(author => author.id);
+    //check status for live
+    const posts = await Post.find({ communityId, status: 'live' }).sort({
+      createdAt: -1,
+    });
 
-  const creators = await Creator.findAll({
-    where: { id: creatorIds },
-    attributes: ["id", "imageUrl", "organizationName"],
-  });
+    // Extract unique author IDs and user types
+    const authorData = posts.map((post) => ({
+      id: post.authorId,
+      type: post.userType,
+    }));
+    const uniqueAuthors = Array.from(
+      new Set(authorData.map(JSON.stringify))
+    ).map(JSON.parse);
 
-  const ecosystemUsers = await EcosystemUser.findAll({
-    where: { id: ecosystemUserIds },
-    attributes: ["id", "imageUrl", "username"],
-  });
+    const creatorIds = uniqueAuthors
+      .filter((author) => author.type === "creator")
+      .map((author) => author.id);
+    const ecosystemUserIds = uniqueAuthors
+      .filter((author) => author.type === "user")
+      .map((author) => author.id);
 
-  const userImages = {};
-  const userNames = {};
+    const creators = await Creator.findAll({
+      where: { id: creatorIds },
+      attributes: ["id", "imageUrl", "organizationName"],
+    });
 
-  creators.forEach((creator) => {
-    userImages[creator.id] = creator.imageUrl;
-    userNames[creator.id] = creator.organizationName;
-  });
+    const ecosystemUsers = await EcosystemUser.findAll({
+      where: { id: ecosystemUserIds },
+      attributes: ["id", "imageUrl", "username"],
+    });
 
-  ecosystemUsers.forEach((user) => {
-    userImages[user.id] = user.imageUrl;
-    userNames[user.id] = user.username;
-  });
+    const userImages = {};
+    const userNames = {};
 
-  const postsWithImages = posts.map((post) => ({
-    ...post.toObject(),
-    userImage: userImages[post.authorId] || null,
-    username: userNames[post.authorId] || null,
-  }));
+    creators.forEach((creator) => {
+      userImages[creator.id] = creator.imageUrl;
+      userNames[creator.id] = creator.organizationName;
+    });
 
-  return res.status(200).json({
-    community,
-    posts: postsWithImages,
-  });
+    ecosystemUsers.forEach((user) => {
+      userImages[user.id] = user.imageUrl;
+      userNames[user.id] = user.username;
+    });
+
+    const postsWithImages = posts.map((post) => ({
+      ...post.toObject(),
+      userImage: userImages[post.authorId] || null,
+      username: userNames[post.authorId] || null,
+    }));
+
+    return res.status(200).json({
+      community,
+      posts: postsWithImages,
+    });
   } catch (error) {
     console.error(
       "Error fetching community with posts and user images:",
@@ -203,7 +220,13 @@ const commentOnPost = async (req, res) => {
   try {
     const { postId, userId, ecosystemDomain, comment, userType } = req.body;
 
-    const requiredFields = ["postId", "userId", "comment", "ecosystemDomain", "userType"];
+    const requiredFields = [
+      "postId",
+      "userId",
+      "comment",
+      "ecosystemDomain",
+      "userType",
+    ];
 
     for (const field of requiredFields) {
       if (!req.body[field]) {
@@ -225,7 +248,7 @@ const commentOnPost = async (req, res) => {
       userId,
       ecosystemDomain,
       comment,
-      userType
+      userType,
     });
 
     await newComment.save();
@@ -255,11 +278,20 @@ const getPostComments = async (req, res) => {
         .json({ message: "No comments found for this post" });
     }
 
-    const userData = comments.map((comment) => ({ id: comment.userId, type: comment.userType }));
-    const uniqueUsers = Array.from(new Set(userData.map(JSON.stringify))).map(JSON.parse);
+    const userData = comments.map((comment) => ({
+      id: comment.userId,
+      type: comment.userType,
+    }));
+    const uniqueUsers = Array.from(new Set(userData.map(JSON.stringify))).map(
+      JSON.parse
+    );
 
-    const creatorIds = uniqueUsers.filter(user => user.type === 'creator').map(user => user.id);
-    const ecosystemUserIds = uniqueUsers.filter(user => user.type === 'user').map(user => user.id);
+    const creatorIds = uniqueUsers
+      .filter((user) => user.type === "creator")
+      .map((user) => user.id);
+    const ecosystemUserIds = uniqueUsers
+      .filter((user) => user.type === "user")
+      .map((user) => user.id);
 
     const creators = await Creator.findAll({
       where: { id: creatorIds },
@@ -370,12 +402,66 @@ const updateImage = async (req, res) => {
   }
 };
 
+const pendingPosts = async (req, res) => {
+  try {
+    const ecosystemDomain = req.params.ecosystemDomain;
+
+    const pendingPosts = await Post.find({
+      ecosystemDomain,
+      status: "pending",
+    });
+
+    if (pendingPosts.length === 0) {
+      return res.status(404).json({ message: "No pending posts found" });
+    }
+
+    return res.status(200).json(pendingPosts);
+  } catch (error) {
+    console.error("Error fetching pending posts:", error);
+    return res.status(500).json({ message: "Failed to fetch pending posts" });
+  }
+};
+
+const approveOrRejectPost = async (req, res) => {
+  try {
+    const { status, postId } = req.body;
+
+    if (!status || !["live", "rejected"].includes(status)) {
+      return res
+        .status(400)
+        .json({
+          message:
+            'Invalid status. Status must be either "live" or "rejected".',
+        });
+    }
+    if (!postId) {
+      return res.status(400).json({ message: "Please provide post id" });
+    }
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    post.status = status;
+    await post.save();
+
+    return res
+      .status(200)
+      .json({ message: `Post status updated to ${status}` });
+  } catch (error) {
+    console.error("Error updating post status:", error);
+    return res.status(500).json({ message: "Failed to update post status" });
+  }
+};
 module.exports = {
   createCommunityHeader,
   createPost,
   getCommunityWithPosts,
   commentOnPost,
   getPostComments,
+  pendingPosts,
   updateImage,
   updateBackgroundCover,
+  approveOrRejectPost,
 };
