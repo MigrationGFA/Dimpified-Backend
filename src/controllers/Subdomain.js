@@ -12,9 +12,9 @@ const createSubdomain = async (req, res) => {
         const subdomain = req.params.subdomain;
 
         const credential = new ClientSecretCredential(
-            process.env.TENANT_ID, // AZURE_TENANT_ID
-            process.env.CLIENT_ID, // AZURE_CLIENT_ID
-            process.env.VALUE // AZURE_CLIENT_SECRET
+            process.env.TENANT_ID, 
+            process.env.CLIENT_ID, 
+            process.env.VALUE 
         );
         const client = new DnsManagementClient(credential, subscriptionId);
 
@@ -39,33 +39,5 @@ const createSubdomain = async (req, res) => {
     }
 };
 
-// const createSubdomain = async (req, res) => {
-//     try {
-//          const subdomain = req.params.subdomain
-//     const credential = new DefaultAzureCredential();
-//     const client = new DnsManagementClient(credential, subscriptionId);
-
-//   const parameters = {
-//     ttl: 3600,
-//     aRecords: [{ ipv4Address: "your-ip-address" }]
-//   };
-
-//   await client.recordSets.createOrUpdate(
-//     resourceGroupName,
-//     zoneName,
-//     subdomain,
-//     "A",
-//     parameters
-//   );
-
-//   console.log(`Subdomain ${subdomain}.${zoneName} created successfully!`);
-//     } catch (error) {
-//         console.log("error creating subdomain:", error)
-//         res.status(500).json({ error: 'Failed to fetch creator' });
-//     }
-   
-// };
-
-// createSubdomain().catch(err => console.error("Error creating subdomain:", err));
 
 module.exports = createSubdomain
