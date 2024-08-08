@@ -12,9 +12,9 @@ const createSubdomain = async (req, res) => {
         const subdomain = req.params.subdomain;
 
         const credential = new ClientSecretCredential(
-            "6ae6f711-0008-4a2d-899f-15cc3239c809", // AZURE_TENANT_ID
-            "8df07449-b5a2-499d-8b5e-cfec901ed508", // AZURE_CLIENT_ID
-            "zKX8Q~~rQqkvys5WA1Fl0IpgSaM2posjjlLI5dtG" // AZURE_CLIENT_SECRET
+            process.env.TENANT_ID, // AZURE_TENANT_ID
+            process.env.CLIENT_ID, // AZURE_CLIENT_ID
+            process.env.VALUE // AZURE_CLIENT_SECRET
         );
         const client = new DnsManagementClient(credential, subscriptionId);
 
