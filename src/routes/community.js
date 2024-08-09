@@ -7,6 +7,8 @@ const {
   getPostComments,
   updateBackgroundCover,
   updateImage,
+  pendingPosts,
+  approveOrRejectPost,
 } = require("../controllers/FeatureController/Community/community");
 const router = express.Router();
 const multer = require("multer");
@@ -26,10 +28,7 @@ const postUpload = multer({
   },
 });
 
-router.post(
-  "/create-community-header",
-  createCommunityHeader
-);
+router.post("/create-community-header", createCommunityHeader);
 
 router.post("/create-post", postUpload.array("image"), createPost);
 router.get("/community/:ecosystemDomain", getCommunityWithPosts);
@@ -40,10 +39,12 @@ router.patch(
   upload.single("backgroundCover"),
   updateBackgroundCover
 );
+router.get("/pending-posts/:ecosystemDomain", pendingPosts);
 router.patch(
   "/update-image/:ecosystemDomain",
   upload.single("image"),
   updateImage
 );
+router.patch("/validate-post", approveOrRejectPost);
 
 module.exports = router;
