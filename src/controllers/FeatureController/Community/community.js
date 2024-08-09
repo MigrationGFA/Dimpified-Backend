@@ -154,7 +154,7 @@ const getCommunityWithPosts = async (req, res) => {
     const communityId = community._id;
 
     //check status for live
-    const posts = await Post.find({ communityId, status: 'live' }).sort({
+    const posts = await Post.find({ communityId, status: "live" }).sort({
       createdAt: -1,
     });
 
@@ -427,12 +427,9 @@ const approveOrRejectPost = async (req, res) => {
     const { status, postId } = req.body;
 
     if (!status || !["live", "rejected"].includes(status)) {
-      return res
-        .status(400)
-        .json({
-          message:
-            'Invalid status. Status must be either "live" or "rejected".',
-        });
+      return res.status(400).json({
+        message: 'Invalid status. Status must be either "live" or "rejected".',
+      });
     }
     if (!postId) {
       return res.status(400).json({ message: "Please provide post id" });
