@@ -7,6 +7,8 @@ const EcosystemUser = require("../../../models/EcosystemUser");
 const CreatorSupport = require("../../../models/Support");
 const Template = require("../../../models/Templates");
 const PurchasedItem = require("../../../models/PurchasedItem");
+const Feature = require("../../../models/Feature")
+const Review = require("../../../models/Reviews")
 
 //Admin ecosystem overview
 const getAdminDashboardEcosystemOverview = async (req, res) => {
@@ -439,7 +441,38 @@ const getAdminDashboardOverview = async (req, res) => {
     }
 }
 
+const getAllFeatures = async (req, res) => {
+    try {
+        const allFeatures = await Feature.findAll({
+            order: [['createdAt', 'DESC']]
+        })
 
+        res.status(200).json({
+            success: true,
+            data: allFeatures,
+        });
+    } catch (error) {
+        console.error("Error retrieving Features:", error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+const getAllReviews = async (req, res) => {
+    try {
+        const allReviews = await Review.findAll({
+            order: [['createdAt', 'DESC']]
+        })
+
+        res.status(200).json({
+            success: true,
+            data: allReviews,
+        });
+    } catch (error) {
+        console.error("Error retrieving Reviews:", error);
+        res.status(500).json({ message: 'Server error' });
+    };
+
+};
 module.exports = {
     getAdminDashboardEcosystemOverview,
     getAdminAllEcosystem,
@@ -454,5 +487,7 @@ module.exports = {
     getAdminLastFourCreators,
     getAllSupportRequests,
     getAdminDashboardSupportOverview,
-    getAdminDashboardOverview
+    getAdminDashboardOverview,
+    getAllFeatures,
+    getAllReviews
 };
