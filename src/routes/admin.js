@@ -13,8 +13,11 @@ const {
     getAdminDashboardCreatorOverview,
     getAllSupportRequests,
     getAdminDashboardSupportOverview,
-    getAdminDashboardOverview } = require("../controllers/AdminController/adminDashboard.js/dashboard");
-    const createSubdomain = require("../controllers/Subdomain")
+    getAdminDashboardOverview,
+    getAllFeatures,
+    getAllReviews
+} = require("../controllers/AdminController/adminDashboard.js/dashboard");
+const createSubdomain = require("../controllers/Subdomain")
 const router = express.Router();
 
 
@@ -36,6 +39,12 @@ router.get("/admin-creator-dashboard-overview", getAdminDashboardCreatorOverview
 //Admin creator support Requests
 router.get("/admin-all-support-requests", getAllSupportRequests)
 router.get("/admin-support-dashboard-overview", getAdminDashboardSupportOverview)
+
+//Admin get all Features 
+router.get("/admin-all-features", getAllFeatures)
+
+//Admin get all reviews
+router.get("/admin-all-reviews", getAllReviews)
 
 //Dashboard data
 router.get("/admin-dashboard-overview", getAdminDashboardOverview);
