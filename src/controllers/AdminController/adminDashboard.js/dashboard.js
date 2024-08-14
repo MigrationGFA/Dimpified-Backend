@@ -6,8 +6,9 @@ const Service = require("../../../models/Service")
 const EcosystemUser = require("../../../models/EcosystemUser");
 const CreatorSupport = require("../../../models/Support");
 const Template = require("../../../models/Templates");
-
-//const PurchasedItem = require("../../../models/PurchasedItem");
+const PurchasedItem = require("../../../models/PurchasedItem");
+const Feature = require("../../../models/Feature")
+const Review = require("../../../models/Reviews")
 
 //Admin ecosystem overview
 const getAdminDashboardEcosystemOverview = async (req, res) => {
@@ -128,6 +129,49 @@ const getCompletedEcosystems = async (req, res) => {
     }
 };
 
+
+//Get a single ecosystem
+const getEcosystemSingle = async (req, res) => {
+    try {
+        const ecosystemId = req.params.id
+
+        const ecosystem = await Ecosystem.findById(ecosystemId)
+            .populate('courses')
+            .populate('ecoCertificate')
+            .populate('templates')
+            .populate('forms');
+
+        if (!ecosystem) {
+            return res.status(404).json({ message: 'Ecosystem not found' });
+        }
+
+        const courses = await Course.find({ ecosystemId: ecosystemId });
+        const digitalProducts = await DigitalProduct.find({ ecosystemDomain: ecosystem.ecosystemDomain });
+        const services = await Service.find({ ecosystemDomain: ecosystem.ecosystemDomain });
+
+
+        const userCount = await EcosystemUser.count({ where: { ecosystemDomain: ecosystem.ecosystemDomain } });
+
+
+        const totalAmount = await PurchasedItem.sum('itemAmount', { where: { ecosystemDomain: ecosystem.ecosystemDomain } });
+
+        res.status(200).json({
+            ecosystem,
+            courses,
+            digitalProducts,
+            services,
+            userCount,
+            totalAmount,
+        });
+
+    } catch (error) {
+        console.error("Error retrieving ecosystem:", error);
+        res.status(500).json({ message: 'Oops its not you its us' });
+    }
+}
+
+
+//Get last four products
 const getAdminLastFourProducts = async (req, res) => {
     try {
         const lastFourCourses = await Course.find().sort({ createdAt: -1 }).limit(4);
@@ -291,6 +335,7 @@ const getACreatorById = async (req, res) => {
 const getAdminLastFourCreators = async (req, res) => {
     try {
         const lastFourCreator = await Creator.findAll({
+            attributes: { exclude: ['password', 'passwordToken', 'verificationToken', 'passwordTokenExpirationDate'] },
             order: [['createdAt', 'DESC']],
             limit: 4
         })
@@ -396,13 +441,45 @@ const getAdminDashboardOverview = async (req, res) => {
     }
 }
 
+const getAllFeatures = async (req, res) => {
+    try {
+        const allFeatures = await Feature.findAll({
+            order: [['createdAt', 'DESC']]
+        })
 
+        res.status(200).json({
+            success: true,
+            data: allFeatures,
+        });
+    } catch (error) {
+        console.error("Error retrieving Features:", error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+const getAllReviews = async (req, res) => {
+    try {
+        const allReviews = await Review.findAll({
+            order: [['createdAt', 'DESC']]
+        })
+
+        res.status(200).json({
+            success: true,
+            data: allReviews,
+        });
+    } catch (error) {
+        console.error("Error retrieving Reviews:", error);
+        res.status(500).json({ message: 'Server error' });
+    };
+
+};
 module.exports = {
     getAdminDashboardEcosystemOverview,
     getAdminAllEcosystem,
     getPendingEcosystems,
     getCompletedEcosystems,
     getAdminLastFourEcosystems,
+    getEcosystemSingle,
     getAdminLastFourProducts,
     getAdminDashboardCreatorOverview,
     getAllCreators,
@@ -410,5 +487,7 @@ module.exports = {
     getAdminLastFourCreators,
     getAllSupportRequests,
     getAdminDashboardSupportOverview,
-    getAdminDashboardOverview
+    getAdminDashboardOverview,
+    getAllFeatures,
+    getAllReviews
 };
