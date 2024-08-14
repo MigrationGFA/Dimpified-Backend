@@ -23,6 +23,8 @@ const getAllEcosystemProduct = async (req, res) => {
       return res.status(404).json({ message: "Ecosystem not found" });
     }
 
+   
+
     const courses = await Course.find({
       ecosystemId: ecosystemProduct._id,
     }).sort({ createdAt: -1 });
@@ -78,6 +80,8 @@ const ecosystemDashboard = async (req, res) => {
     if (!ecosystem) {
       return res.status(400).json({ message: "Ecosystem not found" });
     }
+
+    const createCommunity = ecosystem.communityCreated
 
     const transactions = await PurchasedItem.findAll({
       where: {
@@ -142,6 +146,7 @@ const ecosystemDashboard = async (req, res) => {
       totalProducts,
       totalServices,
       totalEarnings,
+      createCommunity
     });
   } catch (error) {
     console.error(error);

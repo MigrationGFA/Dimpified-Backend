@@ -14,6 +14,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@azure/arm-appservice": "^15.0.0",
     "@azure/arm-dns": "^5.1.0",
     "@azure/identity": "^4.4.1",
     "bcryptjs": "^2.4.3",
