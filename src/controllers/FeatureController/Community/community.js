@@ -469,6 +469,49 @@ const approveOrRejectPost = async (req, res) => {
     return res.status(500).json({ message: "Failed to update post status" });
   }
 };
+
+const likeOrUnlikePost = async (req, res) => {
+  try {
+    const { communityId, userId, postId } = req.body
+
+    if (!communityId || !postId || !userId) {
+      return res.status(400).json({ message: "Missing required parameters" });
+    }
+    //find post by communityId and postId
+    const post = await Post.findOne({ _id: postId, communityId });
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+
+    //check if post has been liked
+    const hasLiked = post.likesUserId.includes(userId);
+
+    if (hasLiked) {
+      // If already liked, remove the like
+      post.likesUserId = post.likesUserId.filter(id => id !== userId);
+      post.likes -= 1; // Decrease the likes count
+    } else {
+      // If not liked, add the like
+      post.likesUserId.push(userId);
+      post.likes += 1; // Increase the likes count
+    }
+    await post.save();
+
+    return res.status(200).json({
+      message: hasLiked ? "Like removed" : "Post liked",
+      post: {
+        postId: post._id,
+        likes: post.likes,
+      },
+    });
+
+  } catch (error) {
+    console.error("Error liking or unliking post:", error);
+    return res.status(500).json({ message: "Failed to like or unlike post" });
+  }
+}
 module.exports = {
   createCommunityHeader,
   createPost,
@@ -479,4 +522,5 @@ module.exports = {
   updateImage,
   updateBackgroundCover,
   approveOrRejectPost,
+  likeOrUnlikePost
 };
