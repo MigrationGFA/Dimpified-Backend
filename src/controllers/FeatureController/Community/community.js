@@ -197,15 +197,30 @@ const getCommunityWithPosts = async (req, res) => {
       userNames[user.id] = user.username;
     });
 
-    const postsWithImages = posts.map((post) => ({
-      ...post.toObject(),
-      userImage: userImages[post.authorId] || null,
-      username: userNames[post.authorId] || null,
-    }));
+    // const postsWithImages = posts.map((post) => ({
+    //   ...post.toObject(),
+    //   userImage: userImages[post.authorId] || null,
+    //   username: userNames[post.authorId] || null,
+    // }));
+
+
+    // Fetch comments count for each post
+    const postsWithDetails = await Promise.all(
+      posts.map(async (post) => {
+        const commentsCount = await Comment.countDocuments({ postId: post._id });
+        return {
+          ...post.toObject(),
+          userImage: userImages[post.authorId] || null,
+          username: userNames[post.authorId] || null,
+          likes: post.likes,
+          commentsCount,
+        };
+      })
+    );
 
     return res.status(200).json({
       community,
-      posts: postsWithImages,
+      posts: postsWithDetails,
     });
   } catch (error) {
     console.error(
