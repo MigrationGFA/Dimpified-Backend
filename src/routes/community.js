@@ -9,6 +9,7 @@ const {
   updateImage,
   pendingPosts,
   approveOrRejectPost,
+  likeOrUnlikePost
 } = require("../controllers/FeatureController/Community/community");
 
 const router = express.Router();
@@ -48,6 +49,8 @@ router.patch(
   updateImage
 );
 router.patch("/validate-post", approveOrRejectPost);
+
+router.post("/like-unlike-post", likeOrUnlikePost);
 
 //Get User profile endpoint
 router.get("/get-user-profile/:ecosystemDomain", getUserProfile);
