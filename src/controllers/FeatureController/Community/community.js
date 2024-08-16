@@ -1,7 +1,9 @@
+const Reply = require("../../../models/Reply");
 const { Community, Post, Comment } = require("../../../models/Community");
 const Creator = require("../../../models/Creator");
 const Ecosystem = require("../../../models/Ecosystem");
 const EcosystemUser = require("../../../models/EcosystemUser");
+
 
 const createCommunityHeader = async (req, res) => {
   try {
@@ -197,15 +199,30 @@ const getCommunityWithPosts = async (req, res) => {
       userNames[user.id] = user.username;
     });
 
-    const postsWithImages = posts.map((post) => ({
-      ...post.toObject(),
-      userImage: userImages[post.authorId] || null,
-      username: userNames[post.authorId] || null,
-    }));
+    // const postsWithImages = posts.map((post) => ({
+    //   ...post.toObject(),
+    //   userImage: userImages[post.authorId] || null,
+    //   username: userNames[post.authorId] || null,
+    // }));
+
+
+    // Fetch comments count for each post
+    const postsWithDetails = await Promise.all(
+      posts.map(async (post) => {
+        const commentsCount = await Comment.countDocuments({ postId: post._id });
+        return {
+          ...post.toObject(),
+          userImage: userImages[post.authorId] || null,
+          username: userNames[post.authorId] || null,
+          likes: post.likes,
+          commentsCount,
+        };
+      })
+    );
 
     return res.status(200).json({
       community,
-      posts: postsWithImages,
+      posts: postsWithDetails,
     });
   } catch (error) {
     console.error(
@@ -454,6 +471,151 @@ const approveOrRejectPost = async (req, res) => {
     return res.status(500).json({ message: "Failed to update post status" });
   }
 };
+
+//endpoint to like and Unlike a post
+const likeOrUnlikePost = async (req, res) => {
+  try {
+    const { communityId, userId, postId } = req.body
+
+    if (!communityId || !postId || !userId) {
+      return res.status(400).json({ message: "Missing required parameters" });
+    }
+    //find post by communityId and postId
+    const post = await Post.findOne({ _id: postId, communityId });
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+
+    //check if post has been liked
+    const hasLiked = post.likesUserId.includes(userId);
+
+    if (hasLiked) {
+      // If already liked, remove the like
+      post.likesUserId = post.likesUserId.filter(id => id !== userId);
+      post.likes -= 1; // Decrease the likes count
+    } else {
+      // If not liked, add the like
+      post.likesUserId.push(userId);
+      post.likes += 1; // Increase the likes count
+    }
+    await post.save();
+
+    return res.status(200).json({
+      message: hasLiked ? "Like removed" : "Post liked",
+      post: {
+        postId: post._id,
+        likes: post.likes,
+      },
+    });
+
+  } catch (error) {
+    console.error("Error liking or unliking post:", error);
+    return res.status(500).json({ message: "Failed to like or unlike post" });
+  }
+}
+
+const replyComment = async (req, res) => {
+  try {
+    const { commentId, userId, userType, reply, ecosystemDomain } = req.body;
+
+    // Validate input
+    if (!commentId || !userId || !userType || !reply || !ecosystemDomain) {
+      return res.status(400).json({ message: "All fields are required" })
+    }
+
+    // Check if the comment exists
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    };
+
+    // Create a new reply
+    const newReply = new Reply({
+      commentId,
+      userId,
+      userType,
+      reply,
+      ecosystemDomain,
+    });
+
+    // Save the reply to the database
+    await newReply.save();
+
+    return res.status(201).json({
+      message: "Reply added successfully",
+      reply: newReply,
+    });
+  } catch (error) {
+    console.error("Error replying to comment:", error);
+    return res.status(500).json({ message: "Failed to reply to comment" });
+  }
+};
+
+const getReplies = async (req, res) => {
+  try {
+    const commentId = req.params.commentId;
+
+    if (!commentId) {
+      return res.status(400).json({ message: "Comment ID is required" });
+    }
+
+    const replies = await Reply.find({ commentId }).sort({ createdAt: -1 });
+
+    if (replies.length === 0) {
+      return res.status(404).json({ message: "No replies found for this comment" });
+    }
+
+    return res.status(200).json({
+      message: "Replies fetched successfully",
+      replies,
+    });
+  } catch (error) {
+    console.error("Error fetching replies:", error);
+    return res.status(500).json({ message: "Failed to fetch replies" });
+  }
+};
+
+const likeOrUnlikeReply = async (req, res) => {
+  try {
+    const { replyId, userId } = req.body;
+
+    if (!replyId || !userId) {
+      return res.status(400).json({ message: "Reply ID and User ID are required" });
+    }
+
+    const reply = await Reply.findById(replyId);
+    if (!reply) {
+      return res.status(404).json({ message: "Reply not found" });
+    }
+
+    // Check if the user has already liked the reply
+    const hasLiked = reply.likesUserId.includes(userId);
+
+    if (hasLiked) {
+      // If user has liked, remove the like
+      reply.likesUserId = reply.likesUserId.filter(id => id !== userId);
+      reply.likes -= 1;
+    } else {
+      // If user has not liked, add the like
+      reply.likesUserId.push(userId);
+      reply.likes += 1;
+    }
+
+    // Save the updated reply
+    await reply.save();
+
+    return res.status(200).json({
+      message: hasLiked ? "Like removed" : "Reply liked",
+      likes: reply.likes,
+      likesUserId: reply.likesUserId,
+    });
+  } catch (error) {
+    console.error("Error liking/unliking reply:", error);
+    return res.status(500).json({ message: "Failed to like/unlike reply" });
+  }
+}
 module.exports = {
   createCommunityHeader,
   createPost,
@@ -464,4 +626,8 @@ module.exports = {
   updateImage,
   updateBackgroundCover,
   approveOrRejectPost,
+  likeOrUnlikePost,
+  replyComment,
+  getReplies,
+  likeOrUnlikeReply
 };
