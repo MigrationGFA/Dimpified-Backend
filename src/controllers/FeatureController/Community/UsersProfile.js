@@ -3,7 +3,7 @@ const EcosystemUser = require("../../../models/EcosystemUser");
 
 const getUserProfile = async (req, res) => {
   const ecosystemDomain = req.params.ecosystemDomain;
-  
+
   try {
     const ecosystemStudent = await Ecosystem.findOne({ ecosystemDomain });
 
@@ -15,7 +15,10 @@ const getUserProfile = async (req, res) => {
       where: {
         ecosystemDomain: ecosystemDomain,
       },
+
+      attributes: { exclude: ["password", "passwordToken", "passwordTokenExpirationDate", "verificationToken"] },
       order: [["createdAt", "DESC"]],
+
     });
     res.status(200).json({ ecosystemUser });
   } catch (error) {
@@ -23,3 +26,5 @@ const getUserProfile = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+module.exports = getUserProfile
