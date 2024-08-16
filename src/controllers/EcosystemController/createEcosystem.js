@@ -5,6 +5,7 @@ const Template = require("../../models/Templates");
 const CreatorSupport = require("../../models/Support");
 const PurchasedItem = require("../../models/PurchasedItem");
 const { Op } = require("sequelize");
+const createSubdomain = require("../DomainController/Subdomain.js")
 
 const aboutEcosystem = async (req, res) => {
   const {
@@ -50,7 +51,6 @@ const aboutEcosystem = async (req, res) => {
           creatorId,
           ecosystemName,
           ecosystemDomain,
-          targetAudienceSector,
           mainObjective,
           expectedAudienceNumber,
           experience,
@@ -65,6 +65,8 @@ const aboutEcosystem = async (req, res) => {
         return res.status(404).json({ message: "Ecosystem not found" });
       }
     } else {
+      const result = await createSubdomain(ecosystemDomain)
+      if(result === "Subdomain creation successful"){
       ecosystem = new Ecosystem({
         creatorId,
         ecosystemName,
@@ -78,11 +80,16 @@ const aboutEcosystem = async (req, res) => {
         status: "draft",
       });
       await ecosystem.save();
-    }
-
-    return res
+       return res
       .status(201)
       .json({ message: "Ecosystem about information saved", ecosystem });
+      } else {
+        return res
+      .status(201)
+      .json({ message: "Domain creation falied" });
+      }
+    } 
+
   } catch (error) {
     console.error("Error saving ecosystem about information:", error);
     res.status(500).json({ message: "Internal server error", error });

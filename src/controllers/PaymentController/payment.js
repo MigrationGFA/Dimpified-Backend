@@ -10,7 +10,7 @@ const { sequelize } = require("../../config/dbConnect");
 const User = require("../../models/EcosystemUser");
 
 const VAT_RATE = 0.075;
-const verifyPayment = async (reference, provider) => {
+const thirdPartyVerification = async (reference, provider) => {
   let options;
   if (provider === "paystack") {
     options = {
@@ -183,7 +183,7 @@ const VerifyPayment = async (req, res) => {
       currency: "NGN",
     });
 
-    const responseData = await verifyPayment(reference, provider);
+    const responseData = await thirdPartyVerification(reference, provider);
     if (!responseData || !responseData.data) {
       console.log("Payment verification failed, invalid response data");
       return res.status(400).json({
