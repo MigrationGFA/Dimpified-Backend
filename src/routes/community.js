@@ -9,10 +9,16 @@ const {
   updateImage,
   pendingPosts,
   approveOrRejectPost,
+  likeOrUnlikePost,
+  replyComment,
+  getReplies,
+  likeOrUnlikeReply
 } = require("../controllers/FeatureController/Community/community");
+
 const router = express.Router();
 const multer = require("multer");
 const { communityStorage, postStorage } = require("../helper/multerUpload");
+const getUserProfile = require("../controllers/FeatureController/Community/UsersProfile");
 
 const upload = multer({
   storage: communityStorage,
@@ -46,5 +52,13 @@ router.patch(
   updateImage
 );
 router.patch("/validate-post", approveOrRejectPost);
+
+router.post("/like-unlike-post", likeOrUnlikePost);
+router.post("/reply-to-comment", replyComment);
+router.get("/replies/:commentId", getReplies);
+router.post("/like-unlike-reply", likeOrUnlikeReply)
+
+//Get User profile endpoint
+router.get("/get-user-profile/:ecosystemDomain", getUserProfile);
 
 module.exports = router;
