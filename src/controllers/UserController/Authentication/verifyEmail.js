@@ -4,8 +4,6 @@ const Template = require("../../../models/Templates");
 const Ecosystem = require("../../../models/Ecosystem");
 
 
-
-
 const verifyEmailUser = async (req, res) => {
   const { email, verificationToken } = req.body;
 
@@ -37,6 +35,9 @@ const verifyEmailUser = async (req, res) => {
     if (!ecoDetails) {
       return res.status(200).json({ msg: "Ecosystem Not found" });
     }
+
+     ecoDetails.users += 1
+      await ecoDetails.save()
 
     const templateDetails = await Template.findOne({_id: ecoDetails.templates})
     await sendWelcomeEmail({
