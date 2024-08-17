@@ -12,7 +12,8 @@ const {
   likeOrUnlikePost,
   replyComment,
   getReplies,
-  likeOrUnlikeReply
+  likeOrUnlikeReply,
+  likeOrUnlikeComment
 } = require("../controllers/FeatureController/Community/community");
 
 const router = express.Router();
@@ -57,6 +58,9 @@ router.post("/like-unlike-post", likeOrUnlikePost);
 router.post("/reply-to-comment", replyComment);
 router.get("/replies/:commentId", getReplies);
 router.post("/like-unlike-reply", likeOrUnlikeReply)
+router.post("/like-unlike-comment", likeOrUnlikeComment)
+
+
 
 //Get User profile endpoint
 router.get("/get-user-profile/:ecosystemDomain", getUserProfile);
