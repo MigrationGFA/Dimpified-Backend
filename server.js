@@ -28,7 +28,7 @@ app.use("/uploads", express.static("uploads"));
 app.use("/api/v1", require("./src/routes/authentication"));
 app.use("/api/v1", require("./src/routes/creatorProducts"));
 app.use("/api/v1", require("./src/routes/customerCare"));
-app.use("/api/v1", require("./src/routes/ecosystem"));
+//app.use("/api/v1", require("./src/routes/ecosystem"));
 app.use("/api/v1/", require("./src/routes/ratingRoutes"));
 app.use("/api/v1/", require("./src/routes/domainCheck"));
 app.use("/api/v1/", require("./src/routes/templates"));

@@ -8,6 +8,10 @@ const {
   createBarberTemplate,
 } = require("../controllers/EcosystemController/createTemplate");
 const multer = require("multer");
+const {
+  createReservedTemplate,
+  getReservedTemplate,
+} = require("../controllers/EcosystemController/generalTemplate");
 
 const upload = multer({
   storage: storageTemplate,
@@ -68,5 +72,8 @@ router.post(
   },
   createBarberTemplate
 );
+
+router.post("/create/reserved-template", createReservedTemplate);
+router.get("/reserved-template/:templateId", getReservedTemplate);
 
 module.exports = router;
