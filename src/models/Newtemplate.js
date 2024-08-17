@@ -3,6 +3,14 @@ const { Schema } = mongoose;
 
 const TemplateSchema = new mongoose.Schema({
   templateId: { type: String },
+  creatorId: {
+    type: String,
+    required: true,
+  },
+  subDomain: {
+    type: String,
+    required: true,
+  },
   navbar: {
     logo: String,
     brand: String,
