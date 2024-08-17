@@ -38,7 +38,7 @@ app.use("/api/v1/", require("./src/routes/EcosystemConflictResolution.js"));
 app.use("/api/v1/", require("./src/routes/payment"));
 app.use("/api/v1/", require("./src/routes/setting"));
 app.use("/api/v1/", require("./src/routes/serviceRequest"));
-app.use("/api/v1/", require("./src/routes/admin.js"))
+//app.use("/api/v1/", require("./src/routes/admin.js"))
 
 app.use("/api/v1/", require("./src/routes/community"));
 

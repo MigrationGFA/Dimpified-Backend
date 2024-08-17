@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
+
 const templateSchema = new mongoose.Schema({
   templateId: { type: String },
   navbar: {
@@ -15,6 +16,7 @@ const templateSchema = new mongoose.Schema({
     link7: String,
     buttonText1: String,
     buttonText2: String,
+
     styles: {
       backgroundColor: String,
       color: String,
@@ -22,6 +24,7 @@ const templateSchema = new mongoose.Schema({
     },
   },
   hero: {
+
     title1: String,
     title2: String,
     summary1: String,
@@ -251,6 +254,7 @@ const templateSchema = new mongoose.Schema({
     privacy: String,
     legal: String,
     footerTags: String,
+
     styles: {
       backgroundColor: String,
       color: String,
@@ -258,6 +262,8 @@ const templateSchema = new mongoose.Schema({
     },
   },
 });
+
 const ReservedTemplate = mongoose.model("ReservedTemplate", templateSchema);
+
 
 module.exports = ReservedTemplate;
