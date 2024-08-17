@@ -2,13 +2,16 @@ const ReservedTemplate = require("../../models/ReservedTemplate");
 
 const createReservedTemplate = async (req, res) => {
   try {
+
     if (!req.body.templateId) {
       return res.status(400).json({ message: "Please provide a TemplateId" });
     }
 
+
     const newTemplate = new ReservedTemplate(req.body);
 
     const savedTemplate = await newTemplate.save();
+
 
     res.status(201).json({
       message: "Template created successfully",
@@ -55,3 +58,4 @@ const getReservedTemplate = async (req, res) => {
 };
 
 module.exports = { createReservedTemplate, getReservedTemplate };
+
