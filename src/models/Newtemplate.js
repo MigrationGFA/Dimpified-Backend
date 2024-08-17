@@ -1,11 +1,21 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const TemplateSchema = new Schema({
+const TemplateSchema = new mongoose.Schema({
+  templateId: { type: String },
   navbar: {
-    logo: { type: String, required: true },
-    links: [{ type: String, maxlength: 7 }], // Maximum of 7 links
-    ctaButtons: [{ type: String, maxlength: 2 }], // Maximum of 2 CTA buttons
+    logo: String,
+    brand: String,
+    link1: String,
+    link2: String,
+    link3: String,
+    link4: String,
+    link5: String,
+    link6: String,
+    link7: String,
+    buttonText1: String,
+    buttonText2: String,
+
     styles: {
       backgroundColor: String,
       color: String,
@@ -13,146 +23,236 @@ const TemplateSchema = new Schema({
     },
   },
   hero: {
-    headings: [{ type: String, maxlength: 2 }], // Maximum of 2 <h> tags
-    paragraphs: [{ type: String, maxlength: 4 }], // Maximum of 4 <p> tags
-    spans: [{ type: String, maxlength: 2 }], // Maximum of 2 <span> tags
-    backgroundImages: [{ type: String, maxlength: 3 }], // Maximum of 3 background images
-    ctaButtons: [{ type: String, maxlength: 2 }], // Maximum of 2 CTA buttons
+    title1: String,
+    title2: String,
+    summary1: String,
+    summary2: String,
+    summary3: String,
+    summary4: String,
+    span1: String,
+    span2: String,
+    buttonText1: String,
+    buttonText2: String,
+    backgroundImage1: String,
+    backgroundImage2: String,
+    backgroundImage3: String,
     styles: {
       color: String,
       fontFamily: String,
     },
   },
-  about: {
-    headings: [{ type: String, maxlength: 2 }], // Maximum of 2 <h> tags
-    paragraphs: [{ type: String, maxlength: 2 }], // Maximum of 2 <p> tags
-    ctaButtons: [{ type: String, maxlength: 2 }], // Maximum of 2 CTA buttons
-    images: [{ type: String, maxlength: 5 }], // Maximum of 5 images
+  aboutUs: {
+    title1: String,
+    title2: String,
+    text1: String,
+    text2: String,
+    buttonText1: String,
+    buttonText2: String,
+    image1: String,
+    image2: String,
+    image3: String,
+    image4: String,
+    image5: String,
     styles: {
       backgroundColor: String,
       color: String,
       fontFamily: String,
     },
   },
-  quickSummary: [
-    {
-      span: String,
-      icon: String, // Might not be editable
-      heading: String,
-      paragraph: String,
+  Vision: {
+    visiomheader: String,
+    visionsummary: String,
+    impactheader: String,
+    impactsummary: String,
+    missionheader: String,
+    missionsummary: String,
+    styles: {
+      backgroundColor: String,
+      color: String,
+      fontFamily: String,
     },
-  ], // Maximum of 4 sub-sections
-  products: {
-    subheading: String,
-    heading: String,
-    ctaButtons: [{ type: String, maxlength: 2 }], // Maximum of 2 CTA buttons
-    serviceCards: [
-      {
-        image: String,
-        serviceName: String,
-        description: [{ type: String, maxlength: 2 }], // Maximum of 2 <p> tags
-        ctaButtons: [{ type: String, maxlength: 2 }], // Maximum of 2 CTA buttons
-      },
-    ], // Maximum of 12 service cards
   },
-  pricing: [
-    {
-      image: String,
-      heading: String,
-      span: String,
-      description: String,
-      ctaButton: String, // Maximum of 1 CTA button
+  Statistics: {
+    section1header: String,
+    section1paragraphy: String,
+    section1span: String,
+    section1icon: String,
+    section2header: String,
+    section2paragraphy: String,
+    section2span: String,
+    section2icon: String,
+    section3header: String,
+    section3paragraphy: String,
+    section3span: String,
+    section3icon: String,
+    section4header: String,
+    section4paragraphy: String,
+    section4span: String,
+    section4icon: String,
+  },
+  Patrners: {
+    sectionImage1: String,
+    section1header: String,
+    sectionImage2: String,
+    section2header: String,
+    sectionImage3: String,
+    section3header: String,
+    sectionImage4: String,
+    section4header: String,
+    buttonText1: String,
+    buttonText2: String,
+  },
+  Events: {
+    heading: String,
+    summary: String,
+    sectionImage1: String,
+    section1header: String,
+    section1paragraphy: String,
+    buttonText1: String,
+    sectionImage2: String,
+    section2header: String,
+    section2paragraphy: String,
+    buttonText2: String,
+    sectionImage3: String,
+    section3header: String,
+    section3paragraphy: String,
+    buttonText3: String,
+    sectionImage4: String,
+    section4header: String,
+    section4paragraphy: String,
+    buttonText4: String,
+  },
+  Gallery: {
+    image1: String,
+    summary1: String,
+    image2: String,
+    summary2: String,
+    image3: String,
+    summary3: String,
+    image4: String,
+    summary4: String,
+    image5: String,
+    summary5: String,
+    image6: String,
+    summary6: String,
+  },
+  LargeCta: {
+    image1: String,
+    header1: String,
+    image2: String,
+    header2: String,
+    header3: String,
+    summary1: String,
+    summary2: String,
+    buttonText1: String,
+    buttonText2: String,
+  },
+  Team: {
+    image1: String,
+    header1: String,
+    summary1: String,
+    image2: String,
+    header2: String,
+    summary2: String,
+    image3: String,
+    header3: String,
+    summary3: String,
+    image4: String,
+    header4: String,
+    summary4: String,
+  },
+  Blog: {
+    image1: String,
+    header1: String,
+    summary1: String,
+    date1: String,
+    author1: String,
+    content1: String,
+    buttonText1: String,
+    image2: String,
+    header2: String,
+    summary2: String,
+    date2: String,
+    author2: String,
+    content2: String,
+    buttonText2: String,
+    image3: String,
+    header3: String,
+    summary3: String,
+    date3: String,
+    author3: String,
+    content3: String,
+    buttonText3: String,
+    image4: String,
+    header4: String,
+    summary4: String,
+    date4: String,
+    author4: String,
+    content4: String,
+    buttonText4: String,
+  },
+  Reviews: {
+    image1: String,
+    header1: String,
+    title1: String,
+    summary1: String,
+    image2: String,
+    header2: String,
+    summary2: String,
+    title2: String,
+    image3: String,
+    header3: String,
+    summary3: String,
+    title3: String,
+  },
+  contactUs: {
+    heading1: String,
+    heading2: String,
+    heading3: String,
+    heading4: String,
+    heading5: String,
+    heading6: String,
+    heading7: String,
+    paragraph1: String,
+    buttonText1: String,
+    styles: {
+      backgroundColor: String,
+      color: String,
+      fontFamily: String,
     },
-  ], // Maximum of 6 pricing cards
-  partners: [
+  },
+  faq: [
     {
-      image: String,
-      heading: String,
-      ctaButtons: [{ type: String, maxlength: 2 }], // Maximum of 2 CTA buttons
+      question: String,
+      answer: String,
     },
-  ], // Maximum of 8 brands
-  events: {
-    heading: String,
-    sectionDescription: String,
-    subSections: [
-      {
-        image: String,
-        heading: String,
-        description: String,
-        ctaButton: String, // Maximum of 1 CTA button
-      },
-    ], // Maximum of 6 sub-sections
-  },
-  gallery: {
-    heading: String,
-    briefInfo: String,
-    images: [
-      {
-        image: String,
-        description: String, // Each image has 1 <p> tag also
-      },
-    ], // Up to 12 gallery images
-  },
-  largeCta: {
-    backgroundImages: [{ type: String, maxlength: 2 }], // Maximum of 2 background images
-    headings: [{ type: String, maxlength: 3 }], // Maximum of 3 <h> tags
-    paragraphs: [{ type: String, maxlength: 2 }], // Maximum of 2 <p> tags
-    ctaButtons: [{ type: String, maxlength: 2 }], // Maximum of 2 CTA buttons
-  },
-  team: [
-    {
-      image: String,
-      name: String,
-      role: String,
-    },
-  ], // Maximum of 6 team cards
-  blog: {
-    blogPosts: [
-      {
-        image: String,
-        heading: String,
-        overview: String,
-        date: String, // <span> tag for date
-        author: String, // <span> tag for author
-        readMoreButton: String, // Optional CTA/link button
-      },
-    ], // Maximum of 4 blog posts
-  },
-  testimonials: {
-    reviews: [
-      {
-        image: String, // Round thumbnail or star rating
-        name: String,
-        review: String,
-      },
-    ], // Maximum of 6 carousels
-  },
-  smallCta: {
-    heading: String,
-    paragraph: String,
-    ctaButtons: [{ type: String, maxlength: 2 }], // Maximum of 2 CTA buttons
-  },
-  contact: {
-    backgroundImages: [{ type: String, maxlength: 2 }], // Maximum of 2 background images
-    headings: [{ type: String, maxlength: 6 }], // Maximum of 6 <h> tags
-    paragraphs: [{ type: String, maxlength: 2 }], // Maximum of 2 <p> tags
-    ctaButtons: [{ type: String, maxlength: 2 }], // Maximum of 2 CTA buttons
-    socialImages: [{ type: String, maxlength: 4 }], // Maximum of 4 social images
-    formEntries: [
-      {
-        label: String, // e.g., first name, email, phone
-        placeholder: String, // Short description
-        selectOptions: [{ type: String, maxlength: 12 }], // Maximum of 12 select options
-      },
-    ], // Up to 10 form entries
+  ],
+  faqStyles: {
+    backgroundColor: String,
+    color: String,
+    fontFamily: String,
   },
   footer: {
     logo: String,
-    backgroundImage: String, // Optional
-    headings: [{ type: String, maxlength: 4 }], // Maximum of 4 <h> tags
-    paragraphs: [{ type: String, maxlength: 8 }], // Maximum of 8 <p> tags
-    links: [{ type: String, maxlength: 8 }], // Maximum of 8 links
-    socialImages: [{ type: String, maxlength: 5 }], // Maximum of 5 social icons
+    header: String,
+    title1: String,
+    title2: String,
+    title3: String,
+    title4: String,
+    paragraph1: String,
+    paragraph2: String,
+    paragraph3: String,
+    paragraph4: String,
+    paragraph5: String,
+    paragraph6: String,
+    paragraph7: String,
+    paragraph8: String,
+    paragraph9: String,
+    paragraph10: String,
+    privacy: String,
+    legal: String,
+    footerTags: String,
+
     styles: {
       backgroundColor: String,
       color: String,
