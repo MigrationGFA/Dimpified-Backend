@@ -2,7 +2,7 @@ const Template = require("../../models/Templates");
 const Ecosystem = require("../../models/Ecosystem");
 const Creator = require("../../models/Creator");
 const EcosystemUser = require("../../models/EcosystemUser");
-const Barbertemplate = require("../../models/Barbertemplate");
+const Barbertemplate = require("../../models/AllTemplate/Barbertemplate");
 
 const createTemplate = async (req, res) => {
   try {
@@ -232,6 +232,7 @@ const createBarberTemplate = async (req, res) => {
     res.status(500).json({ message: "Internal server error", error });
   }
 };
+
 
 module.exports = {
   createTemplate,

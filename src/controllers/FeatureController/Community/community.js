@@ -97,7 +97,6 @@ const createPost = async (req, res) => {
     }
 
     community.totalPost += 1;
-
     await community.save();
 
     const imageLinks = [];
@@ -426,7 +425,7 @@ const pendingPosts = async (req, res) => {
     const pendingPosts = await Post.find({
       ecosystemDomain,
       status: "pending",
-    });
+    }).sort({ createdAt: -1 });
 
     if (pendingPosts.length === 0) {
       return res.status(404).json({ message: "No pending posts found" });
