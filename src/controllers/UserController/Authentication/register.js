@@ -48,9 +48,11 @@ const registerUser = async (req, res) => {
           username: duplicateUser.username,
           email: duplicateUser.email,
           verificationToken: duplicateUser.verificationToken,
-          origin: process.env.ORIGIN,
+          ecosystemDomain: ecosystemDomain,
+          origin: `${process.env.ORIGIN_HEADER}${duplicateUser.ecosystemDomain}.${process.env.ORIGIN}`,
           ecosystemName: ecoDetails.ecosystemName
         });
+        console.log("this is the link", `${process.env.ORIGIN_HEADER}${duplicateUser.ecosystemDomain}.${process.env.ORIGIN}`)
 
         return res
           .status(201)
@@ -74,7 +76,7 @@ const registerUser = async (req, res) => {
         verificationToken,
         ecosystemDomain,
          firstName,  
-          lastName, 
+         lastName, 
           phoneNumber, 
           address, 
           zipCode, 
@@ -83,15 +85,15 @@ const registerUser = async (req, res) => {
         isVerified: false,
       });
 
-      ecoDetails.users += 1
-      await ecoDetails.save()
       await sendVerificationUser({
         username: newUser.username,
         email: newUser.email,
+        ecosystemDomain: newUser.ecosystemDomain,
         verificationToken: newUser.verificationToken,
-        origin: process.env.ORIGIN,
+        origin: `${process.env.ORIGIN_HEADER}${newUser.ecosystemDomain}.${process.env.ORIGIN}`,
         ecosystemName: ecoDetails.ecosystemName
       });
+      
 
       return res.status(201).json({ message: "User created successfully" });
     }
