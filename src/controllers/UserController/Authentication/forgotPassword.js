@@ -37,7 +37,7 @@ const forgotPasswordUser = async (req, res) => {
       username: user.username,
       email: user.email,
       token: resetToken,
-      origin: process.env.ORIGIN,
+      origin: `${user.ecosystemDomain}.${process.env.ORIGIN}`,
     });
 
     res.status(200).json({ message: "Reset password link sent successfully" });

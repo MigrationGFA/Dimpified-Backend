@@ -4,19 +4,17 @@ const Template = require("../../../models/Templates");
 const Ecosystem = require("../../../models/Ecosystem");
 
 
-
-
 const verifyEmailUser = async (req, res) => {
-  const { email, verificationToken } = req.body;
+  const { email, verificationToken, ecosystemDomain } = req.body;
 
-  if (!email || !verificationToken) {
+  if (!email || !verificationToken || !ecosystemDomain) {
     return res
       .status(400)
-      .json({ msg: "Email and verification token are required" });
+      .json({ msg: "Email, ecosystemDomain and verification token are required" });
   }
 
   try {
-    const user = await EcosystemUser.findOne({ where: { email: email } });
+    const user = await EcosystemUser.findOne({ where: { email: email, ecosystemDomain: ecosystemDomain } });
     if (!user) {
       return res.status(404).json({ msg: "User not found" });
     }
@@ -37,6 +35,9 @@ const verifyEmailUser = async (req, res) => {
     if (!ecoDetails) {
       return res.status(200).json({ msg: "Ecosystem Not found" });
     }
+
+     ecoDetails.users += 1
+      await ecoDetails.save()
 
     const templateDetails = await Template.findOne({_id: ecoDetails.templates})
     await sendWelcomeEmail({
