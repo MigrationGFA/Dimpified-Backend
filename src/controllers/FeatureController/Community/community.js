@@ -615,6 +615,44 @@ const likeOrUnlikeReply = async (req, res) => {
     console.error("Error liking/unliking reply:", error);
     return res.status(500).json({ message: "Failed to like/unlike reply" });
   }
+};
+
+const likeOrUnlikeComment = async (req, res) => {
+  try {
+    const { commentId, userId } = req.body
+
+    if (!commentId || !userId) {
+      return res.status(400).json({ message: "Comment ID and User ID are required" });
+    }
+
+    // Find the comment by ID
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    const hasLiked = comment.likesUserId.includes(userId);
+
+    if (hasLiked) {
+      comment.likesUserId = comment.likesUserId.filter(id => id !== userId);
+      comment.likes -= 1;
+    } else {
+      comment.likesUserId.push(userId);
+      comment.likes += 1;
+    }
+
+    await comment.save();
+
+    return res.status(200).json({
+      message: hasLiked ? "Like removed" : "Comment liked",
+      likes: comment.likes,
+      likesUserId: comment.likesUserId,
+    });
+
+  } catch (error) {
+    console.error("Error liking/unliking comment:", error);
+    return res.status(500).json({ message: "Failed to like/unlike comment" });
+  }
 }
 module.exports = {
   createCommunityHeader,
@@ -629,5 +667,6 @@ module.exports = {
   likeOrUnlikePost,
   replyComment,
   getReplies,
-  likeOrUnlikeReply
+  likeOrUnlikeReply,
+  likeOrUnlikeComment
 };

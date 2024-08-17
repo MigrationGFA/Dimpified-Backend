@@ -2,16 +2,60 @@ const ReservedTemplate = require("../../models/ReservedTemplate");
 
 const createReservedTemplate = async (req, res) => {
   try {
+
+    if (!req.body.templateId) {
+      return res.status(400).json({ message: "Please provide a TemplateId" });
+    }
+
+
     const newTemplate = new ReservedTemplate(req.body);
 
     const savedTemplate = await newTemplate.save();
 
-    res.status(200).json({ message: "Templated created successfully" });
+
+    res.status(201).json({
+      message: "Template created successfully",
+      data: savedTemplate, // Return the saved template (optional)
+    });
   } catch (error) {
-    // Handle errors (e.g., validation errors, database errors)
     console.error("Error creating template:", error);
-    res.status(500).json({ message: "error creating template" });
+
+    // Handle specific error types
+    if (error.name === "ValidationError") {
+      return res.status(400).json({ message: error.message });
+    } else if (error.code === 11000) {
+      // Duplicate key error
+      return res.status(409).json({ message: "Template already exists" });
+    }
+
+    res.status(500).json({ message: "Error creating template" });
   }
 };
 
-module.exports = { createReservedTemplate };
+const getReservedTemplate = async (req, res) => {
+  try {
+    const { templateId } = req.params; // Extract templateId from the request parameters
+
+    const template = await ReservedTemplate.findOne({ templateId });
+
+    if (!template) {
+      return res.status(404).json({ message: "Template not found" });
+    }
+
+    res.status(200).json({
+      message: "Template fetched successfully",
+      data: template,
+    });
+  } catch (error) {
+    console.error("Error fetching template:", error);
+
+    if (error.kind === "ObjectId") {
+      return res.status(400).json({ message: "Invalid template ID" });
+    }
+
+    res.status(500).json({ message: "Error fetching template" });
+  }
+};
+
+module.exports = { createReservedTemplate, getReservedTemplate };
+
