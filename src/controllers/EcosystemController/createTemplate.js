@@ -2,7 +2,7 @@ const Template = require("../../models/Templates");
 const Ecosystem = require("../../models/Ecosystem");
 const Creator = require("../../models/Creator");
 const EcosystemUser = require("../../models/EcosystemUser");
-const Barbertemplate = require("../../models/Barbertemplate");
+const Barbertemplate = require("../../models/AllTemplate/Barbertemplate");
 
 const createTemplate = async (req, res) => {
   try {
@@ -232,6 +232,32 @@ const createBarberTemplate = async (req, res) => {
     res.status(500).json({ message: "Internal server error", error });
   }
 };
+
+const getATemplate = async (req, res) => {
+  try {
+    const templateId = req.params.templateId
+    if (!templateId) {
+      return res
+        .status(400)
+        .json({ message: "templateId name  is required" });
+    }
+
+    let template;
+    if(templateId === 1){
+      template = await Barbertemplate.findOne({})
+    }
+
+    if (!template) {
+      return res.status(404).json({ message: "template not found" });
+    }
+     res
+      .status(201)
+      .json({ message: "Template created successfully", template });
+  } catch (error) {
+     console.error("Error creating template:", error);
+    res.status(500).json({ message: "Internal server error", error });
+  }
+}
 
 module.exports = {
   createTemplate,

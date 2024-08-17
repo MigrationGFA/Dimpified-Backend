@@ -6,8 +6,9 @@ const sendVerificationEmailUser = async ({
   verificationToken,
   origin,
   ecosystemName,
+  ecosystemDomain
 }) => {
-  const verifyEmailUrl = `${origin}ecosystem/verify-email?token=${verificationToken}&email=${email}`;
+  const verifyEmailUrl = `${origin}ecosystem/verify-email?token=${verificationToken}&email=${email}&ecosystemDomain=${ecosystemDomain}`;
 
   const message = `<p>Please confirm your email by clicking on the following link: 
     <a href="${verifyEmailUrl}">Verify Email</a></p>`;
