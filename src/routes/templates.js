@@ -5,7 +5,7 @@ const { storageTemplate } = require("../helper/multerUpload");
 const {
   createTemplate,
   getAnEcosystemTemplate,
-  createBarberTemplate,
+  createCreatorTemplate,
 } = require("../controllers/EcosystemController/createTemplate");
 const multer = require("multer");
 const {
@@ -60,20 +60,7 @@ const barberImgUpload = upload.fields([
   { name: "team.images", maxCount: 10 },
 ]);
 
-router.post(
-  "/ecosystem/create-barber-template",
-  (req, res, next) => {
-    barberImgUpload(req, res, (err) => {
-      if (err) {
-        console.error("Multer error:", err);
-        return res.status(400).send(err.message);
-      }
-      console.log("Files received:", req.files);
-      next();
-    });
-  },
-  createBarberTemplate
-);
+router.post("/ecosystem/create-barber-template", createCreatorTemplate);
 
 router.post("/create/reserved-template", createReservedTemplate);
 router.post("/create/general-template", createGeneralTemplate);
