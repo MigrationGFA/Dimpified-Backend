@@ -169,7 +169,7 @@ const getCommunityWithPosts = async (req, res) => {
     ).map(JSON.parse);
 
     const creatorIds = uniqueAuthors
-      .filter((author) => author.type === "creator" )
+      .filter((author) => author.type === "creator")
       .map((author) => author.id);
     const ecosystemUserIds = uniqueAuthors
       .filter((author) => author.type === "user")
