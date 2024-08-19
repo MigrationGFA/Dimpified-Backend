@@ -51,16 +51,7 @@ router.post(
 );
 router.get("/getTemplate/:ecosystemDomain", getAnEcosystemTemplate);
 
-const barberImgUpload = upload.fields([
-  { name: "navbar.logo", maxCount: 1 },
-  { name: "aboutSection.images", maxCount: 4 },
-  { name: "heroSection.backgroundImage", maxCount: 1 },
-  { name: "carouselImages", maxCount: 5 },
-  { name: "footer.logo", maxCount: 1 },
-  { name: "team.images", maxCount: 10 },
-]);
-
-router.post("/ecosystem/create-barber-template", createCreatorTemplate);
+router.post("/ecosystem/create-creator-template", createCreatorTemplate);
 
 router.post("/create/reserved-template", createReservedTemplate);
 router.post("/create/general-template", createGeneralTemplate);
