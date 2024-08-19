@@ -169,7 +169,7 @@ const getCommunityWithPosts = async (req, res) => {
     ).map(JSON.parse);
 
     const creatorIds = uniqueAuthors
-      .filter((author) => author.type === "creator" )
+      .filter((author) => author.type === "creator")
       .map((author) => author.id);
     const ecosystemUserIds = uniqueAuthors
       .filter((author) => author.type === "user")
@@ -492,8 +492,8 @@ const likeOrUnlikePost = async (req, res) => {
 
     if (hasLiked) {
       // If already liked, remove the like
-      post.likesUserId = post.likesUserId.filter(id => id !== userId);
-      post.likes -= 1; // Decrease the likes count
+      post.likesUserId.pull(userId);  // Atomic operation in Mongoose
+      post.likes = Math.max(0, post.likes - 1); // Ensure likes never go below 0// Decrease the likes count
     } else {
       // If not liked, add the like
       post.likesUserId.push(userId);
@@ -594,8 +594,8 @@ const likeOrUnlikeReply = async (req, res) => {
 
     if (hasLiked) {
       // If user has liked, remove the like
-      reply.likesUserId = reply.likesUserId.filter(id => id !== userId);
-      reply.likes -= 1;
+      reply.likesUserId.pull(userId);
+      reply.likes = Math.max(0, reply.likes - 1);
     } else {
       // If user has not liked, add the like
       reply.likesUserId.push(userId);
@@ -633,8 +633,8 @@ const likeOrUnlikeComment = async (req, res) => {
     const hasLiked = comment.likesUserId.includes(userId);
 
     if (hasLiked) {
-      comment.likesUserId = comment.likesUserId.filter(id => id !== userId);
-      comment.likes -= 1;
+      comment.likesUserId.pull(userId);  // Atomic operation in Mongoose
+      comment.likes = Math.max(0, comment.likes - 1); // Ensure likes never go below 0
     } else {
       comment.likesUserId.push(userId);
       comment.likes += 1;
