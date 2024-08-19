@@ -110,7 +110,7 @@ const getAnEcosystemTemplate = async (req, res) => {
       return res.status(404).json({ message: "Ecosystem not found" });
     }
 
-    const template = await Template.findOne({ _id: ecosystem.templates });
+    const template = await CreatorTemplate.findOne({ _id: ecosystem.templates });
     console.log("this is template", template);
 
     if (!template) {
