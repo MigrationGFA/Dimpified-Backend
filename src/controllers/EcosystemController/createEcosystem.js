@@ -116,7 +116,6 @@ const ecosystemDelete = async (req, res) => {
     res.status(500).json({ message: "Internal server error", error });
   }
 };
-
 //Endpoint to get all courses for an ecosystem
 const allEcosystemCourses = async (req, res) => {
   try {
