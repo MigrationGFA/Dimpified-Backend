@@ -541,10 +541,27 @@ const replyComment = async (req, res) => {
 
     // Save the reply to the database
     await newReply.save();
+    let user;
+    if (userType === "creator") {
+      user = await Creator.findByPk(userId, {
+        attributes: ["id", "imageUrl", "organizationName"],
+      });
+    } else {
+      user = await EcosystemUser.findByPk(userId, {
+        attributes: ["id", "imageUrl", "username"],
+      });
+    }
+    //Get the number of replies to the comment
+    const replyCount = await Reply.countDocuments({ commentId });
 
     return res.status(201).json({
       message: "Reply added successfully",
-      reply: newReply,
+      reply: {
+        ...newReply.toObject(),
+        userImage: user ? user.imageUrl : null,
+        username: user ? (user.organizationName || user.username) : null,
+      },
+      replyCount,
     });
   } catch (error) {
     console.error("Error replying to comment:", error);
