@@ -1,5 +1,17 @@
 const mongoose = require("mongoose");
 
+const socialMediaSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+  link: {
+    type: String,
+    required: true,
+  }
+});
+
+
 const ecosystemSchema = new mongoose.Schema({
   creatorId: {
     type: Number,
@@ -71,6 +83,7 @@ const ecosystemSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  socialMedia: [socialMediaSchema],
   createdAt: {
     type: Date,
     default: Date.now,
