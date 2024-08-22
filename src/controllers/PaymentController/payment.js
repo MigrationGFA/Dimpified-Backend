@@ -95,7 +95,6 @@ const VerifyPayment = async (req, res) => {
         return res.status(400).json({ message: `${detail} is required` });
       }
     }
-
     let item;
     let amount;
     let itemTitle;
@@ -121,7 +120,6 @@ const VerifyPayment = async (req, res) => {
 
       amount = parseInt(item.price, 10);
       if (isNaN(amount)) {
-        // console.log("Invalid price for course:", item.price);
         return res.status(400).json({ message: "Invalid price for course" });
       }
       itemTitle = item.title;
@@ -161,6 +159,7 @@ const VerifyPayment = async (req, res) => {
           .status(400)
           .json({ message: "Invalid price for service package" });
       }
+      // for vat
       amount = itemPrice + itemPrice * VAT_RATE; // Adding VAT to the price
       itemTitle = item.header;
       creatorId = item.creatorId;
