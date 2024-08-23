@@ -10,7 +10,7 @@ const { sequelize } = require("../../config/dbConnect");
 const User = require("../../models/EcosystemUser");
 
 const VAT_RATE = 0.075;
-const verifyPayment = async (reference, provider) => {
+const thirdPartyVerification = async (reference, provider) => {
   let options;
   if (provider === "paystack") {
     options = {
@@ -94,7 +94,6 @@ const VerifyPayment = async (req, res) => {
         return res.status(400).json({ message: `${detail} is required` });
       }
     }
-
     let item;
     let amount;
     let itemTitle;
@@ -155,6 +154,7 @@ const VerifyPayment = async (req, res) => {
           .status(400)
           .json({ message: "Invalid price for service package" });
       }
+      // for vat
       amount = itemPrice + itemPrice * VAT_RATE; // Adding VAT to the price
       itemTitle = item.header;
       creatorId = item.creatorId;
@@ -176,7 +176,7 @@ const VerifyPayment = async (req, res) => {
       currency: "NGN",
     });
 
-    const responseData = await verifyPayment(reference, provider);
+    const responseData = await thirdPartyVerification(reference, provider);
     if (!responseData || !responseData.data) {
       return res.status(400).json({
         message: "Payment verification failed, invalid response data",

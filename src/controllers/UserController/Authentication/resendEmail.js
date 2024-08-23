@@ -32,7 +32,7 @@ const resendEmailUser = async (req, res) => {
       username: user.username,
       email: user.email,
       verificationToken: newVerificationToken,
-      origin: process.env.ORIGIN,
+      origin: `${user.ecosystemDomain}.${process.env.ORIGIN}`,
     });
 
     res.status(200).json({ message: "New verification email sent" });

@@ -5,9 +5,15 @@ const { storageTemplate } = require("../helper/multerUpload");
 const {
   createTemplate,
   getAnEcosystemTemplate,
-  createBarberTemplate,
+  createCreatorTemplate,
 } = require("../controllers/EcosystemController/createTemplate");
 const multer = require("multer");
+const {
+  createReservedTemplate,
+  getReservedTemplate,
+  createGeneralTemplate,
+  getGeneralTemplate,
+} = require("../controllers/EcosystemController/generalTemplate");
 
 const upload = multer({
   storage: storageTemplate,
@@ -45,28 +51,11 @@ router.post(
 );
 router.get("/getTemplate/:ecosystemDomain", getAnEcosystemTemplate);
 
-const barberImgUpload = upload.fields([
-  { name: "navbar.logo", maxCount: 1 },
-  { name: "aboutSection.images", maxCount: 4 },
-  { name: "heroSection.backgroundImage", maxCount: 1 },
-  { name: "carouselImages", maxCount: 5 },
-  { name: "footer.logo", maxCount: 1 },
-  { name: "team.images", maxCount: 10 },
-]);
+router.post("/ecosystem/create-creator-template", createCreatorTemplate);
 
-router.post(
-  "/ecosystem/create-barber-template",
-  (req, res, next) => {
-    barberImgUpload(req, res, (err) => {
-      if (err) {
-        console.error("Multer error:", err);
-        return res.status(400).send(err.message);
-      }
-      console.log("Files received:", req.files);
-      next();
-    });
-  },
-  createBarberTemplate
-);
+router.post("/create/reserved-template", createReservedTemplate);
+router.post("/create/general-template", createGeneralTemplate);
+router.get("/reserved-template/:templateId", getReservedTemplate);
+router.get("/general-template/:templateId", getGeneralTemplate);
 
 module.exports = router;

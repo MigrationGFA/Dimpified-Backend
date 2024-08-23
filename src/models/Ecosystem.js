@@ -1,5 +1,15 @@
 const mongoose = require("mongoose");
 
+const socialMediaSchema = new mongoose.Schema({
+  name: {
+    type: String,
+  },
+  link: {
+    type: String,
+  }
+});
+
+
 const ecosystemSchema = new mongoose.Schema({
   creatorId: {
     type: Number,
@@ -29,11 +39,11 @@ const ecosystemSchema = new mongoose.Schema({
     required: true,
   },
   communityId: { type: mongoose.Schema.Types.ObjectId, ref: "dimpCommunity" },
-  expectedAudienceNumber: {
+  contact: {
     type: String,
     required: true,
   },
-  experience: {
+  address: {
     type: String,
     required: true,
   },
@@ -70,6 +80,10 @@ const ecosystemSchema = new mongoose.Schema({
   steps: {
     type: Number,
     default: 0,
+  },
+  socialMedia: {
+    type: [socialMediaSchema],
+    default: []
   },
   createdAt: {
     type: Date,

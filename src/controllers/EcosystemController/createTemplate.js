@@ -2,7 +2,8 @@ const Template = require("../../models/Templates");
 const Ecosystem = require("../../models/Ecosystem");
 const Creator = require("../../models/Creator");
 const EcosystemUser = require("../../models/EcosystemUser");
-const Barbertemplate = require("../../models/Barbertemplate");
+const Barbertemplate = require("../../models/AllTemplate/Barbertemplate");
+const CreatorTemplate = require("../../models/creatorTemplate");
 
 const createTemplate = async (req, res) => {
   try {
@@ -109,7 +110,7 @@ const getAnEcosystemTemplate = async (req, res) => {
       return res.status(404).json({ message: "Ecosystem not found" });
     }
 
-    const template = await Template.findOne({ _id: ecosystem.templates });
+    const template = await CreatorTemplate.findOne({ ecosystemDomain: ecosystemDomain });
     console.log("this is template", template);
 
     if (!template) {
@@ -123,11 +124,11 @@ const getAnEcosystemTemplate = async (req, res) => {
   }
 };
 
-const createBarberTemplate = async (req, res) => {
+const createCreatorTemplate = async (req, res) => {
   try {
-    const { creatorId, ecosystemDomain, templateNumber } = req.body;
+    const { creatorId, ecosystemDomain, templateId } = req.body;
 
-    const requiredFields = ["creatorId", "ecosystemDomain", "templateNumber"];
+    const requiredFields = ["creatorId", "ecosystemDomain", "templateId"];
 
     // Check if required fields are provided
     for (const field of requiredFields) {
@@ -137,12 +138,11 @@ const createBarberTemplate = async (req, res) => {
     }
 
     // Check if the creator exists
-    const creator = await Creator.findByPk(creatorId);
+    const creator = await Creator.findByPk(creatorId); // Assuming `Creator` is a Mongoose model
     if (!creator) {
       return res.status(404).json({ message: "Creator not found" });
     }
 
-    // Check if the ecosystem exists
     const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
     if (!ecosystem) {
       return res.status(404).json({ message: "Ecosystem not found" });
@@ -152,72 +152,27 @@ const createBarberTemplate = async (req, res) => {
     const templateData = {
       creatorId,
       ecosystemDomain,
-      templateNumber,
-      navbar: JSON.parse(req.body.navbar),
-      heroSection: JSON.parse(req.body.heroSection),
-      aboutSection: JSON.parse(req.body.aboutSection),
-      carouselImages: JSON.parse(req.body.carouselImages),
-      testimonials: JSON.parse(req.body.testimonials),
-      team: JSON.parse(req.body.team),
-      contactInfo: JSON.parse(req.body.contactInfo),
-      footer: JSON.parse(req.body.footer),
+      templateId,
+      navbar: req.body.navbar,
+      hero: req.body.hero,
+      aboutUs: req.body.aboutUs,
+      Vision: req.body.Vision,
+      Statistics: req.body.Statistics,
+      Patrners: req.body.Patrners,
+      Events: req.body.Events,
+      Gallery: req.body.Gallery,
+      LargeCta: req.body.LargeCta,
+      Team: req.body.Team,
+      Blog: req.body.Blog,
+      Reviews: req.body.Reviews,
+      contactUs: req.body.contactUs,
+      faq: req.body.faq,
+      faqStyles: req.body.faqStyles,
+      footer: req.body.footer,
     };
 
-    // Set file paths in templateData
-    if (req.files) {
-      // Navbar logo
-      if (req.files["navbar.logo"]) {
-        templateData.navbar.logo = `https://dimpified-backend-development.azurewebsites.net/${req.files["navbar.logo"][0].path}`;
-      }
-
-      // Hero section background image
-      if (req.files["heroSection.backgroundImage"]) {
-        templateData.heroSection.backgroundImage = `https://dimpified-backend-development.azurewebsites.net/${req.files["heroSection.backgroundImage"][0].path}`;
-      }
-
-      // About section images
-      if (req.files["aboutSection.images"]) {
-        templateData.aboutSection.images = req.files["aboutSection.images"].map(
-          (file) => ({
-            src: `https://dimpified-backend-development.azurewebsites.net/${file.path}`,
-            style: {
-              backgroundImage: `url(https://dimpified-backend-development.azurewebsites.net/${file.path})`,
-            },
-          })
-        );
-      }
-
-      // Carousel images
-      if (req.files["carouselImages"]) {
-        templateData.carouselImages = req.files["carouselImages"].map(
-          (file) => ({
-            src: `https://dimpified-backend-development.azurewebsites.net/${file.path}`,
-            alt: file.originalname,
-          })
-        );
-      }
-
-      // Footer logo
-      if (req.files["footer.logo"]) {
-        templateData.footer.logo = `https://dimpified-backend-development.azurewebsites.net/${req.files["footer.logo"][0].path}`;
-      }
-
-      // Team member images
-      if (req.files["team.images"]) {
-        // Assuming team.images is an array of files and each file corresponds to a team member
-        templateData.team = templateData.team.map((member, index) => {
-          if (req.files["team.images"][index]) {
-            return {
-              ...member,
-              imageUrl: `https://dimpified-backend-development.azurewebsites.net/${req.files["team.images"][index].path}`,
-            };
-          }
-          return member;
-        });
-      }
-    }
     // Create the template
-    const template = await Barbertemplate.create(templateData);
+    const template = await CreatorTemplate.create(templateData);
 
     // Update ecosystem with the new template
     ecosystem.steps = 2;
@@ -236,5 +191,5 @@ const createBarberTemplate = async (req, res) => {
 module.exports = {
   createTemplate,
   getAnEcosystemTemplate,
-  createBarberTemplate,
+  createCreatorTemplate,
 };

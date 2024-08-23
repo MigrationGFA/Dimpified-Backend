@@ -39,7 +39,7 @@ const resetPasswordUser = async (req, res) => {
       await sendResetPasswordAlert({
         username: user.username,
         email: user.email,
-        origin: process.env.ORIGIN,
+        origin: `${user.ecosystemDomain}.${process.env.ORIGIN}`,
       });
 
       return res.status(200).json({ message: "Password reset successfully" });
