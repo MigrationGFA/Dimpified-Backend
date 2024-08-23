@@ -100,6 +100,10 @@ const commentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    totalReplies: {
+      type: Number,
+      default: 0,
+    },
     likesUserId: [{ type: String }],
     comment: { type: String, required: true },
   },
