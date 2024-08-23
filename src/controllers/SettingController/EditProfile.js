@@ -49,13 +49,13 @@ const updateProfile = async (req, res) => {
 
     let imageLink;
 
-     if (req.file) {
-        const newImage = req.file;
-        if (!isValidFile(newImage)) {
-          return res.status(400).json({ message: "Invalid image file" });
-        }
-        imageLink = `https://dimpified-backend-development.azurewebsites.net/${newImage.path}`;
+    if (req.file) {
+      const newImage = req.file;
+      if (!isValidFile(newImage)) {
+        return res.status(400).json({ message: "Invalid image file" });
       }
+      imageLink = `https://dimpified-backend-development.azurewebsites.net/${newImage.path}`;
+    }
 
     await user.update({
       username,
@@ -100,16 +100,18 @@ const getUserData = async (req, res) => {
       return res.status(400).json({ message: "User ID is required" });
     }
 
-    const userDetails = await User.findByPk(userId, { attributes: { 
+    const userDetails = await User.findByPk(userId, {
+      attributes: {
         exclude: [
-          'password', 
-          'passwordToken', 
-          'passwordTokenExpirationDate', 
-          'verificationToken',
+          "password",
+          "passwordToken",
+          "passwordTokenExpirationDate",
+          "verificationToken",
           "createdAt",
-          "updatedAt"
-        ]
-      }});
+          "updatedAt",
+        ],
+      },
+    });
 
     if (!userDetails) {
       return res.status(404).json({ message: "User does not exist" });

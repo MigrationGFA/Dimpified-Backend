@@ -91,7 +91,6 @@ const VerifyPayment = async (req, res) => {
 
     for (const detail of details) {
       if (!req.body[detail]) {
-        console.log(`${detail} is required`);
         return res.status(400).json({ message: `${detail} is required` });
       }
     }
@@ -133,7 +132,6 @@ const VerifyPayment = async (req, res) => {
 
       itemPrice = parseFloat(item.price);
       if (isNaN(itemPrice)) {
-        console.log("Invalid price for product:", item.price);
         return res.status(400).json({ message: "Invalid price for product" });
       }
       amount = itemPrice + itemPrice * VAT_RATE;
@@ -142,19 +140,16 @@ const VerifyPayment = async (req, res) => {
     } else if (itemType === "Service") {
       item = await Service.findById(itemId);
       if (!item) {
-        console.log("Service not found");
         return res.status(404).json({ message: "Service not found" });
       }
 
       const packageItem = item.services[0];
       if (!packageItem) {
-        console.log("No package found in service");
         return res.status(404).json({ message: "No package found in service" });
       }
 
       itemPrice = parseFloat(packageItem.price);
       if (isNaN(itemPrice)) {
-        console.log("Invalid price for service package:", packageItem.price);
         return res
           .status(400)
           .json({ message: "Invalid price for service package" });
@@ -164,7 +159,6 @@ const VerifyPayment = async (req, res) => {
       itemTitle = item.header;
       creatorId = item.creatorId;
     } else {
-      console.log("Unsupported item type");
       return res.status(400).json({ message: "Unsupported item type" });
     }
 
@@ -184,7 +178,6 @@ const VerifyPayment = async (req, res) => {
 
     const responseData = await thirdPartyVerification(reference, provider);
     if (!responseData || !responseData.data) {
-      console.log("Payment verification failed, invalid response data");
       return res.status(400).json({
         message: "Payment verification failed, invalid response data",
       });
@@ -196,7 +189,6 @@ const VerifyPayment = async (req, res) => {
     if (provider === "paystack") {
       verifiedAmount = responseData.data.amount / 100;
       if (verifiedAmount !== amount) {
-        console.log("Payment verification failed, amount mismatch");
         return res.status(400).json({ message: "Payment verification failed" });
       }
     } else if (provider === "flutterwave") {
@@ -266,7 +258,6 @@ const VerifyPayment = async (req, res) => {
 
     const user = await User.findByPk(userId);
     if (!user) {
-      console.log("User does not exist");
       return res.status(400).json({ message: "User does not exist" });
     }
 
@@ -289,8 +280,6 @@ const VerifyPayment = async (req, res) => {
     } else {
       successMessage = "Item purchased successfully";
     }
-
-    console.log(successMessage);
     return res.status(201).json({
       message: successMessage,
       responseData,

@@ -26,6 +26,10 @@ const Subscription = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    planType: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     startDate: {
       type: DataTypes.DATE,
       allowNull: false,
