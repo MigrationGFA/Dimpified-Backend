@@ -583,9 +583,12 @@ const getReplies = async (req, res) => {
       return res.status(404).json({ message: "No replies found for this comment" });
     }
 
+    const totalReply = replies.length
+
     return res.status(200).json({
       message: "Replies fetched successfully",
       replies,
+      totalReply
     });
   } catch (error) {
     console.error("Error fetching replies:", error);

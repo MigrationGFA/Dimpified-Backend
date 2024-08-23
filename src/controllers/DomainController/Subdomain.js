@@ -83,7 +83,7 @@ const createSubdomain = async (subdomain) => {
         );
         // Step 4: Validate the subdomain by retrying the hostname binding
         console.log('Waiting for DNS propagation...');
-        await new Promise(resolve => setTimeout(resolve, 10000)); // Wait for 60 seconds
+        await new Promise(resolve => setTimeout(resolve, 10000)); // Wait for 10 seconds
         await webClient.webApps.createOrUpdateHostNameBinding(
             resourceGroupName,
             appServiceName,
