@@ -198,12 +198,6 @@ const getCommunityWithPosts = async (req, res) => {
       userNames[user.id] = user.username;
     });
 
-    // const postsWithImages = posts.map((post) => ({
-    //   ...post.toObject(),
-    //   userImage: userImages[post.authorId] || null,
-    //   username: userNames[post.authorId] || null,
-    // }));
-
 
     // Fetch comments count for each post
     const postsWithDetails = await Promise.all(
@@ -529,6 +523,8 @@ const replyComment = async (req, res) => {
     if (!comment) {
       return res.status(404).json({ message: "Comment not found" });
     };
+    comment.totalReplies += 1
+    await comment.save()
 
     // Create a new reply
     const newReply = new Reply({
@@ -583,12 +579,55 @@ const getReplies = async (req, res) => {
       return res.status(404).json({ message: "No replies found for this comment" });
     }
 
-    const totalReply = replies.length
+    
+
+        const userData = replies.map((reply) => ({
+      id: reply.userId,
+      type: reply.userType,
+    }));
+    const uniqueUsers = Array.from(new Set(userData.map(JSON.stringify))).map(
+      JSON.parse
+    );
+
+     const creatorIds = uniqueUsers
+      .filter((user) => user.type === "creator")
+      .map((user) => user.id);
+    const ecosystemUserIds = uniqueUsers
+      .filter((user) => user.type === "user")
+      .map((user) => user.id);
+
+    const creators = await Creator.findAll({
+      where: { id: creatorIds },
+      attributes: ["id", "imageUrl", "organizationName"],
+    });
+
+    const ecosystemUsers = await EcosystemUser.findAll({
+      where: { id: ecosystemUserIds },
+      attributes: ["id", "imageUrl", "username"],
+    });
+
+    const userImages = {};
+    const userNames = {};
+
+    creators.forEach((creator) => {
+      userImages[creator.id] = creator.imageUrl;
+      userNames[creator.id] = creator.organizationName;
+    });
+
+    ecosystemUsers.forEach((user) => {
+      userImages[user.id] = user.imageUrl;
+      userNames[user.id] = user.username;
+    });
+
+    const repliesWithImages = replies.map((reply) => ({
+      ...reply.toObject(),
+      userImage: userImages[reply.userId] || null,
+      userName: userNames[reply.userId] || null,
+    }));
 
     return res.status(200).json({
       message: "Replies fetched successfully",
-      replies,
-      totalReply
+      repliesWithImages,
     });
   } catch (error) {
     console.error("Error fetching replies:", error);
