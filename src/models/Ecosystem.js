@@ -39,11 +39,11 @@ const ecosystemSchema = new mongoose.Schema({
     required: true,
   },
   communityId: { type: mongoose.Schema.Types.ObjectId, ref: "dimpCommunity" },
-  expectedAudienceNumber: {
+  contact: {
     type: String,
     required: true,
   },
-  experience: {
+  address: {
     type: String,
     required: true,
   },
