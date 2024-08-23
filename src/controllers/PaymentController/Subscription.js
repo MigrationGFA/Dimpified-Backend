@@ -56,7 +56,7 @@ const verifySubscription = async (req, res) => {
     }
 
     const responseData = await verifyPayment(reference);
-    console.log(responseData);
+
     if (!responseData || !responseData.data) {
       return res.status(400).json({
         message: "Payment verification failed, invalid response data",
