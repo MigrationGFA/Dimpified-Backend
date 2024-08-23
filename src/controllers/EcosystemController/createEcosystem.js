@@ -18,6 +18,7 @@ const aboutEcosystem = async (req, res) => {
     experience,
     ecosystemDescription,
     ecosystemId,
+    socialMedia
   } = req.body;
 
   const requiredFields = [
@@ -55,6 +56,7 @@ const aboutEcosystem = async (req, res) => {
           expectedAudienceNumber,
           experience,
           ecosystemDescription,
+          socialMedia,
           status: "draft",
           updatedAt: Date.now(),
         },
@@ -77,6 +79,7 @@ const aboutEcosystem = async (req, res) => {
         expectedAudienceNumber,
         experience,
         ecosystemDescription,
+        socialMedia,
         status: "draft",
       });
       await ecosystem.save();
