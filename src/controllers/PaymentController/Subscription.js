@@ -45,8 +45,8 @@ const verifySubscription = async (req, res) => {
   try {
     await Subscription.sync();
 
-    const { reference, creatorId } = req.body;
-    const details = ["reference", "creatorId"];
+    const { reference, creatorId, planType } = req.body;
+    const details = ["reference", "creatorId", "planType"];
 
     for (const detail of details) {
       if (!req.body[detail]) {
@@ -56,6 +56,7 @@ const verifySubscription = async (req, res) => {
     }
 
     const responseData = await verifyPayment(reference);
+    console.log(responseData);
     if (!responseData || !responseData.data) {
       return res.status(400).json({
         message: "Payment verification failed, invalid response data",
@@ -115,6 +116,7 @@ const verifySubscription = async (req, res) => {
     const subscription = await Subscription.create({
       creatorId,
       planCode: plan,
+      planType,
       startDate,
       endDate,
       sizeLimit: sizeLimitString,
