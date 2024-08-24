@@ -38,6 +38,7 @@ const aboutEcosystem = async (req, res) => {
     }
   }
 
+  // creator
   try {
     const creator = await Creator.findByPk(creatorId);
     if (!creator) {
