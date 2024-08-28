@@ -38,7 +38,7 @@ const createService = async (req, res) => {
       return res.status(400).json({ message: "Please onboard as a creator" });
     }
 
-    const ecosystem = await Ecosystem.findOne({ecosystemDomain});
+    const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
     if (!ecosystem) {
       return res.status(400).json({ message: "Invalid ecosystem domain name" });
     }
@@ -47,7 +47,7 @@ const createService = async (req, res) => {
 
     if (req.files && req.files.length > 0) {
       backgroundCover = req.files.map((file) => {
-         return `https://dimpified-backend-development.azurewebsites.net/uploads/background-cover/${file.filename}`;
+        return `${process.env.IMAGE_URL}/${file.filename}`;
       });
     }
 
@@ -77,10 +77,11 @@ const createService = async (req, res) => {
 
 const getAllServices = async (req, res) => {
   try {
-     const ecosystemDomain = req.params.ecosystemDomain;
+    const ecosystemDomain = req.params.ecosystemDomain;
 
-    const services = await Service.find({ ecosystemDomain }).sort(
-      { createdAt: -1 });
+    const services = await Service.find({ ecosystemDomain }).sort({
+      createdAt: -1,
+    });
 
     if (services.length === 0) {
       return res
@@ -97,7 +98,7 @@ const getAllServices = async (req, res) => {
 
 const getAService = async (req, res) => {
   try {
-    const serviceId  = req.params.serviceId;
+    const serviceId = req.params.serviceId;
 
     const service = await Service.findOne({ _id: serviceId });
     if (!service) {
@@ -111,4 +112,4 @@ const getAService = async (req, res) => {
   }
 };
 
-module.exports = { createService, getAllServices,getAService };
+module.exports = { createService, getAllServices, getAService };
