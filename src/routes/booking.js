@@ -1,12 +1,12 @@
-// const express = require("express");
-// const {
-//   createBooking,
-//   getBookings,
-// } = require("../controllers/serviceRequest/booking");
+const express = require("express");
+const {
+  createBooking,
+  getBookings,
+} = require("../controllers/serviceRequest/booking");
 
-// const router = express.Router();
+const router = express.Router();
 
-// router.post("/create-booking", createBooking);
-// router.get("/bookings/:subDomain", getBookings);
+router.post("/create-booking", createBooking);
+router.get("/bookings/:ecosystemDomain", getBookings);
 
-// module.exports = router;
+module.exports = router;
