@@ -1,4 +1,4 @@
-const Booking = require("../../models/DimpBooking"); // Ensure this path is correct
+const Booking = require("../../models/DimpBooking");
 const Ecosystem = require("../../models/Ecosystem");
 
 const createBooking = async (req, res) => {
@@ -10,7 +10,9 @@ const createBooking = async (req, res) => {
       location,
       address,
       service,
-      dateAndTime,
+      bookingType,
+      date,
+      time,
       price,
       ecosystemDomain,
     } = req.body;
@@ -21,8 +23,10 @@ const createBooking = async (req, res) => {
       "email",
       "phone",
       "location",
+      "bookingType",
       "service",
-      "dateAndTime",
+      "date",
+      "time",
       "price",
     ];
 
@@ -35,30 +39,40 @@ const createBooking = async (req, res) => {
 
     const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
     if (!ecosystem) {
-      res.status(400).json({ messsage: "Ecosystem not found" });
+      return res.status(400).json({ message: "Ecosystem not found" });
     }
 
     const existingBooking = await Booking.findOne({
-      location,
-      dateAndTime,
+      date,
+      time,
     });
 
     if (existingBooking) {
       return res.status(400).json({
-        message:
-          "The selected date and time are already booked at this location.",
+        message: "The selected date and time are already booked .",
       });
     }
 
+    const generateUniqueId = () => {
+      const letters = Math.random().toString(36).substring(2, 5).toUpperCase();
+      const numbers = Math.floor(100 + Math.random() * 900);
+      return `${letters}${numbers}`;
+    };
+
+    const bookingId = generateUniqueId();
+
     const newBooking = new Booking({
+      bookingId,
       name,
       email,
       phone,
       location,
       address,
       service,
-      dateAndTime,
+      date,
+      time,
       price,
+      bookingType,
       ecosystemDomain,
     });
 

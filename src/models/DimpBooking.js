@@ -2,6 +2,11 @@ const mongoose = require("mongoose");
 
 const bookingSchema = new mongoose.Schema(
   {
+    bookingId: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     ecosystemDomain: {
       type: String,
       required: true,
@@ -13,7 +18,6 @@ const bookingSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
-
       lowercase: true,
     },
     phone: {
@@ -31,8 +35,12 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    dateAndTime: {
+    date: {
       type: Date,
+      required: true,
+    },
+    time: {
+      type: String,
       required: true,
     },
     status: {
@@ -44,6 +52,10 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       enum: ["Pending", "Paid", "Unpaid"],
       default: "Pending",
+    },
+    bookingType: {
+      type: String,
+      required: true,
     },
     price: {
       type: Number,
