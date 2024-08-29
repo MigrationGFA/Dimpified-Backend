@@ -348,7 +348,7 @@ const verifyBookingPayment = async (req, res) => {
 
     return res.status(201).json({
       message: "Booking payment verified and updated to paid",
-      responseData,
+      booking,
     });
   } catch (error) {
     console.error("Error in verifyBookingPayment function:", error);
