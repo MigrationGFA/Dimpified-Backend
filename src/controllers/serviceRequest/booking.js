@@ -165,4 +165,33 @@ const bookingOverview = async (req, res) => {
   }
 };
 
-module.exports = { createBooking, getBookings, bookingOverview };
+const changeBookingStatusToCompleted = async (req, res) => {
+  try {
+    const { bookingId } = req.body;
+
+    const updatedBooking = await Booking.findByIdAndUpdate(
+      bookingId,
+      { status: "Completed" },
+      { new: true }
+    );
+
+    if (!updatedBooking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    res.status(200).json({
+      message: "Booking status updated to Completed",
+      booking: updatedBooking,
+    });
+  } catch (error) {
+    console.log("Error:", error);
+    res.status(500).json({ message: "Failed to update booking status", error });
+  }
+};
+
+module.exports = {
+  createBooking,
+  getBookings,
+  bookingOverview,
+  changeBookingStatusToCompleted,
+};
