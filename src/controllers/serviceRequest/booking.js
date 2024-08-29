@@ -11,6 +11,7 @@ const createBooking = async (req, res) => {
       address,
       service,
       bookingType,
+      description,
       date,
       time,
       price,
@@ -45,6 +46,7 @@ const createBooking = async (req, res) => {
     const existingBooking = await Booking.findOne({
       date,
       time,
+      ecosystemDomain,
     });
 
     if (existingBooking) {
@@ -67,6 +69,7 @@ const createBooking = async (req, res) => {
       email,
       phone,
       location,
+      description,
       address,
       service,
       date,
@@ -112,4 +115,54 @@ const getBookings = async (req, res) => {
   }
 };
 
-module.exports = { createBooking, getBookings };
+const bookingOverview = async (req, res) => {
+  try {
+    const { ecosystemDomain } = req.params;
+
+    // Get start and end of today
+    const today = new Date();
+    const startOfToday = new Date(today.setHours(0, 0, 0, 0));
+    const endOfToday = new Date(today.setHours(23, 59, 59, 999));
+
+    // Get start and end of the current week (assuming Sunday as the start)
+    const startOfWeek = new Date(
+      today.setDate(today.getDate() - today.getDay())
+    );
+    startOfWeek.setHours(0, 0, 0, 0);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(endOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+
+    // Fetch all bookings and filter based on date ranges
+    const allBookings = await Booking.find({ ecosystemDomain });
+
+    const todayBookings = allBookings.filter((booking) => {
+      const bookingDate = new Date(booking.date);
+      return bookingDate >= startOfToday && bookingDate <= endOfToday;
+    });
+
+    const weekBookings = allBookings.filter((booking) => {
+      const bookingDate = new Date(booking.date);
+      return bookingDate >= startOfWeek && bookingDate <= endOfWeek;
+    });
+
+    // Fetch pending and completed bookings
+    const [pendingBookings, completedBookings] = await Promise.all([
+      Booking.find({ ecosystemDomain, status: "Pending" }),
+      Booking.find({ ecosystemDomain, status: "Completed" }),
+    ]);
+
+    res.status(200).json({
+      todayBookings,
+      weekBookings,
+      allBookings,
+      pendingBookings,
+      completedBookings,
+    });
+  } catch (error) {
+    console.log("Error:", error);
+    res.status(500).json({ message: "Failed to retrieve bookings", error });
+  }
+};
+
+module.exports = { createBooking, getBookings, bookingOverview };

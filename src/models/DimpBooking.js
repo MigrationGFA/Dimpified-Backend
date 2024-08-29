@@ -27,6 +27,7 @@ const bookingSchema = new mongoose.Schema(
     address: {
       type: String,
     },
+    description: { type: String },
     location: {
       type: String,
       required: true,
