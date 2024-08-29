@@ -314,7 +314,7 @@ const verifyBookingPayment = async (req, res) => {
       return res.status(404).json({ message: "Booking not found" });
     }
 
-    const amount = booking.totalAmount; // Assuming the booking has a totalAmount field
+    const amount = booking.price; // Assuming the booking has a totalAmount field
     const responseData = await thirdPartyVerification(reference, provider);
     console.log("responssedata:", responseData);
     if (!responseData || !responseData.data) {
@@ -343,7 +343,7 @@ const verifyBookingPayment = async (req, res) => {
     }
 
     // Update the booking payment status to "paid"
-    booking.paymentStatus = "paid";
+    booking.paymentStatus = "Paid";
     await booking.save(); // Save the changes to the booking document
 
     return res.status(201).json({
