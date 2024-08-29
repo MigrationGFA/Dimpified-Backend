@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const VerifyPayment = require("../controllers/PaymentController/payment");
+
 const verifySubscription = require("../controllers/PaymentController/Subscription");
 const {
   saveCreatorAccount,
@@ -13,8 +13,13 @@ const {
   getWithdrawalRequests,
   getMyWithdrawalRequests,
 } = require("../controllers/PaymentController/withdrawalController");
+const {
+  VerifyPayment,
+  verifyBookingPayment,
+} = require("../controllers/PaymentController/payment");
 
 router.post("/verify-payment", VerifyPayment);
+router.post("/verify-booking-payment", verifyBookingPayment);
 router.post("/verify-subscription", verifySubscription);
 
 // Creator Payment Details
