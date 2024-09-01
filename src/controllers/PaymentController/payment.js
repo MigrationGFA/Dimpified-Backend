@@ -262,15 +262,6 @@ const VerifyPayment = async (req, res) => {
       return res.status(400).json({ message: "User does not exist" });
     }
 
-    // await sendCoursePurchaseEmail({
-    //   username: user.username,
-    //   email: email,
-    //   title: itemTitle,
-    //   price: itemPrice,
-    //   category: item.category,
-    //   hour: item.hour,
-    // });
-
     let successMessage;
     if (itemType === "Course") {
       successMessage = "Course purchased successfully";
