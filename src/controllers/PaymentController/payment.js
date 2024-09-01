@@ -299,7 +299,8 @@ const VerifyPayment = async (req, res) => {
 const verifyBookingPayment = async (req, res) => {
   console.log("verifyBookingPayment function called");
   try {
-    const { provider, reference, bookingId } = req.body;
+    const { provider, reference, bookingId, ecosystemDomain, itemType, email } =
+      req.body;
 
     const details = ["provider", "reference", "bookingId"];
 
@@ -309,7 +310,7 @@ const verifyBookingPayment = async (req, res) => {
       }
     }
 
-    const booking = await Booking.findById(bookingId); // Use `findById` for MongoDB
+    const booking = await Booking.findById(bookingId); 
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
     }
