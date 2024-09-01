@@ -8,6 +8,7 @@ const CreatorEarning = require("../../models/CreatorEarning");
 const Ecosystem = require("../../models/Ecosystem");
 const { sequelize } = require("../../config/dbConnect");
 const User = require("../../models/EcosystemUser");
+const Booking = require("../../models/DimpBooking");
 
 const VAT_RATE = 0.075;
 const thirdPartyVerification = async (reference, provider) => {
@@ -261,15 +262,6 @@ const VerifyPayment = async (req, res) => {
       return res.status(400).json({ message: "User does not exist" });
     }
 
-    // await sendCoursePurchaseEmail({
-    //   username: user.username,
-    //   email: email,
-    //   title: itemTitle,
-    //   price: itemPrice,
-    //   category: item.category,
-    //   hour: item.hour,
-    // });
-
     let successMessage;
     if (itemType === "Course") {
       successMessage = "Course purchased successfully";
@@ -295,4 +287,66 @@ const VerifyPayment = async (req, res) => {
   }
 };
 
-module.exports = VerifyPayment;
+const verifyBookingPayment = async (req, res) => {
+  console.log("verifyBookingPayment function called");
+  try {
+    const { provider, reference, bookingId } = req.body;
+
+    const details = ["provider", "reference", "bookingId"];
+
+    for (const detail of details) {
+      if (!req.body[detail]) {
+        return res.status(400).json({ message: `${detail} is required` });
+      }
+    }
+
+    const booking = await Booking.findById(bookingId); // Use `findById` for MongoDB
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    const amount = booking.price; // Assuming the booking has a totalAmount field
+    const responseData = await thirdPartyVerification(reference, provider);
+    console.log("responssedata:", responseData);
+    if (!responseData || !responseData.data) {
+      return res.status(400).json({
+        message: "Payment verification failed, invalid response data",
+      });
+    }
+
+    let verifiedAmount;
+
+    if (provider === "paystack") {
+      verifiedAmount = responseData.data.amount / 100;
+      if (verifiedAmount !== amount) {
+        return res.status(400).json({ message: "Payment verification failed" });
+      }
+    } else if (provider === "flutterwave") {
+      verifiedAmount = responseData.data.amount;
+      if (
+        responseData.data.status !== "successful" ||
+        verifiedAmount !== amount
+      ) {
+        return res.status(400).json({ message: "Payment verification failed" });
+      }
+    } else {
+      return res.status(400).json({ message: "Unsupported payment provider" });
+    }
+
+    // Update the booking payment status to "paid"
+    booking.paymentStatus = "Paid";
+    await booking.save(); // Save the changes to the booking document
+
+    return res.status(201).json({
+      message: "Booking payment verified and updated to paid",
+      booking,
+    });
+  } catch (error) {
+    console.error("Error in verifyBookingPayment function:", error);
+    res.status(500).json({
+      message: "An error occurred during booking payment verification",
+    });
+  }
+};
+
+module.exports = { VerifyPayment, verifyBookingPayment };
