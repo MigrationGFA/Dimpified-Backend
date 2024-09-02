@@ -14,6 +14,10 @@ const CreatorEarning = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    ecosystemDomain: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     Naira: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
