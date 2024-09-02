@@ -237,6 +237,7 @@ const VerifyPayment = async (req, res) => {
       if (!creatorEarning) {
         creatorEarning = await CreatorEarning.create({
           creatorId,
+          ecosystemDomain,
           Naira: 0,
           Dollar: 0,
         });

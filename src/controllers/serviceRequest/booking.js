@@ -188,6 +188,7 @@ const changeBookingStatusToCompleted = async (req, res) => {
   } catch (error) {
     console.log("Error:", error);
     res.status(500).json({ message: "Failed to update booking status", error });
+    4;
   }
 };
 
