@@ -50,11 +50,11 @@ const createDigitalProduct = async (req, res) => {
 
     if (req.files && req.files.length > 0) {
       backgroundCover = req.files.map((file) => {
-        return `https://dimpified-backend-development.azurewebsites.net/uploads/background-cover/${file.filename}`;
+        return `${process.env.IMAGE_URL}/${file.filename}`;
       });
     }
 
-const parsedPackages = JSON.parse(package)
+    const parsedPackages = JSON.parse(package);
 
     const digitalProduct = new DigitalProduct({
       category,
@@ -67,7 +67,7 @@ const parsedPackages = JSON.parse(package)
       ecosystemDomain,
       backgroundCover,
       currency,
-      package:parsedPackages
+      package: parsedPackages,
     });
 
     await digitalProduct.save();
@@ -103,7 +103,7 @@ const getADigitalProduct = async (req, res) => {
 const getAllDigitalProducts = async (req, res) => {
   try {
     const creatorId = req.params.creatorId;
-     if (!creatorId) {
+    if (!creatorId) {
       return res.status(404).json({ message: "creatorId is required" });
     }
 
@@ -125,11 +125,13 @@ const getAllEcosystemDigitalProducts = async (req, res) => {
   try {
     const ecosystemDomain = req.params.ecosystemDomain;
 
-     if (!ecosystemDomain) {
+    if (!ecosystemDomain) {
       return res.status(404).json({ message: "ecosystemDomain is required" });
     }
 
-    const ecosystemDigitalProducts = await DigitalProduct.find({ ecosystemDomain }).sort({
+    const ecosystemDigitalProducts = await DigitalProduct.find({
+      ecosystemDomain,
+    }).sort({
       createdAt: -1,
     });
     res.status(200).json({ ecosystemDigitalProducts });
@@ -143,5 +145,5 @@ module.exports = {
   createDigitalProduct,
   getADigitalProduct,
   getAllDigitalProducts,
-  getAllEcosystemDigitalProducts
+  getAllEcosystemDigitalProducts,
 };

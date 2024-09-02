@@ -1,5 +1,7 @@
+const Creator = require("../../models/Creator");
 const Booking = require("../../models/DimpBooking");
 const Ecosystem = require("../../models/Ecosystem");
+const sendBookingConfirmationEmail = require("../../utils/bookingNotification");
 
 const createBooking = async (req, res) => {
   try {
@@ -80,6 +82,20 @@ const createBooking = async (req, res) => {
     });
 
     await newBooking.save();
+    const creator = await Creator.findByPk(ecosystem.creatorId);
+    if (!creator) {
+      res.status(404).json({ messsage: "Creator not found" });
+    }
+
+    await sendBookingConfirmationEmail({
+      email: creator.email,
+      name: creator.organizationName,
+      bookingId,
+      service,
+      bookingType,
+      date,
+      time,
+    });
 
     res
       .status(201)
@@ -188,6 +204,7 @@ const changeBookingStatusToCompleted = async (req, res) => {
   } catch (error) {
     console.log("Error:", error);
     res.status(500).json({ message: "Failed to update booking status", error });
+    4;
   }
 };
 
