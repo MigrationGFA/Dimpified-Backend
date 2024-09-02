@@ -9,6 +9,7 @@ const Ecosystem = require("../../models/Ecosystem");
 const { sequelize } = require("../../config/dbConnect");
 const User = require("../../models/EcosystemUser");
 const Booking = require("../../models/DimpBooking");
+const sendBookingPaymentConfirmationEmail = require("../../utils/bookingpaymentNotification");
 
 const VAT_RATE = 0.075;
 const thirdPartyVerification = async (reference, provider) => {
@@ -291,9 +292,16 @@ const VerifyPayment = async (req, res) => {
 const verifyBookingPayment = async (req, res) => {
   console.log("verifyBookingPayment function called");
   try {
-    const { provider, reference, bookingId } = req.body;
+    const { provider, reference, bookingId, ecosystemDomain, itemType, email } =
+      req.body;
 
-    const details = ["provider", "reference", "bookingId"];
+    const details = [
+      "provider",
+      "reference",
+      "bookingId",
+      "ecosystemDomain",
+      "email",
+    ];
 
     for (const detail of details) {
       if (!req.body[detail]) {
@@ -301,14 +309,21 @@ const verifyBookingPayment = async (req, res) => {
       }
     }
 
-    const booking = await Booking.findById(bookingId); // Use `findById` for MongoDB
+    const booking = await Booking.findById(bookingId);
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
     }
 
+    const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
+    if (!ecosystem) {
+      return res.status(404).json({
+        message: "Ecosystem not found",
+      });
+    }
+
     const amount = booking.price; // Assuming the booking has a totalAmount field
     const responseData = await thirdPartyVerification(reference, provider);
-    console.log("responssedata:", responseData);
+ 
     if (!responseData || !responseData.data) {
       return res.status(400).json({
         message: "Payment verification failed, invalid response data",
@@ -337,6 +352,43 @@ const verifyBookingPayment = async (req, res) => {
     // Update the booking payment status to "paid"
     booking.paymentStatus = "Paid";
     await booking.save(); // Save the changes to the booking document
+
+    let creatorEarning = await CreatorEarning.findOne({
+      where: { ecosystemDomain },
+    });
+
+    if (!creatorEarning) {
+      creatorEarning = await CreatorEarning.create({
+        creatorId: ecosystem.creatorId,
+        ecosystemDomain,
+        Naira: 0,
+        Dollar: 0,
+      });
+    }
+
+    const currency = responseData.data.currency;
+
+    switch (currency) {
+      case "NGN":
+        creatorEarning.Naira += verifiedAmount;
+        break;
+      case "USD":
+        creatorEarning.Dollar += verifiedAmount;
+        break;
+      default:
+        console.log("Unsupported currency");
+        return res.status(400).json({ message: "Unsupported currency" });
+    }
+
+    await creatorEarning.save();
+console.log(creatorEarning)
+    await sendBookingPaymentConfirmationEmail({
+      email,
+      bookingId,
+      paymentAmount: verifiedAmount,
+      paymentDate: new Date().toISOString(),
+      paymentMethod: provider,
+    });
 
     return res.status(201).json({
       message: "Booking payment verified and updated to paid",
