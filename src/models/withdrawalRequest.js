@@ -45,6 +45,10 @@ const WithdrawalRequest = sequelize.define(
         key: "id",
       },
     },
+    ecosystemDomain: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     creatorId: {
       type: DataTypes.INTEGER,
       allowNull: false,
