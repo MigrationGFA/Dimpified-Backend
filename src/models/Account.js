@@ -14,6 +14,10 @@ const Account = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    ecosystemDomain: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     accountName: {
       type: DataTypes.STRING,
       allowNull: false,

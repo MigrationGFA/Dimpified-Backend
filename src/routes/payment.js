@@ -7,6 +7,7 @@ const {
   getCreatorBankDetails,
   editCreatorAccount,
   getCreatorEarning,
+  ecosystemEarnings,
 } = require("../controllers/PaymentController/AccountController");
 const {
   withdrawalRequest,
@@ -22,9 +23,12 @@ router.post("/verify-payment", VerifyPayment);
 router.post("/verify-booking-payment", verifyBookingPayment);
 router.post("/verify-subscription", verifySubscription);
 
+//ecosystemEarnings
+router.get("/ecosystem-earnings/:ecosystemDomain", ecosystemEarnings);
+
 // Creator Payment Details
 router.post("/save-bank-details", saveCreatorAccount);
-router.get("/bank-details/:creatorId", getCreatorBankDetails);
+router.get("/bank-details/:ecosystemDomain", getCreatorBankDetails);
 router.put("/edit-account", editCreatorAccount);
 router.get("/creator/earnings/:creatorId", getCreatorEarning);
 

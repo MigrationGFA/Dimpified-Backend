@@ -4,102 +4,145 @@ const CreatorEarning = require("../../models/CreatorEarning");
 
 const saveCreatorAccount = async (req, res) => {
   await Account.sync();
-  const { creatorId, accountName, accountNumber, bankName, currency } =
-    req.body;
-  const details = [
+  const {
+    creatorId,
+    ecosystemDomain,
+    accountName,
+    accountNumber,
+    bankName,
+    currency,
+  } = req.body;
+
+  const Details = [
     "creatorId",
+    "ecosystemDomain",
     "accountName",
     "accountNumber",
     "bankName",
     "currency",
   ];
-  // Check if userId is provided
-  for (const detail of details) {
+
+  for (const detail of Details) {
     if (!req.body[detail]) {
       return res.status(400).json({ message: `${detail} is required` });
     }
   }
+
   try {
-    // Find the user by ID to ensure they exist
-    const user = await Creator.findByPk(creatorId);
-    if (!user) {
+    const creator = await Creator.findByPk(creatorId);
+    if (!creator) {
       return res.status(404).json({ message: "Creator not found." });
     }
+
+    const existingAccount = await Account.findOne({
+      where: { accountNumber, creatorId },
+    });
+    if (existingAccount) {
+      return res.status(409).json({
+        message:
+          "Account with this account number already exists for this creator.",
+      });
+    }
+
     const newAccount = await Account.create({
       creatorId,
+      ecosystemDomain,
       accountName,
       accountNumber,
       bankName,
       currency,
     });
-    return res
-      .status(201)
-      .json({ message: "Bank details saved successfully", newAccount });
+
+    return res.status(201).json({
+      message: "Bank details saved successfully",
+      newAccount,
+    });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "Error saving bank details", error: error.message });
+    console.error("Error saving bank details:", error);
+    return res.status(500).json({
+      message: "Error saving bank details",
+      error: error.message,
+    });
   }
 };
 
 const getCreatorBankDetails = async (req, res) => {
   try {
-    const creatorId = req.params.creatorId;
-    const accountDetails = await Account.findAll({ where: { creatorId } });
+    // Access ecosystemDomain from request params
+    const { ecosystemDomain } = req.params;
+
+    // Check if ecosystemDomain is provided
+    if (!ecosystemDomain) {
+      return res.status(400).json({ message: "ecosystemDomain is required" });
+    }
+
+    // Find all account details for the given ecosystemDomain
+    const accountDetails = await Account.findAll({
+      where: { ecosystemDomain },
+    });
+
+    if (accountDetails.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No bank details found for this ecosystem." });
+    }
 
     res.status(200).json({ accountDetails });
   } catch (error) {
-    console.log(error);
-    res
-      .status(500)
-      .json({ message: "Error retrieving bank details", error: error.message });
+    console.error("Error retrieving bank details:", error);
+    res.status(500).json({
+      message: "Error retrieving bank details",
+      error: error.message,
+    });
   }
 };
 
 const editCreatorAccount = async (req, res) => {
   try {
-    const { accountId, creatorId, accountName, accountNumber, bankName, currency  } =
+    const { accountId, creatorId, accountName, accountNumber, bankName } =
       req.body;
-    const details = ["creatorId", "accountId", "accountName", "accountNumber", "bankName", "currency"];
 
-    for (const detail of details) {
-      if (!req.body[detail]) {
-        return res.status(400).json({ message: `${detail} is required` });
+    // Validate that all required fields are provided
+    const requiredFields = [
+      "creatorId",
+      "accountId",
+      "accountName",
+      "accountNumber",
+      "bankName",
+    ];
+
+    for (const field of requiredFields) {
+      if (!req.body[field]) {
+        return res.status(400).json({ message: `${field} is required` });
       }
     }
 
+    // Find the account by ID and creatorId to ensure correct ownership
     const account = await Account.findOne({
-      where: { id: accountId, creatorId: creatorId },
+      where: { id: accountId, creatorId },
     });
+
     if (!account) {
       return res.status(404).json({ message: "Account not found" });
     }
 
-    // Prepare the update object
-    const updateObject = {};
+    const updateObject = {
+      accountName,
+      accountNumber,
+      bankName,
+    };
 
-    // Add accountNumber and bankName to the updateObject if provided
-    if (accountName !== undefined) {
-      updateObject.accountName = accountName;
-    }
-    if (accountNumber !== undefined) {
-      updateObject.accountNumber = accountNumber;
-    }
-    if (bankName !== undefined) {
-      updateObject.bankName = bankName;
-    }
-
-    if (currency !== undefined) {
-      updateObject.currency = currency;
-    }
-
-    // Update the account details
     await account.update(updateObject);
 
-    res.status(200).json({ message: "Account updated successfully" });
+    res.status(200).json({
+      message: "Account updated successfully",
+      updatedAccount: account,
+    });
   } catch (error) {
     console.error("Error editing account:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
 
@@ -136,9 +179,52 @@ const getCreatorEarning = async (req, res) => {
   }
 };
 
+const ecosystemEarnings = async (req, res) => {
+  try {
+    const { ecosystemDomain } = req.params;
+
+    if (!ecosystemDomain) {
+      return res.status(400).json({ message: "ecosystemDomain is required" });
+    }
+
+    const creatorEarnings = await CreatorEarning.findAll({
+      where: { ecosystemDomain },
+    });
+
+    if (!creatorEarnings || creatorEarnings.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No earnings found for the given ecosystem" });
+    }
+
+    const totalEarnings = creatorEarnings.reduce(
+      (acc, earning) => {
+        acc.Naira += parseFloat(earning.Naira) || 0;
+        acc.Dollar += parseFloat(earning.Dollar) || 0;
+        return acc;
+      },
+      { Naira: 0, Dollar: 0 }
+    );
+
+    totalEarnings.Naira = totalEarnings.Naira.toFixed(2);
+    totalEarnings.Dollar = totalEarnings.Dollar.toFixed(2);
+
+    return res.status(200).json({
+      message: `Total earnings for ${ecosystemDomain} ecosystem`,
+      totalEarnings,
+    });
+  } catch (error) {
+    console.error("Error fetching ecosystem earnings:", error);
+    return res
+      .status(500)
+      .json({ message: "An error occurred while fetching earnings" });
+  }
+};
+
 module.exports = {
   saveCreatorAccount,
   getCreatorBankDetails,
   editCreatorAccount,
   getCreatorEarning,
+  ecosystemEarnings,
 };
