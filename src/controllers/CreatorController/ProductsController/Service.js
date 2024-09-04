@@ -43,16 +43,16 @@ const createService = async (req, res) => {
       return res.status(400).json({ message: "Invalid ecosystem domain name" });
     }
 
-    let backgroundCover = [];
+    // let backgroundCover = [];
 
-    if (req.files && req.files.length > 0) {
-      backgroundCover = req.files.map((file) => {
-        return `${process.env.IMAGE_URL}/${file.filename}`;
-      });
-    }
+    // if (req.files && req.files.length > 0) {
+    //   backgroundCover = req.files.map((file) => {
+    //     return `${process.env.IMAGE_URL}/${file.filename}`;
+    //   });
+    // }
 
     // Ensure services are parsed correctly
-    let parsedServices = JSON.parse(services);
+    //let parsedServices = JSON.parse(services);
 
     const service = new Service({
       category,
@@ -63,8 +63,7 @@ const createService = async (req, res) => {
       ecosystemDomain,
       format,
       currency,
-      services: parsedServices,
-      backgroundCover,
+      services
     });
 
     await service.save();
