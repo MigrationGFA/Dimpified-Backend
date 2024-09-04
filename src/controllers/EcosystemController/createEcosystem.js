@@ -5,7 +5,9 @@ const Template = require("../../models/Templates");
 const CreatorSupport = require("../../models/Support");
 const PurchasedItem = require("../../models/PurchasedItem");
 const { Op } = require("sequelize");
-const createSubdomain = require("../DomainController/Subdomain.js")
+const createSubdomain = require("../DomainController/Subdomain.js");
+const ReservedTemplate = require("../../models/ReservedTemplate.js");
+const CreatorTemplate = require("../../models/creatorTemplate.js");
 
 const aboutEcosystem = async (req, res) => {
   const {
@@ -18,7 +20,7 @@ const aboutEcosystem = async (req, res) => {
     address,
     ecosystemDescription,
     ecosystemId,
-    socialMedia
+    socialMedia,
   } = req.body;
 
   const requiredFields = [
@@ -69,32 +71,29 @@ const aboutEcosystem = async (req, res) => {
         return res.status(404).json({ message: "Ecosystem not found" });
       }
     } else {
-      const result = await createSubdomain(ecosystemDomain)
-      if(result === "Subdomain creation successful"){
-      ecosystem = new Ecosystem({
-        creatorId,
-        ecosystemName,
-        ecosystemDomain,
-        contact,
-        mainObjective,
-        steps: 1,
-        targetAudienceSector,
-        address,
-        ecosystemDescription,
-        socialMedia,
-        status: "draft",
-      });
-      await ecosystem.save();
-       return res
-      .status(201)
-      .json({ message: "Ecosystem about information saved", ecosystem });
-      } else {
+      const result = await createSubdomain(ecosystemDomain);
+      if (result === "Subdomain creation successful") {
+        ecosystem = new Ecosystem({
+          creatorId,
+          ecosystemName,
+          ecosystemDomain,
+          contact,
+          mainObjective,
+          steps: 1,
+          targetAudienceSector,
+          address,
+          ecosystemDescription,
+          socialMedia,
+          status: "draft",
+        });
+        await ecosystem.save();
         return res
-      .status(201)
-      .json({ message: "Domain creation falied" });
+          .status(201)
+          .json({ message: "Ecosystem about information saved", ecosystem });
+      } else {
+        return res.status(201).json({ message: "Domain creation falied" });
       }
-    } 
-
+    }
   } catch (error) {
     console.error("Error saving ecosystem about information:", error);
     res.status(500).json({ message: "Internal server error", error });
@@ -153,16 +152,18 @@ const getMyEcosystem = async (req, res) => {
     const getEcosystem = await Ecosystem.find({ creatorId: userId }).sort({
       createdAt: -1,
     });
+    //console.log("ecosystems:",getEcosystem)
     const ecosystemLogo = await Promise.all(
       getEcosystem.map(async (ecosystem) => {
-        const templates = await Template.find({
+        const templates = await CreatorTemplate.find({
           _id: { $in: ecosystem.templates },
         });
-
+        //console.log("templsted:",templates)
         const templateLogos = templates.map((template) => ({
           templateId: template._id,
-          templateNumber: template.templateNumber,
+          templateNumber: template.templateId,
           logoPath: template.navbar.logo,
+          barndPath: template.navbar.brand,
         }));
         return {
           ...ecosystem.toObject(),

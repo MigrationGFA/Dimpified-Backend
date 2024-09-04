@@ -7,6 +7,7 @@ const packageSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   deliveryTime: { type: String, required: true },
   priceFormat: { type: String, required: true },
+  serviceImage: { type: String, required: true },
 });
 
 // Define the main service schema
@@ -18,7 +19,6 @@ const ecosystemServiceSchema = new mongoose.Schema(
     description: { type: String, required: true },
     creatorId: { type: String, required: true },
     ecosystemDomain: { type: String, required: true },
-    backgroundCover: [{ type: String, required: true }],
     likes: { type: Number, default: 0 },
     format: { type: String, required: true },
     currency: { type: String, required: true },
