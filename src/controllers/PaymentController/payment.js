@@ -10,6 +10,7 @@ const { sequelize } = require("../../config/dbConnect");
 const User = require("../../models/EcosystemUser");
 const Booking = require("../../models/DimpBooking");
 const sendBookingPaymentConfirmationEmail = require("../../utils/bookingpaymentNotification");
+const GFACommision = require("../../models/GFACommision")
 
 const VAT_RATE = 0.075;
 const thirdPartyVerification = async (reference, provider) => {
@@ -331,14 +332,25 @@ const verifyBookingPayment = async (req, res) => {
     }
 
     let verifiedAmount;
+    let companyCharges;
+    let providerCharges;
+
 
     if (provider === "paystack") {
-      verifiedAmount = responseData.data.amount / 100;
+      companyCharges = responseData.data.amount * 1.1 / 100;
+      providerCharges = responseData.data.amount * 1.4 / 100;
+      const getAmount = responseData.data.amount / 100;
+      verifiedAmount = getAmount - companyCharges - providerCharges;
       if (verifiedAmount !== amount) {
         return res.status(400).json({ message: "Payment verification failed" });
       }
     } else if (provider === "flutterwave") {
-      verifiedAmount = responseData.data.amount;
+      companyCharges = responseData.data.amount * 1.1 / 100;
+      providerCharges = responseData.data.amount * 1.4 / 100;
+      verifiedAmount = responseData.data.amount - companyCharges - providerCharges;
+      console.log("this is verify amount", verifiedAmount)
+      console.log("this is amount", amount)
+      console.log("this is  flutterwave amount", responseData.data.amount)
       if (
         responseData.data.status !== "successful" ||
         verifiedAmount !== amount
