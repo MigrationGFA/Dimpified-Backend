@@ -110,14 +110,21 @@ const getAnEcosystemTemplate = async (req, res) => {
       return res.status(404).json({ message: "Ecosystem not found" });
     }
 
-    const template = await CreatorTemplate.findOne({ ecosystemDomain: ecosystemDomain });
+    const template = await CreatorTemplate.findOne({
+      ecosystemDomain: ecosystemDomain,
+    });
     console.log("this is template", template);
 
     if (!template) {
       return res.status(404).json({ message: "Template not found" });
     }
 
-    return res.status(200).json({ templateDetails: template ,aboutUsDetails:template.aboutUs});
+    return res
+      .status(200)
+      .json({
+        templateDetails: template,
+        aboutUsDetails: ecosystem
+      });
   } catch (error) {
     console.error("Error retrieving template from ecosystem: ", error);
     return res.status(500).json({ error: "Internal server error" });
