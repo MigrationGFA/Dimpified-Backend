@@ -117,7 +117,7 @@ const getAnEcosystemTemplate = async (req, res) => {
       return res.status(404).json({ message: "Template not found" });
     }
 
-    return res.status(200).json({ templateDetails: template });
+    return res.status(200).json({ templateDetails: template ,aboutUsDetails:template.aboutUs});
   } catch (error) {
     console.error("Error retrieving template from ecosystem: ", error);
     return res.status(500).json({ error: "Internal server error" });
