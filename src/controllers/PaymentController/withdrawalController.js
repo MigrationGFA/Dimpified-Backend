@@ -80,7 +80,7 @@ const withdrawalRequest = async (req, res) => {
 
 const getWithdrawalRequests = async (req, res) => {
   try {
-    const { ecosystemDomain } = req.query;
+    const { ecosystemDomain } = req.params;
 
     const whereClause = ecosystemDomain ? { ecosystemDomain } : {};
 
