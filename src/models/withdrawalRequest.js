@@ -19,6 +19,10 @@ const WithdrawalRequest = sequelize.define(
         min: 0,
       },
     },
+    ecosystemDomain: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     currency: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -44,10 +48,6 @@ const WithdrawalRequest = sequelize.define(
         model: "Account",
         key: "id",
       },
-    },
-    ecosystemDomain: {
-      type: DataTypes.STRING,
-      allowNull: false,
     },
     creatorId: {
       type: DataTypes.INTEGER,
