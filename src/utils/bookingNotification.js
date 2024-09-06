@@ -108,7 +108,7 @@ const sendBookingConfirmationEmail = async ({
       <body>
         <main class="container">
           <header class="header">
-            <img src="./images/remsana-logo.png" alt="logo" />
+            <img src="https://res.cloudinary.com/diz6tdgeo/image/upload/v1725638667/dimp_rwgeri.png" alt="logo" />
           </header>
           <section class="section-content">
             <p>Dear ${name},</p>
