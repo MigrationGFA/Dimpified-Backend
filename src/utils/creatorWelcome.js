@@ -182,7 +182,7 @@ const sendWelcomeEmailCreator = async ({ organizationName, email }) => {
             <section class="section-content">
               <div class="experince">
                 <p>Welcome to Dimpified!</p>
-                <img src="./images/person.png" alt="person" />
+                <img src="https://res.cloudinary.com/diz6tdgeo/image/upload/v1725638667/dimp_rwgeri.png" alt="person" />
               </div>
               <p>Hello ${organizationName},</p>
               <p>
