@@ -348,9 +348,6 @@ const verifyBookingPayment = async (req, res) => {
       companyCharges = responseData.data.amount * 1.1 / 100;
       providerCharges = responseData.data.amount * 1.4 / 100;
       verifiedAmount = responseData.data.amount - companyCharges - providerCharges;
-      console.log("this is verify amount", verifiedAmount)
-      console.log("this is amount", amount)
-      console.log("this is  flutterwave amount", responseData.data.amount)
       if (
         responseData.data.status !== "successful" ||
         verifiedAmount !== amount
@@ -377,6 +374,8 @@ const verifyBookingPayment = async (req, res) => {
         Dollar: 0,
       });
     }
+
+    const gfaEarning = await 
 
     const currency = responseData.data.currency;
 
