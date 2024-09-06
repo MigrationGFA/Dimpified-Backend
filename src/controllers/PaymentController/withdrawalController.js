@@ -99,23 +99,20 @@ const getWithdrawalRequests = async (req, res) => {
 };
 
 const totalWithdrawalStats = async (req, res) => {
-  const { ecosystemDomain } = req.params; // You can filter by ecosystemDomain if needed
+  const { ecosystemDomain } = req.params;
   const startOfMonth = new Date(
     new Date().getFullYear(),
     new Date().getMonth(),
     1
-  ); // Start of the current month
+  );
 
   try {
-    // Filter withdrawals based on ecosystemDomain if provided
     const whereCondition = ecosystemDomain ? { ecosystemDomain } : {};
 
-    // Fetch all withdrawals
     const totalWithdrawals = await WithdrawalRequest.count({
       where: whereCondition,
     });
 
-    // Fetch pending withdrawals
     const pendingWithdrawals = await WithdrawalRequest.count({
       where: {
         ...whereCondition,
@@ -123,7 +120,6 @@ const totalWithdrawalStats = async (req, res) => {
       },
     });
 
-    // Fetch completed withdrawals
     const completedWithdrawals = await WithdrawalRequest.count({
       where: {
         ...whereCondition,
@@ -131,12 +127,11 @@ const totalWithdrawalStats = async (req, res) => {
       },
     });
 
-    // Fetch withdrawals made in the current month
     const currentMonthWithdrawals = await WithdrawalRequest.count({
       where: {
         ...whereCondition,
         createdAt: {
-          [Op.gte]: startOfMonth, // Filter for the current month
+          [Op.gte]: startOfMonth,
         },
       },
     });
