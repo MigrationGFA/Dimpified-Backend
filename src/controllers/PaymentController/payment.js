@@ -319,29 +319,23 @@ const verifyBookingPayment = async (req, res) => {
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
     }
-    console.log("this is third")
     const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
     if (!ecosystem) {
       return res.status(404).json({
         message: "Ecosystem not found",
       });
     }
-    console.log("this is fourth")
     const amount = booking.price; // Assuming the booking has a totalAmount field
     const responseData = await thirdPartyVerification(reference, provider);
-    console.log("this is response", responseData.data.amount)
 
-    console.log("this is fifth")
     if (!responseData || !responseData.data) {
       return res.status(400).json({
         message: "Payment verification failed, invalid response data",
       });
     }
-     console.log("this is 6")
 
     let verifiedAmount;
     const getAmount = responseData.data.amount ;
-    console.log("this is 7")
     if (provider === "paystack") {
       verifiedAmount = getAmount - companyCharge - providerCharge;
       if (verifiedAmount !== amount) {
@@ -349,9 +343,6 @@ const verifyBookingPayment = async (req, res) => {
       }
     } else if (provider === "flutterwave") {
       verifiedAmount = getAmount - companyCharge - providerCharge;
-      console.log("this is 8")
-      console.log("this is verify",verifiedAmount)
-      console.log("this is amount",amount)
 
       if (
         responseData.data.status !== "successful" ||
@@ -363,7 +354,6 @@ const verifyBookingPayment = async (req, res) => {
       return res.status(400).json({ message: "Unsupported payment provider" });
     }
 
-    console.log("this is 9")
 
 
     // Update the booking payment status to "paid"
@@ -377,7 +367,6 @@ const verifyBookingPayment = async (req, res) => {
     let creatorEarning = await CreatorEarning.findOne({
       where: { ecosystemDomain },
     });
-    console.log("this is here two")
      if (!creatorEarning) {
       creatorEarning = await CreatorEarning.create({
         creatorId: ecosystem.creatorId,
@@ -425,21 +414,22 @@ const verifyBookingPayment = async (req, res) => {
 
     switch (currency) {
       case "NGN":
-        creatorEarning.Naira += verifiedAmount;
-        gfaCommission.Naira +=  parseFloat(companyCharge);
+        creatorEarning.Naira = (parseFloat(creatorEarning.Naira) + parseFloat(verifiedAmount)).toFixed(2);
+        gfaCommission.Naira =  (parseFloat(gfaCommission.Naira) + parseFloat(companyCharge)).toFixed(2);
         break;
       case "USD":
-        creatorEarning.Dollar += verifiedAmount;
-        gfaCommission.Dollar =  parseFloat(companyCharge);
+        creatorEarning.Dollar = (parseFloat(creatorEarning.Naira) + parseFloat(verifiedAmount)).toFixed(2);
+        gfaCommission.Dollar =  (parseFloat(gfaCommission.Dollar) + parseFloat(companyCharge)).toFixed(2);
         break;
       default:
         console.log("Unsupported currency");
         return res.status(400).json({ message: "Unsupported currency" });
     }
 
+    console.log("this is creator earning", creatorEarning)
+
     await gfaCommission.save()
     await creatorEarning.save();
-console.log(creatorEarning)
     await sendBookingPaymentConfirmationEmail({
       email: booking.email,
       bookingId: booking.bookingId,
