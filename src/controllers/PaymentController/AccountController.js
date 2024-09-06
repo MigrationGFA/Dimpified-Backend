@@ -146,39 +146,6 @@ const editCreatorAccount = async (req, res) => {
   }
 };
 
-const getCreatorEarning = async (req, res) => {
-  const { creatorId } = req.params;
-
-  try {
-    if (!creatorId) {
-      return res.status(400).json({ message: "creatorId is required" });
-    }
-
-    const creator = await Creator.findByPk(creatorId);
-    if (!creator) {
-      return res.status(404).json({ message: "Creator not found" });
-    }
-
-    const creatorEarning = await CreatorEarning.findOne({
-      where: { creatorId },
-    });
-
-    if (!creatorEarning) {
-      return res
-        .status(404)
-        .json({ message: "Earnings not found for this creator" });
-    }
-
-    res.status(200).json({
-      Naira: creatorEarning.Naira,
-      Dollar: creatorEarning.Dollar,
-    });
-  } catch (error) {
-    console.error("Error fetching creator earnings:", error);
-    res.status(500).json({ message: "Failed to fetch creator earnings" });
-  }
-};
-
 const ecosystemEarnings = async (req, res) => {
   try {
     const { ecosystemDomain } = req.params;
@@ -225,6 +192,6 @@ module.exports = {
   saveCreatorAccount,
   getCreatorBankDetails,
   editCreatorAccount,
-  getCreatorEarning,
+
   ecosystemEarnings,
 };
