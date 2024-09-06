@@ -9,14 +9,6 @@ const GFACommision = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    creatorId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    ecosystemDomain: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     Naira: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,

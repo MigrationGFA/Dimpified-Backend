@@ -175,8 +175,8 @@ const VerifyPayment = async (req, res) => {
       itemTitle,
       userId,
       creatorId,
-      status: "pending",
-      currency: "NGN",
+      status:  responseData.data.status,
+      currency: responseData.data.currency,
     });
 
     const responseData = await thirdPartyVerification(reference, provider);
@@ -292,18 +292,23 @@ const VerifyPayment = async (req, res) => {
 
 const verifyBookingPayment = async (req, res) => {
   console.log("verifyBookingPayment function called");
+ 
   try {
-    const { provider, reference, bookingId, ecosystemDomain, itemType, email } =
-      req.body;
-
+      await Transaction.sync();
+    await CreatorEarning.sync();
+    await PurchasedItem.sync();
+    const { provider, reference, bookingId, ecosystemDomain,  email, providerCharge, companyCharge } = req.body;
+    console.log("this is first")
     const details = [
       "provider",
       "reference",
       "bookingId",
       "ecosystemDomain",
       "email",
+      "providerCharge",
+      "companyCharge"
     ];
-
+    console.log("this is second")
     for (const detail of details) {
       if (!req.body[detail]) {
         return res.status(400).json({ message: `${detail} is required` });
@@ -314,40 +319,40 @@ const verifyBookingPayment = async (req, res) => {
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
     }
-
+    console.log("this is third")
     const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
     if (!ecosystem) {
       return res.status(404).json({
         message: "Ecosystem not found",
       });
     }
-
+    console.log("this is fourth")
     const amount = booking.price; // Assuming the booking has a totalAmount field
     const responseData = await thirdPartyVerification(reference, provider);
- 
+    console.log("this is response", responseData.data.amount)
+
+    console.log("this is fifth")
     if (!responseData || !responseData.data) {
       return res.status(400).json({
         message: "Payment verification failed, invalid response data",
       });
     }
+     console.log("this is 6")
 
     let verifiedAmount;
-    let companyCharges;
-    let providerCharges;
-
-
+    const getAmount = responseData.data.amount ;
+    console.log("this is 7")
     if (provider === "paystack") {
-      companyCharges = responseData.data.amount * 1.1 / 100;
-      providerCharges = responseData.data.amount * 1.4 / 100;
-      const getAmount = responseData.data.amount / 100;
-      verifiedAmount = getAmount - companyCharges - providerCharges;
+      verifiedAmount = getAmount - companyCharge - providerCharge;
       if (verifiedAmount !== amount) {
         return res.status(400).json({ message: "Payment verification failed" });
       }
     } else if (provider === "flutterwave") {
-      companyCharges = responseData.data.amount * 1.1 / 100;
-      providerCharges = responseData.data.amount * 1.4 / 100;
-      verifiedAmount = responseData.data.amount - companyCharges - providerCharges;
+      verifiedAmount = getAmount - companyCharge - providerCharge;
+      console.log("this is 8")
+      console.log("this is verify",verifiedAmount)
+      console.log("this is amount",amount)
+
       if (
         responseData.data.status !== "successful" ||
         verifiedAmount !== amount
@@ -358,15 +363,22 @@ const verifyBookingPayment = async (req, res) => {
       return res.status(400).json({ message: "Unsupported payment provider" });
     }
 
+    console.log("this is 9")
+
+
     // Update the booking payment status to "paid"
     booking.paymentStatus = "Paid";
     await booking.save(); // Save the changes to the booking document
 
+    const currency = responseData.data.currency;
+
+    console.log("this is here")
+
     let creatorEarning = await CreatorEarning.findOne({
       where: { ecosystemDomain },
     });
-
-    if (!creatorEarning) {
+    console.log("this is here two")
+     if (!creatorEarning) {
       creatorEarning = await CreatorEarning.create({
         creatorId: ecosystem.creatorId,
         ecosystemDomain,
@@ -375,27 +387,62 @@ const verifyBookingPayment = async (req, res) => {
       });
     }
 
-    const gfaEarning = await 
 
-    const currency = responseData.data.currency;
+        const userTransaction = await Transaction.create({
+      email: booking.email,
+      itemId: booking.bookingId,
+      itemType: "Service",
+      amount: verifiedAmount,
+      paymentMethod: provider,
+      transactionDate: new Date(),
+      itemTitle: "Booking",
+      userId: 1,
+      creatorId: creatorEarning.creatorId,
+      status: responseData.data.status,
+      currency: currency,
+    });
+    console.log("this is transaction", userTransaction)
+
+      const purchasedItem = await PurchasedItem.create({
+      userId: 1,
+      itemType: "Service",
+      itemId: booking.bookingId,
+      itemAmount: verifiedAmount,
+      currency: currency,
+      purchaseDate: new Date(),
+      ecosystemDomain,
+    });
+
+   
+
+   let gfaCommission = await GFACommision.findOne();
+    if (!gfaCommission) {
+      gfaCommission = await GFACommision.create({
+        Naira: 0,
+        Dollar: 0,
+      });
+    }
 
     switch (currency) {
       case "NGN":
         creatorEarning.Naira += verifiedAmount;
+        gfaCommission.Naira +=  parseFloat(companyCharge);
         break;
       case "USD":
         creatorEarning.Dollar += verifiedAmount;
+        gfaCommission.Dollar =  parseFloat(companyCharge);
         break;
       default:
         console.log("Unsupported currency");
         return res.status(400).json({ message: "Unsupported currency" });
     }
 
+    await gfaCommission.save()
     await creatorEarning.save();
 console.log(creatorEarning)
     await sendBookingPaymentConfirmationEmail({
-      email,
-      bookingId,
+      email: booking.email,
+      bookingId: booking.bookingId,
       paymentAmount: verifiedAmount,
       paymentDate: new Date().toISOString(),
       paymentMethod: provider,
@@ -408,9 +455,12 @@ console.log(creatorEarning)
   } catch (error) {
     console.error("Error in verifyBookingPayment function:", error);
     res.status(500).json({
-      message: "An error occurred during booking payment verification",
+      
+      message: "An error occurred during booking payment verification", error
     });
   }
 };
+
+
 
 module.exports = { VerifyPayment, verifyBookingPayment };
