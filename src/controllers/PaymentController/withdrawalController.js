@@ -3,6 +3,7 @@ const Creator = require("../../models/Creator");
 const CreatorEarning = require("../../models/CreatorEarning");
 const WithdrawalRequest = require("../../models/withdrawalRequest");
 const sendWithdrawalRequestEmail = require("../../utils/creatorWithdrawalEmail");
+const { Op } = require("sequelize");
 
 const withdrawalRequest = async (req, res) => {
   await WithdrawalRequest.sync();
@@ -10,14 +11,12 @@ const withdrawalRequest = async (req, res) => {
     const { accountId, creatorId, amount, currency, ecosystemDomain } =
       req.body;
 
-    // Validate request data
     if (!creatorId || !amount || !currency || !accountId || !ecosystemDomain) {
       return res
         .status(400)
         .json({ message: "Incomplete withdrawal request data" });
     }
 
-    // Check if the creator has earnings in the specified ecosystem domain
     const getCreatorEarning = await CreatorEarning.findOne({
       where: { creatorId: creatorId, ecosystemDomain: ecosystemDomain },
     });
@@ -28,21 +27,18 @@ const withdrawalRequest = async (req, res) => {
       });
     }
 
-    // Convert the amount to a float
     const convertedAmount =
       typeof amount === "string"
         ? parseFloat(amount.replace(/,/g, ""))
         : parseFloat(amount);
     const currencyBalance = getCreatorEarning[currency];
 
-    // Check if the user has enough balance in the specified ecosystem
     if (!currencyBalance || currencyBalance < convertedAmount) {
       return res.status(400).json({
         message: `Insufficient ${currency} balance for this withdrawal request in ${ecosystemDomain}`,
       });
     }
 
-    // Create a new withdrawal request
     const newWithdrawalRequest = await WithdrawalRequest.create({
       creatorId: creatorId,
       amount: convertedAmount,
@@ -52,14 +48,11 @@ const withdrawalRequest = async (req, res) => {
       ecosystemDomain,
     });
 
-    // Update the creator's earnings by deducting the withdrawn amount
     getCreatorEarning[currency] -= convertedAmount;
     await getCreatorEarning.save();
 
-    // Fetch creator's details
     const creator = await Creator.findByPk(creatorId);
 
-    // Send withdrawal request email to the creator
     await sendWithdrawalRequestEmail({
       organizationName: creator.organizationName,
       email: creator.email,
@@ -67,7 +60,6 @@ const withdrawalRequest = async (req, res) => {
       currency,
     });
 
-    // Respond with success
     res.status(201).json({
       message: "Withdrawal request created successfully",
       withdrawalRequest: newWithdrawalRequest,
@@ -106,65 +98,57 @@ const getWithdrawalRequests = async (req, res) => {
   }
 };
 
-// const getMyWithdrawalRequests = async (req, res) => {
-//   const { creatorId } = req.params;
-//   try {
-//     const withdrawalRequests = await WithdrawalRequest.findAll({
-//       where: { creatorId },
-//       include: {
-//         model: Account,
-//         attributes: ["accountNumber", "accountName", "bankName"],
-//       },
-//       order: [["createdAt", "DESC"]],
-//     });
-
-//     if (!withdrawalRequests.length) {
-//       return res
-//         .status(404)
-//         .json({ message: "There are no withdrawal requests for this creator" });
-//     }
-
-//     res.status(200).json({ withdrawalRequests });
-//   } catch (error) {
-//     console.error("Error fetching withdrawal requests:", error);
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-// };
-
-const getMyWithdrawalRequests = async (req, res) => {
-  const { creatorId } = req.params;
-  const { ecosystemDomain } = req.body;
+const totalWithdrawalStats = async (req, res) => {
+  const { ecosystemDomain } = req.params;
+  const startOfMonth = new Date(
+    new Date().getFullYear(),
+    new Date().getMonth(),
+    1
+  );
 
   try {
-    const whereClause = { creatorId };
-    if (ecosystemDomain) {
-      whereClause.ecosystemDomain = ecosystemDomain;
-    }
+    const whereCondition = ecosystemDomain ? { ecosystemDomain } : {};
 
-    const withdrawalRequests = await WithdrawalRequest.findAll({
-      where: whereClause,
-      include: {
-        model: Account,
-        attributes: ["accountNumber", "accountName", "bankName"],
-      },
-      order: [["createdAt", "DESC"]],
+    const totalWithdrawals = await WithdrawalRequest.count({
+      where: whereCondition,
     });
 
-    if (!withdrawalRequests.length) {
-      return res
-        .status(404)
-        .json({ message: "There are no withdrawal requests for this creator" });
-    }
+    const pendingWithdrawals = await WithdrawalRequest.count({
+      where: {
+        ...whereCondition,
+        status: "pending",
+      },
+    });
 
-    res.status(200).json({ withdrawalRequests });
+    const completedWithdrawals = await WithdrawalRequest.count({
+      where: {
+        ...whereCondition,
+        status: "approved",
+      },
+    });
+
+    const currentMonthWithdrawals = await WithdrawalRequest.count({
+      where: {
+        ...whereCondition,
+        createdAt: {
+          [Op.gte]: startOfMonth,
+        },
+      },
+    });
+
+    return res.status(200).json({
+      totalWithdrawals,
+      pendingWithdrawals,
+      completedWithdrawals,
+      currentMonthWithdrawals,
+    });
   } catch (error) {
-    console.error("Error fetching withdrawal requests:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Error fetching withdrawal stats:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
-
 module.exports = {
   withdrawalRequest,
   getWithdrawalRequests,
-  getMyWithdrawalRequests,
+  totalWithdrawalStats,
 };
