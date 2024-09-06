@@ -6,13 +6,12 @@ const {
   saveCreatorAccount,
   getCreatorBankDetails,
   editCreatorAccount,
-  getCreatorEarning,
   ecosystemEarnings,
 } = require("../controllers/PaymentController/AccountController");
 const {
   withdrawalRequest,
   getWithdrawalRequests,
-  getMyWithdrawalRequests,
+  totalWithdrawalStats,
 } = require("../controllers/PaymentController/withdrawalController");
 const {
   VerifyPayment,
@@ -30,11 +29,10 @@ router.get("/ecosystem-earnings/:ecosystemDomain", ecosystemEarnings);
 router.post("/save-bank-details", saveCreatorAccount);
 router.get("/bank-details/:ecosystemDomain", getCreatorBankDetails);
 router.put("/edit-account", editCreatorAccount);
-router.get("/creator/earnings/:creatorId", getCreatorEarning);
 
 //Withdrawal routes
 router.post("/withdrawal-request", withdrawalRequest);
 router.get("/get-withdrawal-requests/:ecosystemDomain", getWithdrawalRequests);
-router.get("/get-my-withdrawal-requests/:creatorId", getMyWithdrawalRequests);
+router.get("/total-withdrawals-stats/:ecosystemDomain", totalWithdrawalStats);
 
 module.exports = router;
