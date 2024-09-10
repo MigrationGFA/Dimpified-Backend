@@ -67,7 +67,7 @@ const sendContactUsFeedbackEmail = async ({
                                 <!--begin:Logo-->
                                 <div style="text-align: center; margin-bottom: 40px">
                                     <a rel="noopener">
-                                        <img alt="Unleashified Logo"
+                                        <img alt="Logo"
                                             src="https://res.cloudinary.com/djhnaee9k/image/upload/v1714038296/et5gicqtnuw4u1tqujjr.png"
                                             style="height: 60px" />
                                     </a>
