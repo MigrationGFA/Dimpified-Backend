@@ -18,32 +18,34 @@ const sendBookingPaymentConfirmationEmail = async ({
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Payment Confirmation</title>
         <style>
-          @import url("https://fonts.googleapis.com/css2?family=Outfit&display=swap");
+          @import url("https://fonts.googleapis.com/css?family=Nunito+Sans:400,700&display=swap");
+
+          html, body {
+            padding: 0;
+            margin: 0;
+            font-family: "Nunito Sans", Helvetica, Arial, sans-serif;
+            -webkit-text-size-adjust: none;
+          }
 
           body {
-            margin: 0;
-            padding: 20px;
-            font-family: "Outfit", sans-serif;
             background-color: #f8f8f8;
             line-height: 1.5;
-            min-height: 100%;
-            font-weight: normal;
             font-size: 15px;
             color: #2f3044;
+            padding: 20px;
+          }
+
+          a:hover {
+            color: #009ef7;
           }
 
           .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             background-color: #ffffff;
             padding: 45px 0;
             border-radius: 24px;
             margin: 40px auto;
             max-width: 600px;
             color: black;
-            font-size: 18px;
-            font-weight: 400;
           }
 
           .header img {
@@ -57,9 +59,16 @@ const sendBookingPaymentConfirmationEmail = async ({
             width: 100%;
           }
 
-          .section-content p {
+          .section-content h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+          }
+
+          .section-content p, .section-content li {
             font-size: 18px;
             margin-bottom: 15px;
+            color: #333;
           }
 
           footer {
@@ -83,30 +92,29 @@ const sendBookingPaymentConfirmationEmail = async ({
       </head>
 
       <body>
-      <main class="container">
-        <header class="header">
-          <img src="./images/remsana-logo.png" alt="Remsana Logo" />
-        </header>
-    
-        <section class="section-content">
-          <h1>Payment Confirmation</h1>
-          <p>Dear Provider,</p>
-          <p>We are pleased to inform you that the booking with ID <strong>${bookingId}</strong> has been successfully confirmed, and the payment has been processed.</p>
-          <p><strong>Payment Details:</strong></p>
-          <ul>
-            <li><strong>Amount:</strong> $${paymentAmount}</li>
-            <li><strong>Date:</strong> ${formattedPaymentDate}</li>
-            <li><strong>Method:</strong> ${paymentMethod}</li>
-          </ul>
-          <p>Thank you for your continued partnership with us.</p>
-        </section>
-    
-        <footer>
-          <p>&copy; 2024 Your Company. All rights reserved.</p>
-        </footer>
-      </main>
-    </body>
-    
+        <div class="container">
+          <header class="header" style="text-align: center;">
+            <img src="./images/remsana-logo.png" alt="Remsana Logo" />
+          </header>
+
+          <section class="section-content">
+            <h1>Payment Confirmation</h1>
+            <p>Dear ${name},</p>
+            <p>We are pleased to inform you that the booking with ID <strong>${bookingId}</strong> has been successfully confirmed, and the payment has been processed.</p>
+            <p><strong>Payment Details:</strong></p>
+            <ul>
+              <li><strong>Amount:</strong> $${paymentAmount}</li>
+              <li><strong>Date:</strong> ${formattedPaymentDate}</li>
+              <li><strong>Method:</strong> ${paymentMethod}</li>
+            </ul>
+            <p>Thank you for your continued partnership with us.</p>
+          </section>
+
+          <footer>
+            <p>&copy; 2024 Your Company. All rights reserved.</p>
+          </footer>
+        </div>
+      </body>
     </html>
   `;
 
