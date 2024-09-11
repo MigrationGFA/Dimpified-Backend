@@ -71,6 +71,7 @@ const aboutEcosystem = async (req, res) => {
         return res.status(404).json({ message: "Ecosystem not found" });
       }
     } else {
+      
       const result = await createSubdomain(ecosystemDomain);
       if (result === "Subdomain creation successful") {
         ecosystem = new Ecosystem({
