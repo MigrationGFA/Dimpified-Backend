@@ -10,7 +10,6 @@ const packageSchema = new mongoose.Schema({
   serviceImage: { type: String, required: true },
 });
 
-// Define the main service schema
 const ecosystemServiceSchema = new mongoose.Schema(
   {
     category: { type: String, required: true },
