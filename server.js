@@ -20,6 +20,14 @@ app.use(express.urlencoded({ extended: false }));
 // build in middleware for json
 app.use(express.json({ limit: "100mb" }));
 
+// Set Cache-Control headers globally for all routes
+app.use((req, res, next) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache'); // HTTP 1.0
+    res.setHeader('Expires', '0'); // Proxies
+    next();
+});
+
 // Set the static folder for serving HTML, CSS, JS, etc.
 app.use(express.static(path.join(__dirname, "src")));
 app.use("/uploads", express.static("uploads"));
