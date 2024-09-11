@@ -1,6 +1,7 @@
 const Account = require("../../models/Account");
 const Creator = require("../../models/Creator");
 const CreatorEarning = require("../../models/CreatorEarning");
+const Subscription = require("../../models/Subscription")
 
 const saveCreatorAccount = async (req, res) => {
   await Account.sync();
@@ -154,7 +155,7 @@ const ecosystemEarnings = async (req, res) => {
       return res.status(400).json({ message: "ecosystemDomain is required" });
     }
 
-    const creatorEarnings = await CreatorEarning.findAll({
+    const creatorEarnings = await CreatorEarning.findOne({
       where: { ecosystemDomain },
     });
 
@@ -164,21 +165,39 @@ const ecosystemEarnings = async (req, res) => {
         .json({ message: "No earnings found for the given ecosystem" });
     }
 
-    const totalEarnings = creatorEarnings.reduce(
-      (acc, earning) => {
-        acc.Naira += parseFloat(earning.Naira) || 0;
-        acc.Dollar += parseFloat(earning.Dollar) || 0;
-        return acc;
-      },
-      { Naira: 0, Dollar: 0 }
-    );
+    const totalEarnings = creatorEarnings
 
-    totalEarnings.Naira = totalEarnings.Naira.toFixed(2);
-    totalEarnings.Dollar = totalEarnings.Dollar.toFixed(2);
+    const plan = await Subscription.findOne({
+      where: {
+        creatorId: creatorEarnings.creatorId
+      }
+    })
+    let availableBalance = 0;
+    if( totalEarnings.Naira !== 0){
+        console.log("this is earning before tax", totalEarnings.Naira)
+      if(!plan){
+        const getBalance = (totalEarnings.Naira * 7.5) / 100;
+        console.log("this is earning after tax", getBalance)
+        availableBalance = totalEarnings.Naira - getBalance;
+      } else if(plan.planType === "Plus"){
+        const getBalance = (totalEarnings.Naira * 4) / 100;
+        console.log("this is earning after tax", getBalance)
+        availableBalance = totalEarnings.Naira - getBalance;
+      } else if(plan.planType === "Pro"){
+        const getBalance = (totalEarnings.Naira * 3) / 100;
+        console.log("this is earning after tax", getBalance)
+        availableBalance = totalEarnings.Naira - getBalance;
+      } else {
+         const getBalance = (totalEarnings.Naira * 2) / 100;
+        console.log("this is earning after tax", getBalance)
+        availableBalance = totalEarnings.Naira - getBalance;
+      }
+    } 
 
     return res.status(200).json({
       message: `Total earnings for ${ecosystemDomain} ecosystem`,
       totalEarnings,
+      availableBalance
     });
   } catch (error) {
     console.error("Error fetching ecosystem earnings:", error);
