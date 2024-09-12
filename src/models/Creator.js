@@ -59,6 +59,10 @@ const Creator = sequelize.define(
       allowNull: true,
       defaultValue: [],
     },
+    transactionNumber: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
   },
   {
     tableName: "Creator",
