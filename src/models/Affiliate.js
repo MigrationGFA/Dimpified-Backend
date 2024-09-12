@@ -1,49 +1,60 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/dbConnect");
 
-const EcosystemUser = sequelize.define(
-  "EcosystemUser",
+const Affiliate = sequelize.define(
+  "Affiliate",
   {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    ecosystemDomain: {
+    affiliateId: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
-    username: {
+
+    userName: {
       type: DataTypes.STRING,
       allowNull: false,
     },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
       validate: {
         isEmail: true,
-        notEmpty: true,
       },
     },
     password: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
+    },
+    onboardedUsers: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 0,
     },
     isVerified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
-    imageUrl: DataTypes.STRING,
+    profile: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    role: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: "affiliate",
+    },
     passwordToken: DataTypes.STRING,
     passwordTokenExpirationDate: DataTypes.STRING,
     verificationToken: DataTypes.STRING,
   },
   {
-    tableName: "EcosystemUser",
+    tableName: "Affiliate",
   }
 );
 
-module.exports = EcosystemUser;
+module.exports = Affiliate;
