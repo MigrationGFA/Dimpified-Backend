@@ -18,6 +18,12 @@ const {
   verifyBookingPayment,
 } = require("../controllers/PaymentController/payment");
 
+// bank verification
+const {
+  getAllBanks,
+  verifyBankDetails
+} = require("../controllers/PaymentController/Bank")
+
 router.post("/verify-payment", VerifyPayment);
 router.post("/verify-booking-payment", verifyBookingPayment);
 router.post("/verify-subscription", verifySubscription);
@@ -34,5 +40,10 @@ router.put("/edit-account", editCreatorAccount);
 router.post("/withdrawal-request", withdrawalRequest);
 router.get("/get-withdrawal-requests/:ecosystemDomain", getWithdrawalRequests);
 router.get("/total-withdrawals-stats/:ecosystemDomain", totalWithdrawalStats);
+
+// bank verification
+router.get("/get-all-banks", getAllBanks);
+router.post("/verify-bank-details", verifyBankDetails);
+
 
 module.exports = router;
