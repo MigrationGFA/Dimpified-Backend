@@ -14,7 +14,6 @@ const sendVerificationEmailAffiliate = require("../../utils/sendVerificationEmai
 const sendWelcomeEmailAffiliate = require("../../utils/sendWelcomeEmailAffiliate");
 const sendForgotPasswordEmailAffiliate = require("../../utils/sendForgotPasswordEmailAffiliate");
 
-
 const affiliateSignup = async (req, res) => {
   try {
     // Sync the Affiliate model with the database
@@ -57,11 +56,9 @@ const affiliateSignup = async (req, res) => {
           .status(201)
           .json({ message: "Verification email resent successfully" });
       } else {
-        return res
-          .status(409)
-          .json({
-            message: "Email address is already associated with an account",
-          });
+        return res.status(409).json({
+          message: "Email address is already associated with an account",
+        });
       }
     }
 
@@ -69,9 +66,18 @@ const affiliateSignup = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationToken = crypto.randomBytes(40).toString("hex");
 
+    const generateUniqueId = () => {
+      const letters = Math.random().toString(36).substring(2, 5).toUpperCase();
+      const numbers = Math.floor(100 + Math.random() * 900);
+      return `${letters}${numbers}`;
+    };
+
+    const affiliateId = generateUniqueId();
+
     // Create a new affiliate entry in the database
     const newAffiliate = await Affiliate.create({
       userName,
+      affiliateId,
       email,
       password: hashedPassword,
       verificationToken,
@@ -225,7 +231,7 @@ const affiliateLogOut = async (req, res) => {
       return res.status(400).json({ message: "User ID is required" });
     }
 
-    const affiliateToken = await AffiliateToken.findByPk(userId)
+    const affiliateToken = await AffiliateToken.findByPk(userId);
 
     if (!affiliateToken) {
       return res.status(404).json({ message: "No token found for this user" });
