@@ -32,34 +32,6 @@ const EcosystemUser = sequelize.define(
         notEmpty: true,
       },
     },
-    firstName: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    lastName: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    phoneNumber: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    address: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    zipCode: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    city: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    country: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     isVerified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,

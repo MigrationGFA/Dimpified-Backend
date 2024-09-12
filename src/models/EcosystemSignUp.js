@@ -1,7 +1,11 @@
 const mongoose = require("mongoose");
 
-const uniqueFormSchema = new mongoose.Schema(
+const EcosystemSignUp = new mongoose.Schema(
   {
+    userId: {
+      type: String,
+      required: true,
+    },
     fullName: {
       type: String,
       required: true,
@@ -13,7 +17,6 @@ const uniqueFormSchema = new mongoose.Schema(
     },
     phoneNumber: {
       type: String,
-      required: true,
     },
     password: {
       type: String,
@@ -92,4 +95,4 @@ const uniqueFormSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("uniqueForm", uniqueFormSchema);
+module.exports = mongoose.model("EcosystemSignUp", EcosystemSignUp);
