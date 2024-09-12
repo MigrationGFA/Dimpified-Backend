@@ -1,7 +1,7 @@
 const sendEmail = require("./sendEmail");
 
 const sendForgotPasswordEmailCreator = async ({
-  organizationName,
+  username,
   email,
   token,
   origin,
@@ -14,7 +14,7 @@ const sendForgotPasswordEmailCreator = async ({
   return sendEmail({
     to: email,
     subject: "Dimpified Reset Password",
-    html: `<h4>Hello, ${organizationName}</h4>
+    html: `<h4>Hello, ${username}</h4>
       ${message}`,
   });
 };

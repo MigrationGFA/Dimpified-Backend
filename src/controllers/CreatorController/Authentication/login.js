@@ -1,6 +1,7 @@
 const Creator = require("../../../models/Creator");
 const bcrypt = require("bcryptjs");
 const CreatorToken = require("../../../models/CreatorToken");
+const  Subscription = require("../../../models/Subscription")
 const {
   generateAccessToken,
   generateRefreshToken,
@@ -175,6 +176,18 @@ const loginCreator = async (req, res) => {
     let setProfile =
       creator.organizationName && creator.categoryInterest ? true : false;
 
+    const getSubscription = await Subscription.findOne({
+      where: {
+       creatorId: creator.id
+      }
+    })
+
+    let plan;
+    if(!getSubscription){
+      plan = "Lite"
+    } else {
+      plan = getSubscription.planType
+    }
     const creatorSubset = {
       CreatorId: creator.id,
       organizationName: creator.organizationName,
@@ -183,6 +196,7 @@ const loginCreator = async (req, res) => {
       image: creator.imageUrl,
       interest: hasInterests,
       profile: setProfile,
+      plan: plan
     };
 
     return res.status(200).json({
