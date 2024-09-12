@@ -14,7 +14,6 @@ const createSubdomain = async (subdomain) => {
     try {
         //  const subdomain = req.params.subdomain;
         const fullDomain = `${subdomain}.${zoneName}`;
-
         // Step 1: Create the CNAME record
          const credential = new ClientSecretCredential(
             process.env.TENANT_ID, 
