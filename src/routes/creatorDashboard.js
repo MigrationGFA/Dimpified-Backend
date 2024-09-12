@@ -11,11 +11,15 @@ const {
 } = require("../controllers/CreatorController/CreatorDashboard");
 const router = express.Router();
 
+const 
+  authenticatedUser
+ = require("../middleware/authentication")
+
 // dahboard overview
-router.get("/top-ecosystems/:creatorId", popularEcosystems);
-router.get("/last-four-ecosystems/:creatorId", lastFourEcosystems);
-router.get("/ecosystem-users-per-month/:creatorId", usersPermonth);
-router.get("/ecosystems-users-stats/:creatorId", getEcosystemUsersStats);
+router.get("/top-ecosystems/:creatorId", authenticatedUser, popularEcosystems);
+router.get("/last-four-ecosystems/:creatorId",  authenticatedUser, lastFourEcosystems);
+router.get("/ecosystem-users-per-month/:creatorId",  authenticatedUser, usersPermonth);
+router.get("/ecosystems-users-stats/:creatorId",  authenticatedUser, getEcosystemUsersStats);
 
 
 
