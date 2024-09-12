@@ -15,6 +15,9 @@ const {
 } = require("../controllers/SettingController/EditProfile");
 const { createCreatorSocialProfile, getCreatorSocialProfile } = require("../controllers/SettingController/creatorSocial");
 
+const 
+  authenticatedUser
+ = require("../middleware/authentication")
 
 
 const upload = multer({
@@ -25,17 +28,17 @@ const upload = multer({
 });
 
 // Ecosystem User Settings
-router.get("/get-ecosystemUser-social-profile/:userId", getSocial);
-router.post("/ecosystem-update-social", socialProfile);
-router.delete("/user/:userId", DeleteAccount);
-router.put("/ecosystemUser-profile/:userId", upload.single("image"), updateProfile);
-router.get("/ecosystem-profile/:userId", getUserData);
-router.get("/all-users", getAllUsers);
+router.get("/get-ecosystemUser-social-profile/:userId", authenticatedUser, getSocial);
+router.post("/ecosystem-update-social", authenticatedUser, socialProfile);
+router.delete("/user/:userId", authenticatedUser, DeleteAccount);
+router.put("/ecosystemUser-profile/:userId", authenticatedUser, upload.single("image"), updateProfile);
+router.get("/ecosystem-profile/:userId", authenticatedUser, getUserData);
+router.get("/all-users", authenticatedUser, getAllUsers);
 
 
 //creator socials handle
-router.post("/add-creator-social-profile", createCreatorSocialProfile);
-router.get("/get-creator-social-profile/:userId", getCreatorSocialProfile)
+router.post("/add-creator-social-profile", authenticatedUser, createCreatorSocialProfile);
+router.get("/get-creator-social-profile/:userId", authenticatedUser, getCreatorSocialProfile)
 
 
 module.exports = router;

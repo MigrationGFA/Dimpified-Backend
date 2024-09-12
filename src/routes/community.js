@@ -16,6 +16,10 @@ const {
   likeOrUnlikeComment
 } = require("../controllers/FeatureController/Community/community");
 
+const 
+  authenticatedUser
+ = require("../middleware/authentication")
+
 const router = express.Router();
 const multer = require("multer");
 const { communityStorage, postStorage } = require("../helper/multerUpload");
@@ -35,30 +39,33 @@ const postUpload = multer({
   },
 });
 
-router.post("/create-community-header", createCommunityHeader);
+router.post("/create-community-header", authenticatedUser, createCommunityHeader);
 
-router.post("/create-post", postUpload.array("image"), createPost);
-router.get("/community/:ecosystemDomain", getCommunityWithPosts);
-router.post("/comment", commentOnPost);
-router.get("/post-comments/:postId", getPostComments);
+router.post("/create-post", postUpload.array("image"), authenticatedUser, createPost);
+router.get("/community/:ecosystemDomain", authenticatedUser, getCommunityWithPosts);
+router.post("/comment", authenticatedUser, commentOnPost);
+router.get("/post-comments/:postId", authenticatedUser, getPostComments);
 router.patch(
   "/update-backgroundCover/:ecosystemDomain",
   upload.single("backgroundCover"),
+  authenticatedUser,
   updateBackgroundCover
 );
-router.get("/pending-posts/:ecosystemDomain", pendingPosts);
+router.get("/pending-posts/:ecosystemDomain", authenticatedUser, pendingPosts);
 router.patch(
   "/update-image/:ecosystemDomain",
+   authenticatedUser,
   upload.single("image"),
+ 
   updateImage
 );
-router.patch("/validate-post", approveOrRejectPost);
+router.patch("/validate-post", authenticatedUser, approveOrRejectPost);
 
-router.post("/like-unlike-post", likeOrUnlikePost);
-router.post("/reply-to-comment", replyComment);
-router.get("/replies/:commentId", getReplies);
-router.post("/like-unlike-reply", likeOrUnlikeReply)
-router.post("/like-unlike-comment", likeOrUnlikeComment)
+router.post("/like-unlike-post", authenticatedUser, likeOrUnlikePost);
+router.post("/reply-to-comment", authenticatedUser, replyComment);
+router.get("/replies/:commentId", authenticatedUser, getReplies);
+router.post("/like-unlike-reply", authenticatedUser, likeOrUnlikeReply)
+router.post("/like-unlike-comment", authenticatedUser, likeOrUnlikeComment)
 
 
 

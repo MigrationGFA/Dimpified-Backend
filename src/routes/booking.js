@@ -7,12 +7,16 @@ const {
   onsiteBooking,
 } = require("../controllers/serviceRequest/booking");
 
+const 
+  authenticatedUser
+ = require("../middleware/authentication")
+
 const router = express.Router();
 
-router.post("/create-booking", createBooking);
-router.post("/onsite-booking", onsiteBooking);
-router.get("/bookings/:ecosystemDomain", getBookings);
-router.get("/booking-overview/:ecosystemDomain", bookingOverview);
-router.put("/complete-booking", changeBookingStatusToCompleted);
+router.post("/create-booking",  createBooking);
+router.post("/onsite-booking", authenticatedUser, onsiteBooking);
+router.get("/bookings/:ecosystemDomain", authenticatedUser, getBookings);
+router.get("/booking-overview/:ecosystemDomain", authenticatedUser, bookingOverview);
+router.put("/complete-booking", authenticatedUser, changeBookingStatusToCompleted);
 
 module.exports = router;
