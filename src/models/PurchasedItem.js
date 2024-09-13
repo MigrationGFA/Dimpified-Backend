@@ -46,6 +46,7 @@ const PurchasedItem = sequelize.define("PurchasedItem", {
   },
 });
 
+
 PurchasedItem.belongsTo(User, {
   foreignKey: "userId",
   targetKey: "id",
