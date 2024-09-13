@@ -9,10 +9,11 @@ const {
 const authenticatedUser = async (req, res, next) => {
     const accessToken = req.headers.authorization?.split('Bearer ')[1]?.trim();
     const refreshToken = req.headers['refresh-token'];
+    console.log("this is refresh token", refreshToken)
 
     try {
         if (!accessToken || !refreshToken) {
-            return res.status(401).json({ msg: "Please login again to continue your process" });
+            return res.status(401).json({ msg: "Please login again to continue your process there is no access token" });
         }
 
         // Check if the access token is valid
@@ -26,12 +27,14 @@ const authenticatedUser = async (req, res, next) => {
 
             // Access token is invalid, check the refresh token
             try {
+                console.log("this got here in refreshtoken 1")
                 const payload = await isRefreshTokenValid(refreshToken);
-                
+                console.log("this got here in refreshtoken 2")
                 // If refresh token is valid, proceed with generating a new access token
-                const existingToken = await Token.findOne({ user: payload.id });
+                const existingToken = await Token.findOne({ userId: payload.id });
+                console.log("this got here in refreshtoken 3")
 
-                if (!existingToken || !existingToken.isValid) {
+                if (!existingToken) {
                     return res.status(401).json({ msg: "Please login again to continue your process" });
                 }
 
