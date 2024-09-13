@@ -15,17 +15,21 @@ const {
   getAUserReview,
 } = require("../controllers/RatingController/reviews");
 
+const 
+  authenticatedUser
+ = require("../middleware/authentication")
+
 //Creator review to admin
-router.post("/creator-submit-review", submitReview);
-router.get("/all-creator-reviews", getAllReviews);
-router.get("/get-reviews-by-creator/:creatorId", getReviewsByCreator);
+router.post("/creator-submit-review", authenticatedUser, submitReview);
+router.get("/all-creator-reviews", authenticatedUser, getAllReviews);
+router.get("/get-reviews-by-creator/:creatorId", authenticatedUser, getReviewsByCreator);
 
 
 
 // Ecosystem reviews
-router.post("/ecosystem/create-reviews", createReviews);
-router.get("/get-product-reviews/:reviewedItemId", getReviews);
-router.get("/ecosystem-reviews/:ecosystemDomain", getEcosystemReview,)
-router.get("/ecosystem-user-reviews/:userId", getAUserReview)
+router.post("/ecosystem/create-reviews", authenticatedUser, createReviews);
+router.get("/get-product-reviews/:reviewedItemId",  getReviews);
+router.get("/ecosystem-reviews/:ecosystemDomain", authenticatedUser, getEcosystemReview,)
+router.get("/ecosystem-user-reviews/:userId", authenticatedUser, getAUserReview)
 
 module.exports = router;

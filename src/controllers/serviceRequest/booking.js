@@ -2,6 +2,7 @@ const Creator = require("../../models/Creator");
 const Booking = require("../../models/DimpBooking");
 const Ecosystem = require("../../models/Ecosystem");
 const sendBookingConfirmationEmail = require("../../utils/bookingNotification");
+const EcosystemUser = require("../../models/EcosystemUser")
 
 const createBooking = async (req, res) => {
   try {
@@ -81,11 +82,22 @@ const createBooking = async (req, res) => {
       ecosystemDomain,
     });
 
+
     await newBooking.save();
     const creator = await Creator.findByPk(ecosystem.creatorId);
+    
     if (!creator) {
-      res.status(404).json({ messsage: "Creator not found" });
+      return res.status(404).json({ messsage: "Creator not found" });
     }
+    const newUser = await Booking.findOne({
+      email,
+      ecosystemDomain,
+    });
+    if(!newUser){
+      creator.userCount += 1;
+    }
+    creator.transactionNumber += 1;
+    await creator.save()
 
     await sendBookingConfirmationEmail({
       email: creator.email,
@@ -97,7 +109,9 @@ const createBooking = async (req, res) => {
       time,
     });
 
-    res
+    console.log(creator)
+
+    return res
       .status(201)
       .json({ message: "Booking created successfully", booking: newBooking });
   } catch (error) {
@@ -184,7 +198,15 @@ const onsiteBooking = async (req, res) => {
 
     await newBooking.save();
 
-    res
+     const creator = await Creator.findByPk(ecosystem.creatorId);
+    
+    if (!creator) {
+      return res.status(404).json({ messsage: "Creator not found" });
+    }
+    creator.userCount += 1;
+    await creator.save()
+
+    return res
       .status(201)
       .json({ message: "Booking created successfully", booking: newBooking });
   } catch (error) {

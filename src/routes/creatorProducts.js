@@ -19,6 +19,10 @@ const {
   getAllEcosystemDigitalProducts,
 } = require("../controllers/CreatorController/ProductsController/digitalProduct");
 
+const 
+  authenticatedUser
+ = require("../middleware/authentication")
+
 const upload = multer({
   storage: storageCourse,
   limits: {
@@ -33,19 +37,21 @@ const backgroundUpload = multer({
   },
 });
 // Course creation endpoint
-router.post("/create-course", upload.single("image"), createCourse);
-router.get("/ecosystem-courses/:ecosystemDomain", getEcosystemCourse);
+router.post("/create-course", authenticatedUser, upload.single("image"), createCourse);
+router.get("/ecosystem-courses/:ecosystemDomain",  getEcosystemCourse);
 router.get(
   "/ecosystem-single-course/:ecosystemDomain/:courseId",
+   
   getAnEcosystemCourseDetails
 );
 
 // service creation endpoint
 router.post(
   "/create-service",
+   authenticatedUser,
   createService
 );
-router.get("/get-all-services/:ecosystemDomain", getAllServices);
+router.get("/get-all-services/:ecosystemDomain",  getAllServices);
 router.get("/get-a-service/:serviceId", getAService);
 
 // digital product endpoints
@@ -54,7 +60,7 @@ router.post(
   backgroundUpload.array("backgroundCover"),
   createDigitalProduct
 );
-router.get("/get-all-digital-products/:creatorId", getAllDigitalProducts);
+router.get("/get-all-digital-products/:creatorId",  getAllDigitalProducts);
 router.get(
   "/get-all-ecosystem-digital-products/:ecosystemDomain",
   getAllEcosystemDigitalProducts
