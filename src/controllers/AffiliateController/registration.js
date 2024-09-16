@@ -7,12 +7,18 @@ const {
 } = require("../../utils/generateToken");
 
 const AffiliateToken = require("../../models/AffiliateToken");
-//const sendWelcomeEmailAffiliate = require("../../utils/sendWelcomeEmailAffiliate");
-//const sendForgotPasswordEmailAffiliate = require("../../utils/sendForgotPasswordAffiliate");
 const sendAffiliateResetPasswordAlert = require("../../utils/resetPasswordAlert");
 const sendVerificationEmailAffiliate = require("../../utils/sendVerificationEmailAffiliate");
 const sendWelcomeEmailAffiliate = require("../../utils/sendWelcomeEmailAffiliate");
 const sendForgotPasswordEmailAffiliate = require("../../utils/sendForgotPasswordEmailAffiliate");
+const AffiliateProfile = require("../../models/AffiliateProfile");
+const cloudinary = require("cloudinary").v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const affiliateSignup = async (req, res) => {
   try {
@@ -344,6 +350,90 @@ const resetPasswordAffiliate = async (req, res) => {
   }
 };
 
+const createAffiliateProfile = async (req, res) => {
+  try {
+    await AffiliateProfile.sync();
+
+    const {
+      affiliateId,
+      firstName,
+      lastName,
+      phoneNumber,
+      interestedCategory,
+      country,
+      state,
+      localGovernment,
+      domain,
+    } = req.body;
+
+    let imageUrl = null;
+
+    if (req.file) {
+      // Upload the file to Cloudinary
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        resource_type: "image", // Specify it's an image
+      });
+      imageUrl = result.secure_url; // Get the Cloudinary image URL
+    }
+
+    if (!affiliateId) {
+      return res.status(404).json({ message: "Please provide affiliateId" });
+    }
+
+    // Check if the affiliate exists
+    const affiliate = await Affiliate.findByPk(affiliateId);
+    if (!affiliate) {
+      return res.status(404).json({ message: "Affiliate not found" });
+    }
+
+    // Check if the affiliate profile already exists
+    let profile = await AffiliateProfile.findOne({ where: { affiliateId } });
+
+    if (profile) {
+      // Update the existing profile
+      profile = await profile.update({
+        firstName,
+        lastName,
+        phoneNumber,
+        interestedCategory,
+        country,
+        state,
+        localGovernment,
+        domain,
+        image: imageUrl, // Store the Cloudinary image URL
+      });
+
+      return res
+        .status(200)
+        .json({ message: "Profile updated successfully", profile });
+    } else {
+      // Create a new profile
+      profile = await AffiliateProfile.create({
+        affiliateId,
+        firstName,
+        lastName,
+        phoneNumber,
+        interestedCategory,
+        country,
+        state,
+        localGovernment,
+        domain,
+        image: imageUrl,
+      });
+
+      affiliate.profile = true;
+      await affiliate.save();
+
+      return res
+        .status(201)
+        .json({ message: "Profile created successfully", profile });
+    }
+  } catch (error) {
+    console.error("Error creating profile:", error);
+    res.status(500).json({ message: "Internal Server Error", error });
+  }
+};
+
 module.exports = {
   affiliateSignup,
   affiliateLogin,
@@ -351,4 +441,5 @@ module.exports = {
   affiliateLogOut,
   forgotPasswordAffiliate,
   resetPasswordAffiliate,
+  createAffiliateProfile,
 };
