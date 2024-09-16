@@ -6,8 +6,6 @@ const whiteList = [
   "https://dimpified.com",
   "https://dimpified-frontend-testing.azurewebsites.net"
 ];
-
-
 const allowedDomainsRegex = /^https?:\/\/([a-zA-Z0-9-]+\.)?(localhost|dimpified\.com)(:\d{1,5})?$/;
 
 const corsOptions = {
