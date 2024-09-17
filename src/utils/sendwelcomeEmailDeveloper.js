@@ -217,71 +217,60 @@ const sendWelcomeEmailDeveloper = async ({ fullName, email }) => {
               <p class="last">Welcome aboard,</p>
               <p>The <span>Dimpified</span> Team.</p>
             </section>
-            <footer>
-              <div class="wrapper">
-                <h2>Follow us</h2>
-                <div class="social-media">
-                  <a
-                    href="https://web.facebook.com/dimpified"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg"
-                      alt="facebook"
-                      style="cursor: pointer; height: 30px"
-                    />
-                  </a>
-                  <a
-                    href="https://instagram.com/dimpified"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png"
-                      alt="instagram"
-                      style="cursor: pointer; height: 30px"
-                    />
-                  </a>
-                  <a
-                    href="https://twitter.com/dimpified"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/6/6f/Logo_of_Twitter.svg"
-                      alt="twitter"
-                      style="cursor: pointer; height: 30px"
-                    />
-                  </a>
-                  <a
-                    href="https://www.linkedin.com/company/dimpified"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/0/01/LinkedIn_Logo.svg"
-                      alt="linkedin"
-                      style="cursor: pointer; height: 30px"
-                    />
-                  </a>
-                  <a
-                    href="https://www.youtube.com/dimpified"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/4/42/YouTube_icon_%282013-2017%29.png"
-                      alt="youtube"
-                      style="cursor: pointer; height: 30px; margin-left: 15px"
-                    />
-                  </a>
-                </div>
-                <p class="copyright">
-                  <span>&copy;</span> 2024 Dimpified. All rights reserved.
-                </p>
-              </div>
-            </footer>
+           <footer>
+        <div class="wrapper">
+          <h2>Follow us</h2>
+          <div class="social-media">
+            <a
+              href="https://www.facebook.com/getfundedafricaoffical"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src="https://res.cloudinary.com/diz6tdgeo/image/upload/v1726569922/facebook_ffdnot.png"
+                alt="facebook"
+                style="cursor: pointer; height: 30px"
+              />
+            </a>
+            <a
+              href="https://www.instagram.com/gfatechnologies"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src="https://res.cloudinary.com/diz6tdgeo/image/upload/v1726569891/instagram_uk3i1s.png"
+                alt="instagram"
+                style="cursor: pointer; height: 30px"
+              />
+            </a>
+            <a
+              href="https://x.com/gfunded_africa"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src="https://res.cloudinary.com/diz6tdgeo/image/upload/v1726569730/twitter_avvoed.png"
+                alt="twitter"
+                style="cursor: pointer; height: 30px"
+              />
+            </a>
+            <a
+              href=" https://www.linkedin.com/company/gfa-technologies/mycompany"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src="https://res.cloudinary.com/diz6tdgeo/image/upload/v1726570370/linkedlin_srtrae.png"
+                alt="linkedin"
+                style="cursor: pointer; height: 30px"
+              />
+            </a>
+          </div>
+          <p class="copyright">
+            <span>&copy;</span> 2024 Dimpified. All rights reserved.
+          </p>
+        </div>
+      </footer>
           </main>
         </body>
       </html>

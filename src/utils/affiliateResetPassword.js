@@ -1,12 +1,8 @@
 const sendEmail = require("./sendEmail");
 
-const sendForgotPasswordEmailAffiliate = async ({
-  userName,
-  email,
-  token,
-  origin,
-}) => {
-  const resetPasswordUrl = `${origin}/affiliate/reset-password?token=${token}&email=${email}`;
+const sendAffiliateResetPasswordAlert = async ({ fullName, email, origin }) => {
+  const supportURL = `${origin}/support`;
+
 
    const message = `
     <table width="100%" border="0" cellpadding="0" cellspacing="0" style="font-family: Arial, sans-serif;">
@@ -21,29 +17,18 @@ const sendForgotPasswordEmailAffiliate = async ({
           <table width="600" border="0" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
             <tr>
               <td align="center" style="padding: 40px; font-size: 20px; font-weight: bold; color: #1e2239;">
-                Password Recovery Request
+                Password Reset Successful
               </td>
             </tr>
             <tr>
               <td align="center" style="padding: 0 40px 40px; color: #333333; font-size: 16px;">
-                <p> <strong> Hello ${userName},</strong></p>
-                <p>To Change your password on Dimpified. Please change your password by clicking the button below.</p>
+                <p> <strong> Hello ${fullName},</strong></p>
+                <p>Your password has been successfully changed. If you did not initiate this step, click on the following link to contact support and secure your account: 
+    <a href="${supportURL}">Contact Support</a></p>
               </td>
             </tr>
-            <tr>
-              <td align="center">
-                <a href="${resetPasswordUrl}" style="display: inline-block; padding: 12px 24px; background-color: #1e2239; color: #ffffff; text-decoration: none; border-radius: 4px; font-size: 16px; font-weight: bold;">
-                  Password Reset
-                </a>
-              </td>
-            </tr>
-             <tr>
-              <td align="center" style="font-size: 20px;">
-               <p> <strong>OR</strong></p>
-               <p> copy and paste the link bel|ow in your browser</p>
-                ${resetPasswordUrl}
-              </td>
-            </tr>
+          
+            
             <tr>
               <td align="center" style="padding: 20px 40px 40px; font-size: 14px; color: #999999;">
                 <p>If you did not request for this action, please ignore it and make sure to not share this link with anyone as no DIMP staff will ask for this.</p>
@@ -62,10 +47,11 @@ const sendForgotPasswordEmailAffiliate = async ({
 
   return sendEmail({
     to: email,
-    subject: "Reset Your Dimpified Affiliate Password",
-    html: `<h4>Hello, ${userName}</h4>
-      ${message}`,
+    subject: "Dimpified Afiliate Reset Password Alert",
+    html: `<h4>Hello, ${fullName}</h4>
+      ${message}
+      `,
   });
 };
 
-module.exports = sendForgotPasswordEmailAffiliate;
+module.exports = sendAffiliateResetPasswordAlert;
