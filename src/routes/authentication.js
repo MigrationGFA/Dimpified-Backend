@@ -26,24 +26,29 @@ const {
   resetPasswordDeveloper,
 } = require("../controllers/DeveloperController/registration");
 
+const {
+    authLimiter,
+    resetPasswordLimiter, 
+} = require("../middleware/RateLimiter")
+
 // Ecosystem user endpoints
 router.post("/ecosystem-user/register", Register);
 router.post("/ecosystem-user/verify-email", verifyEmail);
-router.post("/ecosystem-user/resend-email", resendEmail);
+router.post("/ecosystem-user/resend-email", resetPasswordLimiter, resendEmail);
 router.post("/ecosystem-user/login", Login);
-router.post("/ecosystem-user/forgot-password", forgotPassword);
-router.post("/ecosystem-user/reset-password", resetPassword);
+router.post("/ecosystem-user/forgot-password", resetPasswordLimiter, forgotPassword);
+router.post("/ecosystem-user/reset-password", resetPasswordLimiter, resetPassword);
 router.delete("/ecosystem-user/logout/:userId", logout);
 
 // creator endpoints
-router.post("/creator/register", creatorRegister);
+router.post("/creator/register", authLimiter, creatorRegister);
 router.post("/onboarding", onBoarding);
 router.post("/creator/login", creatorLogin);
 router.delete("/creator/logout/:userId", creatorlogout);
-router.post("/creator/resend-email", creatorResendEmail);
+router.post("/creator/resend-email", resetPasswordLimiter, creatorResendEmail);
 router.post("/creator/verify-email", creatorVerifyEmail);
-router.post("/creator/forgot-password", creatorForgotPassword);
-router.post("/creator/reset-password", creatorResetPassword);
+router.post("/creator/forgot-password", resetPasswordLimiter, creatorForgotPassword);
+router.post("/creator/reset-password", resetPasswordLimiter, creatorResetPassword);
 
 //developer endpoints
 router.post("/developer/registration", developerSignup);
