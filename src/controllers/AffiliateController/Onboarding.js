@@ -2,6 +2,8 @@ const Creator = require("../../models/Creator")
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const sendVerificationEmailCreator = require("../../utils/sendVerificationCreator");
+const Subscribers = require("../../models/Subscription")
+const { Op } = require("sequelize");
 
 const onboardUser = async (req, res) => {
    try {
@@ -80,6 +82,94 @@ const onboardUser = async (req, res) => {
   }
 }
 
+const allAffiliateOnboardUsers = async (req, res) => {
+  try {
+    const userId = req.params.userId
+    if(!userId){
+      return res.status(404).json({ message: "userId is required", });
+    }
+
+    const getAllCreator = await Creator.findAll({
+      where: {
+        affiliateId: userId
+      },
+      attributes: { 
+        exclude: ['password', 'id', 'verificationToken', 'passwordToken', 'passwordTokenExpirationDate'] 
+      }
+    })
+    if(!getAllCreator){
+      return res.status(200).json({ message: "You have not onbaord any user", });
+    }
+    return res.status(200).json({ getAllCreator, });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ message: "Internal Server Error", detail: error });
+  }
+}
+
+
+const affiliateUserBlocks = async (req, res) => {
+  const affiliateId = req.params.affiliateId;
+
+  try {
+    const creators = await Creator.findAll({
+      where: {
+        affiliateId: affiliateId,
+      },
+    });
+
+    const creatorIds = creators.map(creator => creator.id);
+
+    const uniqueSubscribedUsersCount = await Subscribers.count({
+      where: {
+        creatorId: {
+          [Op.in]: creatorIds,
+        },
+      },
+      distinct: true, 
+      col: 'creatorId',
+    });
+
+
+    const totalUsers = await Creator.count({
+      where: {
+        affiliateId: affiliateId,
+      },
+    });
+
+    const verifiedUsers = await Creator.count({
+      where: {
+        affiliateId: affiliateId,
+        isVerified: true,
+      },
+    });
+
+    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const usersThisMonth = await Creator.count({
+      where: {
+        affiliateId: affiliateId,
+        createdAt: {
+          [Op.gte]: startOfMonth,
+        },
+      },
+    });
+
+    // 4. Return the results
+    res.status(200).json({
+      totalUsers,
+      verifiedUsers,
+      usersThisMonth,
+      uniqueSubscribedUsersCount,
+    });
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    res.status(500).json({ message: "Failed to fetch user data" });
+  }
+};
+
+
 module.exports = {
-    onboardUser
+    onboardUser,
+    allAffiliateOnboardUsers,
+    affiliateUserBlocks
 }

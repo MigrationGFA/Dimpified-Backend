@@ -19,7 +19,9 @@ const {
 } = require("../middleware/RateLimiter")
 
 const {
-  onboardUser
+  onboardUser,
+  allAffiliateOnboardUsers,
+  affiliateUserBlocks
 } = require("../controllers/AffiliateController/Onboarding")
 
 router.post("/affiliate/signup", authLimiter, affiliateSignup);
@@ -37,5 +39,7 @@ router.post(
 
 // register users
 router.post("/affiliate-onboard-creator",  onboardUser);
+router.get("/affiliate-all-onboarded-users/:userId",  allAffiliateOnboardUsers);
+router.get("/affiliate-onboarded-users-blocks/:affiliateId",   affiliateUserBlocks);
 
 module.exports = router;
