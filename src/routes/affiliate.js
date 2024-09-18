@@ -18,6 +18,10 @@ const {
     resetPasswordLimiter, 
 } = require("../middleware/RateLimiter")
 
+const {
+  onboardUser
+} = require("../controllers/AffiliateController/Onboarding")
+
 router.post("/affiliate/signup", authLimiter, affiliateSignup);
 router.post("/affiliate/login", authLimiter, affiliateLogin);
 router.post("/affiliate/verify-email",  resetPasswordLimiter,  verifyEmailAffiliate);
@@ -30,5 +34,8 @@ router.post(
   authenticatedUser,
   createAffiliateProfile
 );
+
+// register users
+router.post("/affiliate-onboard-creator",  onboardUser);
 
 module.exports = router;
