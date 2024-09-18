@@ -34,7 +34,10 @@ const affiliateSignup = async (req, res) => {
         return res.status(400).json({ message: `${detail} is required` });
       }
     }
-
+    const userNameExists = await Affiliate.findOne({ where: { userName } });
+    if (userNameExists) {
+      return res.status(400).json({ message: "Username is taken" });
+    }
     // Check if the email already exists
     const emailExists = await Affiliate.findOne({ where: { email } });
     if (emailExists) {
@@ -50,7 +53,7 @@ const affiliateSignup = async (req, res) => {
 
         // Send verification email
         await sendVerificationEmailAffiliate({
-          userName: emailExists.userName, 
+          userName: emailExists.userName,
           email,
           verificationToken,
           origin: process.env.ORIGIN,
@@ -137,16 +140,20 @@ const affiliateLogin = async (req, res) => {
 
     let accessToken, refreshToken;
 
-   if (
-      affiliateTokens
-   ){
+    if (affiliateTokens) {
       const accessTokenExpiration = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
       const refreshTokenExpiration = new Date(
         Date.now() + 14 * 24 * 60 * 60 * 1000
       ); // 14 days from now
-       accessToken = generateAccessToken(affiliate.id, affiliate.role);
+      accessToken = generateAccessToken(affiliate.id, affiliate.role);
       refreshToken = generateRefreshToken(affiliate.id, affiliate.role);
-      await affiliateTokens.update({ userAgent, accessToken, refreshToken, accessTokenExpiration, refreshTokenExpiration });
+      await affiliateTokens.update({
+        userAgent,
+        accessToken,
+        refreshToken,
+        accessTokenExpiration,
+        refreshTokenExpiration,
+      });
     } else {
       accessToken = generateAccessToken(affiliate.id, affiliate.role);
       refreshToken = generateRefreshToken(affiliate.id, affiliate.role);
@@ -165,12 +172,14 @@ const affiliateLogin = async (req, res) => {
       });
     }
     let setProfile;
-    const getProfile = await AffiliateProfile.findOne({ where: {affiliateId: affiliate.id}})
-    console.log("this is profile", getProfile)
-    if(getProfile){
-      setProfile = true
-    } else{
-      setProfile = false
+    const getProfile = await AffiliateProfile.findOne({
+      where: { affiliateId: affiliate.id },
+    });
+    console.log("this is profile", getProfile);
+    if (getProfile) {
+      setProfile = true;
+    } else {
+      setProfile = false;
     }
 
     const affiliateSubset = {
@@ -438,6 +447,49 @@ const createAffiliateProfile = async (req, res) => {
   }
 };
 
+const resendEmailAffiliate = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ msg: "Email is required" });
+  }
+
+  try {
+    const affiliate = await Affiliate.findOne({ where: { email: email } });
+
+    if (!affiliate) {
+      return res
+        .status(404)
+        .json({ msg: "No account is associated with this email address" });
+    }
+
+    if (affiliate.isVerified) {
+      return res.status(400).json({ msg: "Email address has been verified" });
+    }
+
+    const newVerificationToken = crypto.randomBytes(40).toString("hex");
+    affiliate.verificationToken = newVerificationToken;
+
+    await affiliate.save();
+
+    const origin = process.env.ORIGIN;
+
+    await sendVerificationEmailAffiliate({
+      userName: affiliate.userName,
+      email: email,
+      verificationToken: newVerificationToken,
+      origin,
+    });
+
+    res.status(200).json({ message: "New verification email sent" });
+  } catch (error) {
+    console.error("Error during resending email:", error);
+    res
+      .status(500)
+      .json({ message: "Internal Server Error", detail: error.message });
+  }
+};
+
 module.exports = {
   affiliateSignup,
   affiliateLogin,
@@ -446,4 +498,5 @@ module.exports = {
   forgotPasswordAffiliate,
   resetPasswordAffiliate,
   createAffiliateProfile,
+  resendEmailAffiliate,
 };
