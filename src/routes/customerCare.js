@@ -6,6 +6,7 @@ const {
   allContactUs,
   contactUsCompleted,
   sendContactUsFeedback,
+  createBarberContact
 } = require("../controllers/CustomerCareController/contactUs");
 
 const {
@@ -33,10 +34,12 @@ const {
   featureDashboard,
 } = require("../controllers/CustomerCareController/feature");
 
+// contact section
 router.post("/contact-us", userContactUs);
 router.get("/all-contact-us", allContactUs);
 router.put("/contact-us/:id/completed", contactUsCompleted);
 router.post("/send-contact-us-feedback", sendContactUsFeedback);
+router.post("/create-barber-contact", createBarberContact);
 
 //End-Users Help center routes
 router.post("/enduser-help-requests", userHelpCenter);

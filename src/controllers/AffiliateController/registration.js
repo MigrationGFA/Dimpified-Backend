@@ -7,7 +7,7 @@ const {
 } = require("../../utils/generateToken");
 
 const AffiliateToken = require("../../models/AffiliateToken");
-const sendAffiliateResetPasswordAlert = require("../../utils/resetPasswordAlert");
+const sendAffiliateResetPasswordAlert = require("../../utils/affiliateResetPassword");
 const sendVerificationEmailAffiliate = require("../../utils/sendVerificationEmailAffiliate");
 const sendWelcomeEmailAffiliate = require("../../utils/sendWelcomeEmailAffiliate");
 const sendForgotPasswordEmailAffiliate = require("../../utils/sendForgotPasswordEmailAffiliate");
@@ -38,12 +38,10 @@ const affiliateSignup = async (req, res) => {
     // Check if the email already exists
     const emailExists = await Affiliate.findOne({ where: { email } });
     if (emailExists) {
-      // If the user exists but verification token is not present, resend verification email
-      if (!emailExists.verificationToken) {
+      if (!emailExists.isVerified) {
         const hashedPassword = await bcrypt.hash(password, 10);
         const verificationToken = crypto.randomBytes(40).toString("hex");
 
-        // Update the existing user details and add a new verification token
         await emailExists.update({
           userName,
           password: hashedPassword,
@@ -52,7 +50,7 @@ const affiliateSignup = async (req, res) => {
 
         // Send verification email
         await sendVerificationEmailAffiliate({
-          userName: emailExists.userName, // You can also use userName
+          userName: emailExists.userName, 
           email,
           verificationToken,
           origin: process.env.ORIGIN,
@@ -68,7 +66,6 @@ const affiliateSignup = async (req, res) => {
       }
     }
 
-    // If email does not exist, create a new affiliate
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationToken = crypto.randomBytes(40).toString("hex");
 
@@ -136,19 +133,20 @@ const affiliateLogin = async (req, res) => {
     const affiliateTokens = await AffiliateToken.findOne({
       where: { userId: affiliate.id },
     });
-    const currentDate = new Date();
     const userAgent = req.headers["user-agent"];
 
     let accessToken, refreshToken;
 
-    if (
-      affiliateTokens &&
-      affiliateTokens.accessTokenExpiration > currentDate &&
-      affiliateTokens.refreshTokenExpiration > currentDate
-    ) {
-      accessToken = affiliateTokens.accessToken;
-      refreshToken = affiliateTokens.refreshToken;
-      await affiliateTokens.update({ userAgent });
+   if (
+      affiliateTokens
+   ){
+      const accessTokenExpiration = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
+      const refreshTokenExpiration = new Date(
+        Date.now() + 14 * 24 * 60 * 60 * 1000
+      ); // 14 days from now
+       accessToken = generateAccessToken(affiliate.id, affiliate.role);
+      refreshToken = generateRefreshToken(affiliate.id, affiliate.role);
+      await affiliateTokens.update({ userAgent, accessToken, refreshToken, accessTokenExpiration, refreshTokenExpiration });
     } else {
       accessToken = generateAccessToken(affiliate.id, affiliate.role);
       refreshToken = generateRefreshToken(affiliate.id, affiliate.role);
@@ -166,8 +164,14 @@ const affiliateLogin = async (req, res) => {
         refreshTokenExpiration,
       });
     }
-
-    let setProfile = affiliate.userName && affiliate.email ? true : false;
+    let setProfile;
+    const getProfile = await AffiliateProfile.findOne({ where: {affiliateId: affiliate.id}})
+    console.log("this is profile", getProfile)
+    if(getProfile){
+      setProfile = true
+    } else{
+      setProfile = false
+    }
 
     const affiliateSubset = {
       AffiliateId: affiliate.id,
