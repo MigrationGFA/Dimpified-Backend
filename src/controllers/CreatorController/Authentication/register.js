@@ -33,7 +33,7 @@ const RegisterCreator = async (req, res) => {
           organizationName,
           password: hashedPassword,
           verificationToken,
-          role
+          role,
         });
 
         // Send verification email
@@ -63,7 +63,7 @@ const RegisterCreator = async (req, res) => {
         password: hashedPassword,
         verificationToken,
         isVerified: false,
-        role
+        role,
       });
 
       await sendVerificationEmailCreator({

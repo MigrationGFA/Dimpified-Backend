@@ -27,17 +27,28 @@ const {
 } = require("../controllers/DeveloperController/registration");
 
 const {
-    authLimiter,
-    resetPasswordLimiter, 
-} = require("../middleware/RateLimiter")
+  authLimiter,
+  resetPasswordLimiter,
+} = require("../middleware/RateLimiter");
+
+//refreshToken
+const refreshCreatorToken = require("../middleware/refreshToken");
 
 // Ecosystem user endpoints
 router.post("/ecosystem-user/register", Register);
 router.post("/ecosystem-user/verify-email", verifyEmail);
 router.post("/ecosystem-user/resend-email", resetPasswordLimiter, resendEmail);
 router.post("/ecosystem-user/login", Login);
-router.post("/ecosystem-user/forgot-password", resetPasswordLimiter, forgotPassword);
-router.post("/ecosystem-user/reset-password", resetPasswordLimiter, resetPassword);
+router.post(
+  "/ecosystem-user/forgot-password",
+  resetPasswordLimiter,
+  forgotPassword
+);
+router.post(
+  "/ecosystem-user/reset-password",
+  resetPasswordLimiter,
+  resetPassword
+);
 router.delete("/ecosystem-user/logout/:userId", logout);
 
 // creator endpoints
@@ -47,8 +58,16 @@ router.post("/creator/login", creatorLogin);
 router.delete("/creator/logout/:userId", creatorlogout);
 router.post("/creator/resend-email", resetPasswordLimiter, creatorResendEmail);
 router.post("/creator/verify-email", creatorVerifyEmail);
-router.post("/creator/forgot-password", resetPasswordLimiter, creatorForgotPassword);
-router.post("/creator/reset-password", resetPasswordLimiter, creatorResetPassword);
+router.post(
+  "/creator/forgot-password",
+  resetPasswordLimiter,
+  creatorForgotPassword
+);
+router.post(
+  "/creator/reset-password",
+  resetPasswordLimiter,
+  creatorResetPassword
+);
 
 //developer endpoints
 router.post("/developer/registration", developerSignup);
@@ -57,5 +76,8 @@ router.post("/developer/verify-email", verifyEmailDeveloper);
 router.delete("/developer/logout/:userId", developerLogOut);
 router.post("/developer/forgot-password", forgotPasswordDeveloper);
 router.post("/developer/reset-password", resetPasswordDeveloper);
+
+//refreshToken
+router.post("/auth/refresh-token", refreshCreatorToken);
 
 module.exports = router;
