@@ -3,6 +3,8 @@ const sendContactUsFeedbackEmail = require("../../utils/sendContactUsFeedbackEma
 //const sendHelpRequestFeedback = require("../../utils/sendHelpRequestFeedback");
 const sendSupportRequestCompletedEmail = require("../../utils/supportRequestCompleted");
 
+const BarberContact = require("../../models/BarberContact")
+
 
 
 const userContactUs = async (req, res) => {
@@ -112,9 +114,78 @@ const sendContactUsFeedback = async (req, res) => {
   }
 }
 
+const createBarberContact = async (req, res) => {
+  await BarberContact.sync()
+  try {
+    const {
+      name,
+      phone,
+      businessName,
+      email,
+      state,
+      lga,
+      businessAddress,
+      businessCity,
+      landmark,
+      consent,
+      latitude,
+      longitude,
+      city,
+    } = req.body;
+
+    // Ensure required fields are provided
+    const requiredFields = [
+      "name",
+      "phone",
+      "businessName",
+      "email",
+      "state",
+      "lga",
+      "businessAddress",
+      "businessCity",
+      "landmark",
+      "consent",
+    ];
+
+    for (const field of requiredFields) {
+      if (!req.body[field]) {
+        return res.status(400).json({ message: `${field} is required` });
+      }
+    }
+
+    const existingContact = await BarberContact.findOne({ where: { email } });
+    if (existingContact) {
+      return res.status(409).json({ message: "You have previously register your email" });
+    }
+
+    const newBarberContact = await BarberContact.create({
+      name,
+      phone,
+      businessName,
+      email,
+      state,
+      lga,
+      businessAddress,
+      businessCity,
+      landmark,
+      consent,
+      latitude,
+      longitude,
+      city,
+    });
+
+    return res
+      .status(201)
+      .json({ message: "Barber contact created successfully", newBarberContact });
+  } catch (error) {
+    console.error("Error:", error);
+    return res.status(500).json({ message: "Internal Server Error", error });
+  }
+};
 module.exports = {
   userContactUs,
   allContactUs,
   contactUsCompleted,
-  sendContactUsFeedback
+  sendContactUsFeedback,
+  createBarberContact
 };
