@@ -22,7 +22,9 @@ const popularEcosystems = async (req, res) => {
 
     const ecosystemsWithLogos = await Promise.all(
       topEcosystems.map(async (ecosystem) => {
-        const template = await Template.findOne({ ecosystemId: ecosystem._id });
+        const template = await CreatorTemplate.findOne({
+          ecosystemDomain: ecosystem.ecosystemDomain,
+        });
         return {
           ...ecosystem.toObject(),
           logo: template ? template.navbar.logo : null,
