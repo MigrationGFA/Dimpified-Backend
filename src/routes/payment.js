@@ -17,12 +17,16 @@ const {
   VerifyPayment,
   verifyBookingPayment,
 } = require("../controllers/PaymentController/payment");
-
+const {
+  saveAffiliateAccount,
+  getAffiliateBankDetails,
+  editAffiliateAccount,
+} = require("../controllers/AffiliateController/affiliateAccount");
 // bank verification
 const {
   getAllBanks,
-  verifyBankDetails
-} = require("../controllers/PaymentController/Bank")
+  verifyBankDetails,
+} = require("../controllers/PaymentController/Bank");
 
 const 
   authenticatedUser
@@ -49,5 +53,9 @@ router.get("/total-withdrawals-stats/:ecosystemDomain", authenticatedUser, total
 router.get("/get-all-banks",  getAllBanks);
 router.post("/verify-bank-details",  verifyBankDetails);
 
+//Affiliae add accounts
+router.post("/affiliate/add-my-account", saveAffiliateAccount);
+router.get("/affiliate/get-my-account/:affiliateId", getAffiliateBankDetails);
+router.put("/affiliate/edit-my-account", editAffiliateAccount);
 
 module.exports = router;
