@@ -8,7 +8,7 @@ const DeleteAccount = async (req, res) => {
     console.log("this is user", userId);
 
     if (!userId) {
-      return res.status(404).json({ message: "User id not sent" });
+      return res.status(400).json({ message: "User id not sent" });
     }
 
     const user = await User.findByPk(userId);

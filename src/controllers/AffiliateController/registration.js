@@ -124,7 +124,7 @@ const affiliateLogin = async (req, res) => {
 
     const isPasswordValid = await bcrypt.compare(password, affiliate.password);
     if (!isPasswordValid) {
-      return res.status(404).json({ message: "Invalid password Credential" });
+      return res.status(401).json({ message: "Invalid password Credential" });
     }
 
     if (!affiliate.isVerified) {
@@ -253,7 +253,7 @@ const affiliateLogOut = async (req, res) => {
     const affiliateToken = await AffiliateToken.findByPk(userId);
 
     if (!affiliateToken) {
-      return res.status(404).json({ message: "No token found for this user" });
+      return res.status(401).json({ message: "No token found for this user" });
     }
 
     await affiliateToken.destroy();
@@ -283,7 +283,7 @@ const forgotPasswordAffiliate = async (req, res) => {
     }
 
     if (!affiliate.isVerified) {
-      return res.status(404).json({ message: "Email not verified" });
+      return res.status(401).json({ message: "Email not verified" });
     }
 
     const resetToken = crypto.randomBytes(40).toString("hex");
@@ -390,7 +390,7 @@ const createAffiliateProfile = async (req, res) => {
     }
 
     if (!affiliateId) {
-      return res.status(404).json({ message: "Please provide affiliateId" });
+      return res.status(401).json({ message: "Please provide affiliateId" });
     }
 
     // Check if the affiliate exists

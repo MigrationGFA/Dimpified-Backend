@@ -15,7 +15,7 @@ const getAllEcosystemProduct = async (req, res) => {
   try {
     const ecosystemDomain = req.params.ecosystemDomain;
     if (!ecosystemDomain) {
-      return res.status(404).json({ message: "ecosystemDomain not found" });
+      return res.status(400).json({ message: "ecosystemDomain not found" });
     }
     const ecosystemProduct = await Ecosystem.findOne({ ecosystemDomain });
 

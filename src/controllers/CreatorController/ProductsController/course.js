@@ -45,7 +45,7 @@ const createCourse = async (req, res) => {
      // Add the course to the ecosystem
     const ecosystem = await Ecosystem.findOne({ ecosystemDomain: ecosystemDomain });
     if (!ecosystem) {
-      return res.status(404).json({ message: "Ecosystem not found" });
+      return res.status(200).json({ message: "Ecosystem not found" });
     }
 
     // Parsing JSON fields
@@ -128,13 +128,13 @@ const createCourse = async (req, res) => {
 const getEcosystemCourse = async (req, res) => {
   const ecosystemDomain = req.params.ecosystemDomain;
   if (!ecosystemDomain) {
-    return res.status(404).json({ message: "Ecosystem domain is required" });
+    return res.status(400).json({ message: "Ecosystem domain is required" });
   }
   try {
 
     const getEcosystem = await Ecosystem.findOne({ ecosystemDomain: ecosystemDomain })
      if (!getEcosystem) {
-    return res.status(404).json({ message: "Ecosystem does not exist" });
+    return res.status(400).json({ message: "Ecosystem does not exist" });
   }
 
     const getAllCourse = await Course.find({ ecosystemId: getEcosystem._id }).sort(
@@ -153,7 +153,7 @@ const getAnEcosystemCourseDetails = async (req, res) => {
     const { ecosystemDomain, courseId } = req.params;
     if (!ecosystemDomain || !courseId) {
       return res
-        .status(404)
+        .status(400)
         .json({ message: "Ecosystem domain and course ID is required" });
     }
 
@@ -165,7 +165,7 @@ const getAnEcosystemCourseDetails = async (req, res) => {
     //check if course is part of ecosystem courses
     if (!ecosystem.courses.includes(courseId)) {
       return res
-        .status(404)
+        .status(200)
         .json({ message: "Course not found in this ecosystem" });
     }
 

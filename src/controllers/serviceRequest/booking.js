@@ -229,7 +229,7 @@ const getBookings = async (req, res) => {
 
     if (!bookings || bookings.length === 0) {
       return res
-        .status(404)
+        .status(200)
         .json({ message: "No bookings found for this ecosystem domain" });
     }
 

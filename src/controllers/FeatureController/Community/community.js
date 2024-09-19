@@ -284,7 +284,7 @@ const getPostComments = async (req, res) => {
 
     if (!comments.length) {
       return res
-        .status(404)
+        .status(200)
         .json({ message: "No comments found for this post" });
     }
 
@@ -422,7 +422,7 @@ const pendingPosts = async (req, res) => {
     }).sort({ createdAt: -1 });
 
     if (pendingPosts.length === 0) {
-      return res.status(404).json({ message: "No pending posts found" });
+      return res.status(200).json({ message: "No pending posts found" });
     }
 
     return res.status(200).json(pendingPosts);
@@ -573,7 +573,7 @@ const getReplies = async (req, res) => {
     const replies = await Reply.find({ commentId }).sort({ createdAt: -1 });
 
     if (replies.length === 0) {
-      return res.status(404).json({ message: "No replies found for this comment" });
+      return res.status(200).json({ message: "No replies found for this comment" });
     }
 
     
