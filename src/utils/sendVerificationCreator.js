@@ -8,18 +8,8 @@ const sendVerificationEmailCreator = async ({
 }) => {
   const verifyEmailUrl = `https://dimpified.com/creator/verify-email?token=${verificationToken}&email=${email}`;
 
-  const message = `<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Welcome to Dimpified</title>
-    <style>
-      @import url("https://fonts.googleapis.com/css2?family=Outfit&display=swap");
-    </style>
-  </head>
 
-  <body>
+  const message = `
     <table
       width="100%"
       border="0"
@@ -94,7 +84,8 @@ const sendVerificationEmailCreator = async ({
               </td>
             </tr>
             <tr>
-              <td align="center" style="font-size: 20px">
+              <td align="center" style="font-size: 20px; padding: 0 40px 40px">
+
                 <p><strong>OR</strong></p>
                 <p>copy and paste the link bel|ow in your browser</p>
                 ${verifyEmailUrl}
@@ -120,8 +111,6 @@ const sendVerificationEmailCreator = async ({
         </td>
       </tr>
     </table>
-  </body>
-</html>
 `;
   return sendEmail({
     to: email,

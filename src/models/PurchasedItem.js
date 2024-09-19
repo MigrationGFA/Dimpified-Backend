@@ -44,7 +44,11 @@ const PurchasedItem = sequelize.define("PurchasedItem", {
     allowNull: false,
     defaultValue: DataTypes.NOW,
   },
-});
+},
+  {
+    tableName: "PurchasedItem", // Specify the exact table name
+  },
+);
 
 
 PurchasedItem.belongsTo(User, {
