@@ -8,8 +8,8 @@ const sendVerificationEmailCreator = async ({
 }) => {
   const verifyEmailUrl = `https://dimpified.com/creator/verify-email?token=${verificationToken}&email=${email}`;
 
-  const message = `
 
+  const message = `
     <table
       width="100%"
       border="0"
@@ -85,6 +85,7 @@ const sendVerificationEmailCreator = async ({
             </tr>
             <tr>
               <td align="center" style="font-size: 20px; padding: 0 40px 40px">
+
                 <p><strong>OR</strong></p>
                 <p>copy and paste the link bel|ow in your browser</p>
                 ${verifyEmailUrl}
