@@ -15,7 +15,7 @@ const logOut = async (req, res) => {
     });
 
     if (!creatorToken) {
-      return res.status(404).json({ message: "No token found for this user" });
+      return res.status(401).json({ message: "No token found for this user" });
     }
 
     await creatorToken.destroy();

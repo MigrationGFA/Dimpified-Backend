@@ -22,12 +22,12 @@ const loginCreator = async (req, res) => {
 
     const creator = await Creator.findOne({ where: { email: email } });
     if (!creator) {
-      return res.status(404).json({ message: "Invalid email Credential" });
+      return res.status(401).json({ message: "Invalid email Credential" });
     }
 
     const isPasswordValid = await bcrypt.compare(password, creator.password);
     if (!isPasswordValid) {
-      return res.status(404).json({ message: "Invalid password Credential" });
+      return res.status(401).json({ message: "Invalid password Credential" });
     }
 
     if (!creator.isVerified) {

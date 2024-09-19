@@ -100,7 +100,7 @@ const getReviews = async (req, res) => {
     });
 
     if (reviews.length === 0) {
-      return res.status(404).json({ message: 'No reviews found for this product.' });
+      return res.status(200).json({ message: 'No reviews found for this product.' });
     }
 
     res.status(200).json(reviews);
@@ -115,7 +115,7 @@ const getEcosystemReview = async (req, res) => {
 
     const ecosystemDomain = req.params.ecosystemDomain
     if (!ecosystemDomain) {
-      return res.status(404).json({ message: "EcosystemDomain is required" })
+      return res.status(400).json({ message: "EcosystemDomain is required" })
     }
 
     const ecosystemReviews = await Review.findAll({
@@ -139,7 +139,7 @@ const getAUserReview = async (req, res) => {
   try {
     const userId = req.params.userId;
     if (!userId) {
-      return res.status(404).json({ message: "userId is required" })
+      return res.status(401).json({ message: "userId is required" })
     }
     const userReview = await Review.findAll({
       where: {

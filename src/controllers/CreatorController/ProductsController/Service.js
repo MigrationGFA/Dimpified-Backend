@@ -84,7 +84,7 @@ const getAllServices = async (req, res) => {
 
     if (services.length === 0) {
       return res
-        .status(404)
+        .status(200)
         .json({ message: "No services found under this ecosystem" });
     }
 

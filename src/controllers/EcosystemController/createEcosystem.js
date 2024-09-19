@@ -126,7 +126,7 @@ const allEcosystemCourses = async (req, res) => {
   try {
     const ecosystemId = req.params.ecosystemId;
     if (!ecosystemId) {
-      res.status(404).json({ message: "Ecosystem ID is required" });
+      res.status(400).json({ message: "Ecosystem ID is required" });
     }
 
     const ecosystemCourses = await Ecosystem.findById(ecosystemId).populate(
@@ -148,7 +148,7 @@ const getMyEcosystem = async (req, res) => {
   try {
     const userId = req.params.userId;
     if (!userId) {
-      return res.status(404).json({ message: "Ecosystem ID is required" });
+      return res.status(400).json({ message: "Ecosystem ID is required" });
     }
     const getEcosystem = await Ecosystem.find({ creatorId: userId }).sort({
       createdAt: -1,

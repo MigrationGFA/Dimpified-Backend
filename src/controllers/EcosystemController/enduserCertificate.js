@@ -41,7 +41,7 @@ const generateUserCertificate = async (req, res) => {
         });
 
         if (!ecosystemCertificate) {
-            return res.status(404).json({ message: "certificate not found" })
+            return res.status(200).json({ message: "certificate not found" })
         };
 
         const userCertificate = new EndUserCertificate({

@@ -17,7 +17,7 @@ const forgotPasswordUser = async (req, res) => {
     }
 
     if (!user.isVerified) {
-      return res.status(404).json({ message: "Email not verified" });
+      return res.status(401).json({ message: "Email not verified" });
     }
 
     const resetToken = crypto.randomBytes(40).toString("hex");

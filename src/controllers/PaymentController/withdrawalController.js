@@ -22,7 +22,7 @@ const withdrawalRequest = async (req, res) => {
     });
 
     if (!getCreatorEarning) {
-      return res.status(404).json({
+      return res.status(200).json({
         message: "User has no earnings to withdraw from in this ecosystem",
       });
     }
@@ -87,7 +87,7 @@ const getWithdrawalRequests = async (req, res) => {
 
     if (!withdrawalRequests.length) {
       return res
-        .status(404)
+        .status(200)
         .json({ message: "There are no withdrawal requests" });
     }
 
