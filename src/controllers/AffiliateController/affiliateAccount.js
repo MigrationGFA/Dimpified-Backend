@@ -21,6 +21,7 @@ const saveAffiliateAccount = async (req, res) => {
   }
 
   try {
+
     const affiliate = await Affiliate.findByPk(affiliateId);
     if (!affiliate) {
       return res.status(404).json({ message: "Affiliate not found." });
@@ -71,11 +72,11 @@ const getAffiliateBankDetails = async (req, res) => {
 
     if (accountDetails.length === 0) {
       return res
-        .status(404)
+        .status(200)
         .json({ message: "No bank details found for this affiliate." });
     }
 
-    res.status(200).json({ accountDetails });
+    return res.status(200).json({ accountDetails });
   } catch (error) {
     console.error("Error retrieving bank details:", error);
     res.status(500).json({

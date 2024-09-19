@@ -11,7 +11,7 @@ const createReservedTemplate = async (req, res) => {
     const templateId = req.body.templateId
     const template = await ReservedTemplate.findOne({ templateId });
     if (template) {
-      return res.status(404).json({ message: "TemplateId already in use" });
+      return res.status(400).json({ message: "TemplateId already in use" });
     }
 
     const newTemplate = new ReservedTemplate(req.body);

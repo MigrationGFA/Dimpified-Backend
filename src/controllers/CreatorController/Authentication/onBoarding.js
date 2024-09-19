@@ -28,7 +28,7 @@ const onBoarding = async (req, res) => {
 
     // Check if user exists
     if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(401).json({ message: "User not found" });
     }
     const interestStringified = JSON.stringify(categoryInterest)
     // Update user's interests

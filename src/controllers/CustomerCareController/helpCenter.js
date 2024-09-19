@@ -26,7 +26,7 @@ const userHelpCenter = async (req, res) => {
     const domainName = await Ecosystem.findOne({ ecosystemDomain });
     if (!domainName) {
       return res
-        .status(404)
+        .status(400)
         .json({ message: "No Ecosystem with that domain name" });
     }
     const creatorId = domainName.creatorId;
@@ -82,7 +82,7 @@ const helpRequestCompleted = async (req, res) => {
     });
     if (!helpRequestSubmission) {
       return res
-        .status(404)
+        .status(400)
         .json({ message: "Support Request submission not found" });
     }
     await helpRequestSubmission.update(
@@ -109,7 +109,7 @@ const getAnEcosystemUserHelpRequest = async (req, res) => {
 
     if (!(userId || ecosystemDomain)) {
       return res
-        .status(404)
+        .status(400)
         .json({ message: "Ecosystem domain and userId needed" });
     }
     const ecosystemUserHelpRequest = await HelpCenter.findAll({
@@ -191,7 +191,7 @@ const sendFeedback = async (req, res) => {
     console.log("This is help", helpRequest)
     if (!helpRequest || !helpRequest.EcosystemUser || !helpRequest.EcosystemUser.email) {
       return res
-        .status(404)
+        .status(400)
         .send({ error: "Valid help request with email not found" });
     }
 

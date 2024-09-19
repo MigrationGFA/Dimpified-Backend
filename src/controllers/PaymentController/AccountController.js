@@ -84,7 +84,7 @@ const getCreatorBankDetails = async (req, res) => {
 
     if (accountDetails.length === 0) {
       return res
-        .status(404)
+        .status(200)
         .json({ message: "No bank details found for this ecosystem." });
     }
 
@@ -161,7 +161,7 @@ const ecosystemEarnings = async (req, res) => {
 
     if (!creatorEarnings || creatorEarnings.length === 0) {
       return res
-        .status(404)
+        .status(200)
         .json({ message: "No earnings found for the given ecosystem" });
     }
 

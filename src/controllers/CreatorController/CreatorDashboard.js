@@ -16,7 +16,7 @@ const popularEcosystems = async (req, res) => {
 
     if (topEcosystems.length === 0) {
       return res
-        .status(404)
+        .status(200)
         .json({ message: "User has no created ecosystems" });
     }
 
@@ -46,7 +46,7 @@ const allEcosystemUsers = async (req, res) => {
     const ecosystems = await Ecosystem.find({ creatorId });
     if (!ecosystems) {
       return res
-        .status(404)
+        .status(200)
         .json({ message: "User has no created Ecosystems" });
     }
 
@@ -55,7 +55,7 @@ const allEcosystemUsers = async (req, res) => {
     );
 
     if (ecosystemDomains.length === 0) {
-      return res.status(404).json({ message: "No ecosystem domains found" });
+      return res.status(200).json({ message: "No ecosystem domains found" });
     }
 
     const ecosystemUsers = await EcosystemUser.findAll({
@@ -68,7 +68,7 @@ const allEcosystemUsers = async (req, res) => {
 
     if (ecosystemUsers.length === 0) {
       return res
-        .status(404)
+        .status(200)
         .json({ message: "No users found for the given ecosystems" });
     }
 
@@ -86,7 +86,7 @@ const usersPerEcosystem = async (req, res) => {
     const ecosystems = await Ecosystem.find({ creatorId });
     if (!ecosystems) {
       return res
-        .status(404)
+        .status(400)
         .json({ message: "User has no created Ecosystems" });
     }
 
@@ -110,7 +110,7 @@ const usersPerEcosystem = async (req, res) => {
 
     if (!users.length === 0) {
       return res
-        .status(404)
+        .status(200)
         .json({ message: "There are no users in this ecosystem" });
     }
 
@@ -133,7 +133,7 @@ const lastFourEcosystems = async (req, res) => {
 
     if (lastcreated.length === 0) {
       return res
-        .status(404)
+        .status(200)
         .json({ message: "User has no created ecosystems" });
     }
 
@@ -163,7 +163,7 @@ const usersPermonth = async (req, res) => {
   try {
     const ecosystems = await Ecosystem.find({ creatorId });
     if (!ecosystems || ecosystems.length === 0) {
-      return res.status(404).json({ message: "No ecosystems found" });
+      return res.status(200).json({ message: "No ecosystems found" });
     }
 
     const ecosystemDomains = ecosystems.map((eco) => eco.ecosystemDomain);
@@ -257,7 +257,7 @@ const getEcosystemUsersStats = async (req, res) => {
   try {
     const ecosystems = await Ecosystem.find({ creatorId });
     if (!ecosystems || ecosystems.length === 0) {
-      return res.status(404).json({ message: "No ecosystems found" });
+      return res.status(200).json({ message: "No ecosystems found" });
     }
 
     const ecosystemDomains = ecosystems.map((eco) => eco.ecosystemDomain);

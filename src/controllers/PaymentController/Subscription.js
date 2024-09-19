@@ -113,25 +113,44 @@ const verifySubscription = async (req, res) => {
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + months);
 
-    const subscription = await Subscription.create({
-      creatorId,
-      planCode: plan,
-      planType,
-      startDate,
-      endDate,
-      sizeLimit: sizeLimitString,
-      amount,
-      currency,
-      email,
-      username,
-      interval,
-      status,
-    });
+    let subscription = await Subscription.findOne({ where: { creatorId } });
+
+    if (subscription) {
+      subscription = await subscription.update({
+        planCode: plan,
+        planType,
+        startDate,
+        endDate,
+        sizeLimit: sizeLimitString,
+        amount,
+        currency,
+        email,
+        username,
+        interval,
+        status,
+      });
+    } else {
+      subscription = await Subscription.create({
+        creatorId,
+        planCode: plan,
+        planType,
+        startDate,
+        endDate,
+        sizeLimit: sizeLimitString,
+        amount,
+        currency,
+        email,
+        username,
+        interval,
+        status,
+      });
+    }
 
     const creator = await Creator.findByPk(creatorId);
     if (!creator) {
       return res.status(400).json({ message: "Creator does not exist" });
     }
+
     return res.status(201).json({
       message: "Subscription verified successfully",
       subscription,
@@ -143,4 +162,5 @@ const verifySubscription = async (req, res) => {
       .json({ message: "An error occurred during subscription verification" });
   }
 };
+
 module.exports = verifySubscription;
