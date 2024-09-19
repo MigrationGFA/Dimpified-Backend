@@ -35,6 +35,9 @@ app.use(limiter);
 app.use(express.static(path.join(__dirname, "src")));
 app.use("/uploads", express.static("uploads"));
 
+app.get('/files/ms14991499.txt', (req, res) => {
+  res.sendFile(path.join(__dirname,'uploads', 'ms14991499.txt.json'));
+});
 //user routes
 app.use("/api/v1", require("./src/routes/authentication"));
 app.use("/api/v1", require("./src/routes/creatorProducts"));
