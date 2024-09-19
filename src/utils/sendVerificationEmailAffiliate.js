@@ -1,25 +1,3 @@
-// const sendEmail = require("./sendEmail");
-
-// const sendVerificationEmailAffiliate = async ({
-//   userName,
-//   email,
-//   verificationToken,
-//   origin,
-// }) => {
-//   const verifyEmailUrl = `${origin}/affiliate/verify-email?token=${verificationToken}&email=${email}`;
-
-//   const message = `<p>Please confirm your email by clicking on the following link: 
-//     <a href="${verifyEmailUrl}">Verify Email</a></p>`;
-
-//   return sendEmail({
-//     to: email,
-//     subject: "Dimpified Email Confirmation",
-//     html: `<h4>Hello, ${userName}</h4>
-//       ${message}`,
-//   });
-// };
-
-// module.exports = sendVerificationEmailAffiliate;
 
 const sendEmail = require("./sendEmail");
 
@@ -61,7 +39,7 @@ const sendVerificationEmailAffiliate = async ({
               </td>
             </tr>
              <tr>
-              <td align="center" style="font-size: 20px;">
+              <td align="center" style="font-size: 20px; padding: 0 40px 40px">
                <p> <strong>OR</strong></p>
                <p> copy and paste the link bel|ow in your browser</p>
                 ${verifyEmailUrl}
@@ -80,7 +58,6 @@ const sendVerificationEmailAffiliate = async ({
           </table>
         </td>
       </tr>
-     
     </table>
   `;
 
