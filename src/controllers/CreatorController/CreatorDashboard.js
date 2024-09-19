@@ -3,7 +3,8 @@ const Ecosystem = require("../../models/Ecosystem");
 const EcosystemUser = require("../../models/EcosystemUser");
 const Template = require("../../models/Templates");
 const { Op, Sequelize } = require("sequelize");
-const PurchasedItem = require("..//../models/PurchasedItem")
+const PurchasedItem = require("..//../models/PurchasedItem");
+const CreatorTemplate = require("../../models/creatorTemplate");
 
 const popularEcosystems = async (req, res) => {
   try {
@@ -21,7 +22,9 @@ const popularEcosystems = async (req, res) => {
 
     const ecosystemsWithLogos = await Promise.all(
       topEcosystems.map(async (ecosystem) => {
-        const template = await Template.findOne({ ecosystemId: ecosystem._id });
+        const template = await CreatorTemplate.findOne({
+          ecosystemDomain: ecosystem.ecosystemDomain,
+        });
         return {
           ...ecosystem.toObject(),
           logo: template ? template.navbar.logo : null,
@@ -118,7 +121,6 @@ const usersPerEcosystem = async (req, res) => {
   }
 };
 
-
 const lastFourEcosystems = async (req, res) => {
   try {
     const creatorId = req.params.creatorId;
@@ -137,7 +139,10 @@ const lastFourEcosystems = async (req, res) => {
 
     const lastFourWithLogos = await Promise.all(
       lastcreated.map(async (ecosystem) => {
-        const template = await Template.findOne({ ecosystemId: ecosystem._id });
+        const template = await CreatorTemplate.findOne({
+          ecosystemDomain: ecosystem.ecosystemDomain,
+        });
+
         return {
           ...ecosystem.toObject(),
           logo: template ? template.navbar.logo : null,
@@ -194,7 +199,7 @@ const usersPermonth = async (req, res) => {
 
     const result = months.map((month, index) => ({
       month,
-      totalPurchasedItems: 0
+      totalPurchasedItems: 0,
     }));
 
     userRegistrations.forEach((registration) => {
@@ -209,22 +214,17 @@ const usersPermonth = async (req, res) => {
   }
 };
 
-
-
 //get creatorById
 
 const getCreatorById = async (req, res) => {
-
   const id = req.params.id;
   try {
-
     const creator = await Creator.findByPk(id);
     if (!creator) {
-      return res.status(404).json({ error: "Creator not found" })
-    };
+      return res.status(404).json({ error: "Creator not found" });
+    }
 
-    res.status(200).json({ creator })
-
+    res.status(200).json({ creator });
   } catch (error) {
     console.error("Error fetching creator: ", error);
     return res
@@ -234,23 +234,22 @@ const getCreatorById = async (req, res) => {
 };
 
 const updateCreator = async (req, res) => {
-  const id = req.params.id
-  const updateData = req.body
+  const id = req.params.id;
+  const updateData = req.body;
 
   try {
     const creator = await Creator.findByPk(id);
     if (!creator) {
-      return res.status(404).json({ error: "Creator not found" })
-    };
+      return res.status(404).json({ error: "Creator not found" });
+    }
 
     await creator.update(updateData);
     return res.status(200).json({ message: "Creator updated successfully" });
-
   } catch (error) {
     console.error("Error updating creator:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
 const getEcosystemUsersStats = async (req, res) => {
   const creatorId = req.params.creatorId;
@@ -305,7 +304,9 @@ const getEcosystemUsersStats = async (req, res) => {
       },
     });
 
-    res.status(200).json({ totalUsers, verifiedUsers, usersThisMonth, totalAmountPaid });
+    res
+      .status(200)
+      .json({ totalUsers, verifiedUsers, usersThisMonth, totalAmountPaid });
   } catch (error) {
     console.error("Error fetching user data:", error);
     res.status(500).json({ message: "Failed to fetch user data" });
@@ -320,5 +321,5 @@ module.exports = {
   getCreatorById,
   updateCreator,
   usersPermonth,
-  getEcosystemUsersStats
+  getEcosystemUsersStats,
 };
