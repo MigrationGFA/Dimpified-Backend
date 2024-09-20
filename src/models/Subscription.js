@@ -62,6 +62,11 @@ const Subscription = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    subscriptionCount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 1, // Default is 1, meaning it's their first subscription
+      allowNull: false,
+    },
   },
   {
     tableName: "Subscription",
