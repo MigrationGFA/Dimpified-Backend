@@ -29,6 +29,8 @@ app.use((req, res, next) => {
   next();
 });
 
+app.set('trust proxy', 1);
+
 app.use(limiter);
 
 // Set the static folder for serving HTML, CSS, JS, etc.
