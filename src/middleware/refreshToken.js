@@ -16,9 +16,11 @@ const refreshCreatorToken = async (req, res) => {
 
   try {
     const payload = await isRefreshTokenValid(creatorToken);
-
     const existingToken = await Token.findOne({
-      where: { userId: payload.id },
+      where: { 
+        userId: payload.id,
+        refreshToken: creatorToken
+      },
       include: [{ model: Creator }],
     });
 
@@ -28,6 +30,7 @@ const refreshCreatorToken = async (req, res) => {
         .json({ msg: "Invalid refresh token. Please login again." });
     }
 
+    
     const newAccessToken = generateAccessToken(
       existingToken.Creator.id,
       existingToken.Creator.username,
@@ -35,6 +38,8 @@ const refreshCreatorToken = async (req, res) => {
       existingToken.Creator.role
     );
 
+     existingToken.accessToken = newAccessToken;
+     await existingToken.save()
     return res.status(200).json({
       msg: "Token refreshed successfully",
       accessToken: newAccessToken,

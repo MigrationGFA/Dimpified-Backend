@@ -9,10 +9,10 @@ const {
 const authenticatedUser = async (req, res, next) => {
   const accessToken = req.headers.authorization?.split("Bearer ")[1]?.trim();
   const refreshToken = req.headers["refresh-token"];
-  console.log("this is refresh token", refreshToken);
+  console.log("this is refresh token", accessToken);
 
   try {
-    if (!accessToken || !refreshToken) {
+    if (!accessToken && !refreshToken) {
       return res.status(401).json({
         msg: "Please login again to continue your process there is no access token",
       });
@@ -69,7 +69,7 @@ const authenticatedUser = async (req, res, next) => {
     }
   } catch (error) {
     console.error("Error during authentication:", error);
-    res.status(500).json({ msg: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
