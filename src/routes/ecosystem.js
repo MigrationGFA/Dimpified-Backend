@@ -91,7 +91,7 @@ router.get("/creator/my-ecosystem/:creatorId", authenticatedUser, creatorEcosyst
 router.get("/ecosystem-products/:ecosystemDomain", authenticatedUser, getAllEcosystemProduct);
 router.get("/ecosystem-students/:ecosystemDomain", authenticatedUser, getAllEcosystemStudent);
 router.get("/ecosystem-orders/:ecosystemDomain", authenticatedUser, getOrders);
-router.get("/ecosystem-dashboard/:ecosystemDomain", authenticatedUser, ecosystemDashboard);
+router.get("/ecosystem-dashboard/:ecosystemDomain", ecosystemDashboard);
 router.get("/ecosystem-product-orders/:ecosystemDomain", authenticatedUser, getProductOrder);
 router.get("/ecosystem-best-selling-products/:ecosystemDomain", authenticatedUser, bestSellingProducts);
 

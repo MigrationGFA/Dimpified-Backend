@@ -81,23 +81,6 @@ const ecosystemDashboard = async (req, res) => {
       return res.status(400).json({ message: "Ecosystem not found" });
     }
 
-    const createCommunity = ecosystem.communityCreated
-
-    const transactions = await PurchasedItem.findAll({
-      where: {
-        ecosystemDomain,
-      },
-    });
-
-    let totalNaira = 0;
-    let totalDollar = 0;
-    transactions.forEach((transaction) => {
-      if (transaction.currency === "NGN") {
-        totalNaira += transaction.itemAmount;
-      } else if (transaction.currency === "USD") {
-        totalDollar += parseFloat(transaction.itemAmount);
-      }
-    });
 
     const startOfMonth = new Date(
       new Date().getFullYear(),
@@ -139,14 +122,11 @@ const ecosystemDashboard = async (req, res) => {
       total: products.length,
       thisMonth: productsThisMonth.length,
     };
-    const totalEarnings = { totalNaira, totalDollar };
 
     res.status(200).json({
       totalCourses,
       totalProducts,
       totalServices,
-      totalEarnings,
-      createCommunity
     });
   } catch (error) {
     console.error(error);

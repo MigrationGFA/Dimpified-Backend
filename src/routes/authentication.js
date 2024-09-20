@@ -33,6 +33,10 @@ const {
 
 //refreshToken
 const refreshCreatorToken = require("../middleware/refreshToken");
+const authenticateToken = require("../middleware/authenticationToken");
+const {
+  showUser
+} = require("../controllers/showUser")
 
 // Ecosystem user endpoints
 router.post("/ecosystem-user/register", Register);
@@ -69,6 +73,7 @@ router.post(
   creatorResetPassword
 );
 
+
 //developer endpoints
 router.post("/developer/registration", developerSignup);
 router.post("/developer/login", developerLogin);
@@ -79,5 +84,8 @@ router.post("/developer/reset-password", resetPasswordDeveloper);
 
 //refreshToken
 router.post("/auth/refresh-token", refreshCreatorToken);
+
+//show user
+router.get("/show-user", authenticateToken, showUser);
 
 module.exports = router;
