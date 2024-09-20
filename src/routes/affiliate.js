@@ -25,6 +25,26 @@ const {
   affiliateUserBlocks,
 } = require("../controllers/AffiliateController/Onboarding");
 
+const {
+      withdrawalRequestAffiliate,
+    getAffiliateWithdrawalRequests,
+    affiliateTotalWithdrawalStats
+} = require("../controllers/AffiliateController/affiliateWithdraw")
+
+const {
+      getAffiliateEarning,
+    getAffiliateEarningHistory
+} = require("../controllers/AffiliateController/affiliateEarning")
+
+
+const {
+   getAffiliateDashboardstat,
+    getLastFourOnboardedUsers,
+    getLastFourSubscribeUsers
+} = require("../controllers/AffiliateController/affiliateDashboard")
+
+
+
 router.post("/affiliate/signup", authLimiter, affiliateSignup);
 router.post("/affiliate/login", authLimiter, affiliateLogin);
 router.post(
@@ -57,11 +77,28 @@ router.post(
 );
 
 // register users
-router.post("/affiliate-onboard-creator", onboardUser);
-router.get("/affiliate-all-onboarded-users/:userId", allAffiliateOnboardUsers);
+router.post("/affiliate-onboard-creator",  onboardUser);
+router.get("/affiliate-all-onboarded-users/:userId", authenticatedUser, allAffiliateOnboardUsers);
 router.get(
   "/affiliate-onboarded-users-blocks/:affiliateId",
+  authenticatedUser,
   affiliateUserBlocks
 );
+
+// earning
+router.get("/affiliate-earning/:affiliateId", authenticatedUser, getAffiliateEarning);
+router.get("/affiliate-earning-history/:affiliateId", authenticatedUser, getAffiliateEarningHistory);
+
+
+// withdraw earning
+router.post("/affiliate-withdrawal-request", authenticatedUser, withdrawalRequestAffiliate);
+router.get("/affiliate-withdrawal-requests/:affiliateId", authenticatedUser, getAffiliateWithdrawalRequests);
+router.get("/affiliate-total-withdrawals-stats/:affiliateId", authenticatedUser, affiliateTotalWithdrawalStats);
+
+// dashboard
+router.get("/affiliate-dashboard-stats/:affiliateId", authenticatedUser, getAffiliateDashboardstat);
+router.get("/affiliate-last-four-onboarded-users/:affiliateId", authenticatedUser, getLastFourOnboardedUsers);
+router.get("/affiliate-last-four-subscribe-users/:affiliateId", authenticatedUser, getLastFourSubscribeUsers);
+
 
 module.exports = router;

@@ -4,6 +4,7 @@ const crypto = require("crypto");
 const sendVerificationEmailCreator = require("../../utils/sendVerificationCreator");
 const Subscribers = require("../../models/Subscription")
 const { Op } = require("sequelize");
+const Affiliate = require("../../models/Affiliate")
 
 const onboardUser = async (req, res) => {
    try {
@@ -73,7 +74,11 @@ const onboardUser = async (req, res) => {
         verificationToken: verificationToken,
         origin: process.env.ORIGIN,
       });
-
+      const getAffiliate = await Affiliate.findByPk(affiliateId)
+      if(getAffiliate){
+        getAffiliate.onboardedUsers += 1
+        await getAffiliate.save()
+      }
       return res.status(201).json({ message: "Creator created successfully", newCreator });
     }
   } catch (error) {
