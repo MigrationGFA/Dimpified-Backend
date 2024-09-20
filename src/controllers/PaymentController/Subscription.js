@@ -1,6 +1,9 @@
 const https = require("https");
 const Subscription = require("../../models/Subscription");
 const Creator = require("../../models/Creator");
+const Affiliate = require("../../models/Affiliate")
+const AffiliateEarning = require("../../models/AffiliateEarning")
+const AffiliateEarningHistory = require("../../models/AffiliateEarningHistory")
 
 // Function to verify payment using Paystack
 const verifyPayment = async (reference) => {
@@ -44,7 +47,8 @@ const verifyPayment = async (reference) => {
 const verifySubscription = async (req, res) => {
   try {
     await Subscription.sync();
-
+    await AffiliateEarning.sync();
+    await AffiliateEarningHistory.sync();
     const { reference, creatorId, planType } = req.body;
     const details = ["reference", "creatorId", "planType"];
 
@@ -54,6 +58,7 @@ const verifySubscription = async (req, res) => {
         return res.status(400).json({ message: `${detail} is required` });
       }
     }
+
 
     const responseData = await verifyPayment(reference);
 
@@ -114,8 +119,14 @@ const verifySubscription = async (req, res) => {
     endDate.setMonth(endDate.getMonth() + months);
 
     let subscription = await Subscription.findOne({ where: { creatorId } });
+    let countNumber;
 
     if (subscription) {
+      if(subscription.subscriptionCount !== 1){
+        
+        console.log("this is console", subscription.subscriptionCount )
+      }
+      subscription.subscriptionCount
       subscription = await subscription.update({
         planCode: plan,
         planType,
@@ -128,7 +139,9 @@ const verifySubscription = async (req, res) => {
         username,
         interval,
         status,
+        subscriptionCount: subscription.subscriptionCount + 1
       });
+      await subscription.save()
     } else {
       subscription = await Subscription.create({
         creatorId,
@@ -150,10 +163,59 @@ const verifySubscription = async (req, res) => {
     if (!creator) {
       return res.status(400).json({ message: "Creator does not exist" });
     }
+     let getAffiliateEarning = await AffiliateEarning.findOne({
+          where: {
+                affiliateId: creator.affiliateId
+          }
+        })
+        if(!getAffiliateEarning){
+          getAffiliateEarning = await AffiliateEarning.create({
+        affiliateId: creator.affiliateId,
+        Naira: 0,
+        Dollar: 0,
+      });
+        }
+
+    let affiliateShare;
+    let createAffiliateHistory
+    
+    if(creator.affiliateId !== null){
+      if(subscription.subscriptionCount < 2){
+        affiliateShare = (15 / 100) * amount;
+         switch (currency) {
+      case "NGN":
+        getAffiliateEarning.Naira = (parseFloat(getAffiliateEarning.Naira) + parseFloat(affiliateShare)).toFixed(2);
+        break;
+      case "USD":
+        getAffiliateEarning.Dollar = (parseFloat(getAffiliateEarning.Naira) + parseFloat(affiliateShare)).toFixed(2);
+        break;
+      default:
+        console.log("Unsupported currency");
+        return res.status(400).json({ message: "Unsupported currency" });
+    }
+        await getAffiliateEarning.save()
+        createAffiliateHistory = await AffiliateEarningHistory.create({
+        affiliateId: creator.affiliateId,
+        userId: creatorId,
+        amount: parseFloat(affiliateShare).toFixed(2),
+        currency: currency,
+        planType: planType,
+        sizeLimit: sizeLimitString,
+        interval: interval
+       })
+      }
+    }
+
+    
+
+   
+    
 
     return res.status(201).json({
       message: "Subscription verified successfully",
       subscription,
+      getAffiliateEarning,
+      createAffiliateHistory
     });
   } catch (error) {
     console.error("Error in verifySubscription function:", error);
