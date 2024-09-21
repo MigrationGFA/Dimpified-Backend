@@ -1,6 +1,6 @@
 const sendEmail = require("./sendEmail");
 
-const sendAffiliateResetPasswordAlert = async ({ fullName, email, origin }) => {
+const sendAffiliateResetPasswordAlert = async ({ userName, email, origin }) => {
   const supportURL = `${origin}/support`;
 
 
@@ -22,7 +22,7 @@ const sendAffiliateResetPasswordAlert = async ({ fullName, email, origin }) => {
             </tr>
             <tr>
               <td align="center" style="padding: 0 40px 40px; color: #333333; font-size: 16px;">
-                <p> <strong> Hello ${fullName},</strong></p>
+                <p> <strong> Hello ${userName},</strong></p>
                 <p>Your password has been successfully changed. If you did not initiate this step, click on the following link to contact support and secure your account: 
     <a href="${supportURL}">Contact Support</a></p>
               </td>

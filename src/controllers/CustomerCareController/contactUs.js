@@ -182,10 +182,36 @@ const createBarberContact = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error", error });
   }
 };
+
+const getBarberContactUs = async (req, res) => {
+  try {
+    const getBarber = await BarberContact.findAll({
+      order: [["createdAt", "DESC"]],
+    })
+    const filteredBarbers = getBarber.slice(10); 
+
+    const totalRegister = filteredBarbers.length;
+
+    const stateNormalized = filteredBarbers.map((barber) => barber.state.toLowerCase());
+
+   // Create an object to store the count of each unique state
+    const stateCount = stateNormalized.reduce((acc, state) => {
+      acc[state] = (acc[state] || 0) + 1;
+      return acc;
+    }, {});
+
+    return res.status(200).json({ totalRegister, stateCount, allBarber:getBarber });
+
+  } catch (error) {
+    console.error("Error:", error);
+    return res.status(500).json({ message: "Internal Server Error", error });
+  }
+}
 module.exports = {
   userContactUs,
   allContactUs,
   contactUsCompleted,
   sendContactUsFeedback,
-  createBarberContact
+  createBarberContact,
+  getBarberContactUs
 };
