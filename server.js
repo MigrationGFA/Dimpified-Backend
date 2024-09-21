@@ -31,7 +31,7 @@ app.use((req, res, next) => {
 
 app.set('trust proxy', 1);
 
-app.use(limiter);
+
 
 // Set the static folder for serving HTML, CSS, JS, etc.
 app.use(express.static(path.join(__dirname, "src")));
@@ -40,6 +40,8 @@ app.use("/uploads", express.static("uploads"));
 app.get('/files/ms14991499.txt', (req, res) => {
   res.sendFile(path.join(__dirname,'uploads', 'ms14991499.txt.json'));
 });
+
+app.use(limiter);
 //user routes
 app.use("/api/v1", require("./src/routes/authentication"));
 app.use("/api/v1", require("./src/routes/creatorProducts"));
