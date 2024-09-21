@@ -186,7 +186,7 @@ const createBarberContact = async (req, res) => {
 const getBarberContactUs = async (req, res) => {
   try {
     const getBarber = await BarberContact.findAll({
-      order: [["createdAt", "DESC"]],
+      // order: [["createdAt", "DESC"]],
     })
     const filteredBarbers = getBarber.slice(10); 
 
@@ -200,7 +200,7 @@ const getBarberContactUs = async (req, res) => {
       return acc;
     }, {});
 
-    return res.status(200).json({ totalRegister, stateCount, allBarber:getBarber });
+    return res.status(200).json({ totalRegister, stateCount, allBarber:filteredBarbers, });
 
   } catch (error) {
     console.error("Error:", error);
