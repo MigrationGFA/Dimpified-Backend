@@ -16,11 +16,10 @@ const refreshCreatorToken = async (req, res) => {
 
   try {
     const payload = await isRefreshTokenValid(creatorToken);
+    console.log("payload", payload);
+
     const existingToken = await Token.findOne({
-      where: { 
-        userId: payload.id,
-        refreshToken: creatorToken
-      },
+      where: { userId: payload.id, refreshToken: creatorToken },
       include: [{ model: Creator }],
     });
 
@@ -30,20 +29,24 @@ const refreshCreatorToken = async (req, res) => {
         .json({ msg: "Invalid refresh token. Please login again." });
     }
 
-    
     const newAccessToken = generateAccessToken(
       existingToken.Creator.id,
-      existingToken.Creator.username,
+      existingToken.Creator.organizationName,
       existingToken.Creator.email,
       existingToken.Creator.role
     );
 
-     existingToken.accessToken = newAccessToken;
-     await existingToken.save()
+    console.log("newAccessToken", newAccessToken);
+
+    await existingToken.update({
+      accessToken: newAccessToken,
+      updatedAt: new Date(),
+    });
+
     return res.status(200).json({
       msg: "Token refreshed successfully",
       accessToken: newAccessToken,
-      creatorToken,
+      refreshToken: creatorToken,
     });
   } catch (error) {
     console.error("Error during refresh token validation:", error);
