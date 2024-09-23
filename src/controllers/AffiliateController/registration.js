@@ -25,7 +25,7 @@ const affiliateSignup = async (req, res) => {
     // Sync the Affiliate model with the database
     await Affiliate.sync();
 
-    const { userName, email, password } = req.body;
+    const { userName, email, password, refCode } = req.body;
     const details = ["userName", "email", "password"];
 
     // Check for required details
@@ -72,13 +72,18 @@ const affiliateSignup = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationToken = crypto.randomBytes(40).toString("hex");
 
-    const generateUniqueId = () => {
-      const letters = Math.random().toString(36).substring(2, 5).toUpperCase();
-      const numbers = Math.floor(100 + Math.random() * 900);
-      return `${letters}${numbers}`;
-    };
+    // const generateUniqueId = () => {
+    //   const letters = Math.random().toString(36).substring(2, 5).toUpperCase();
+    //   const numbers = Math.floor(100 + Math.random() * 900);
+    //   return `${letters}${numbers}`;
+    // };
 
-    const affiliateId = generateUniqueId();
+    let affiliateId;
+    if (refCode === "not available") {
+      affiliateId = null;
+    } else {
+      affiliateId = refCode;
+    }
 
     // Create a new affiliate entry in the database
     const newAffiliate = await Affiliate.create({
@@ -186,7 +191,7 @@ const affiliateLogin = async (req, res) => {
       id: affiliate.id,
       userName: affiliate.userName,
       email: affiliate.email,
-      affiliateId:affiliate.affiliateId,
+      affiliateId: affiliate.affiliateId,
       role: affiliate.role,
       profile: setProfile,
     };
