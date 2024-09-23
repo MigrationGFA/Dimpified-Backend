@@ -12,6 +12,8 @@ const showUser = async (req, res) => {
           "verificationToken",
           "passwordToken",
           "passwordTokenExpirationDate",
+          "createdAt",
+          "updatedAt",
         ],
       },
     });
