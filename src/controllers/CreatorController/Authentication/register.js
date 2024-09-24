@@ -7,7 +7,7 @@ const RegisterCreator = async (req, res) => {
   try {
     await Creator.sync();
 
-    const { organizationName, email, password, role } = req.body;
+    const { organizationName, email, password, role, refCode } = req.body;
     const details = ["organizationName", "email", "password", "role"];
 
     for (const detail of details) {
@@ -57,15 +57,23 @@ const RegisterCreator = async (req, res) => {
       const hashedPassword = await bcrypt.hash(password, 10);
       const verificationToken = crypto.randomBytes(40).toString("hex");
 
+      let affiliateId;
+      if (refCode === "not available") {
+        affiliateId = null;
+      } else {
+        affiliateId = refCode;
+      }
+
       const newCreator = await Creator.create({
         organizationName,
         email,
+        affiliateId,
         password: hashedPassword,
         verificationToken,
         isVerified: false,
         role,
       });
-
+      console.log("creator:", newCreator);
       await sendVerificationEmailCreator({
         organizationName: organizationName,
         email: email,
