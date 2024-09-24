@@ -184,7 +184,7 @@ const affiliateLogin = async (req, res) => {
 
     const affiliateSubset = {
       AffiliateId: affiliate.id,
-      userName: affiliate.userName,
+      organizationName: affiliate.userName,
       email: affiliate.email,
       role: affiliate.role,
       profile: setProfile,
