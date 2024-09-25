@@ -367,7 +367,6 @@ const resetPasswordAffiliate = async (req, res) => {
 const createAffiliateProfile = async (req, res) => {
   try {
     await AffiliateProfile.sync();
-
     const {
       affiliateId,
       firstName,
@@ -491,6 +490,29 @@ const resendEmailAffiliate = async (req, res) => {
   }
 };
 
+const getAffiliateProfile = async (req, res) => {
+  try {
+    const affiliateId = req.params.affiliateId
+    if(!affiliateId){
+      return res.status(400).json({message: "affiliateid is required"})
+    }
+
+    const affiliateProfile = await AffiliateProfile.findOne({ where: { affiliateId: affiliateId } });
+
+    if (!affiliateProfile) {
+      return res
+        .status(200)
+        .json({ message: "You have not create your profile" });
+    }
+    return res.status(200).json({ affiliateProfile });
+  } catch (error) {
+    console.error("Error during resending email:", error);
+    return res
+      .status(500)
+      .json({ message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   affiliateSignup,
   affiliateLogin,
@@ -500,4 +522,5 @@ module.exports = {
   resetPasswordAffiliate,
   createAffiliateProfile,
   resendEmailAffiliate,
+  getAffiliateProfile
 };
