@@ -71,7 +71,7 @@ router.post(
   createAffiliateProfile
 );
 router.get("/get-affiliate-profile/:affiliateId", 
-  // authenticatedUser, 
+  authenticatedUser, 
   getAffiliateProfile
 );
 router.post(
