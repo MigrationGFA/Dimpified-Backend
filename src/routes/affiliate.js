@@ -8,6 +8,7 @@ const {
   affiliateLogOut,
   createAffiliateProfile,
   resendEmailAffiliate,
+  getAffiliateProfile
 } = require("../controllers/AffiliateController/registration");
 const router = express.Router();
 const multer = require("multer");
@@ -69,7 +70,10 @@ router.post(
   authenticatedUser,
   createAffiliateProfile
 );
-
+router.get("/get-affiliate-profile/:affiliateId", 
+  authenticatedUser, 
+  getAffiliateProfile
+);
 router.post(
   "/affiliate/resend-email",
   resetPasswordLimiter,
@@ -99,6 +103,8 @@ router.get("/affiliate-total-withdrawals-stats/:affiliateId", authenticatedUser,
 router.get("/affiliate-dashboard-stats/:affiliateId", authenticatedUser, getAffiliateDashboardstat);
 router.get("/affiliate-last-four-onboarded-users/:affiliateId", authenticatedUser, getLastFourOnboardedUsers);
 router.get("/affiliate-last-four-subscribe-users/:affiliateId", authenticatedUser, getLastFourSubscribeUsers);
+
+
 
 
 module.exports = router;
