@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const verifySubscription = require("../controllers/PaymentController/Subscription");
+const createPlan = require("../controllers/PaymentController/planFeature")
 const {
   saveCreatorAccount,
   getCreatorBankDetails,
@@ -28,9 +29,9 @@ const {
   verifyBankDetails,
 } = require("../controllers/PaymentController/Bank");
 
-const 
+const
   authenticatedUser
- = require("../middleware/authentication")
+    = require("../middleware/authentication")
 
 router.post("/verify-payment", VerifyPayment);
 router.post("/verify-booking-payment", verifyBookingPayment);
@@ -41,7 +42,7 @@ router.get("/ecosystem-earnings/:ecosystemDomain", authenticatedUser, ecosystemE
 
 // Creator Payment Details
 router.post("/save-bank-details", authenticatedUser, saveCreatorAccount);
-router.get("/bank-details/:ecosystemDomain",authenticatedUser, getCreatorBankDetails);
+router.get("/bank-details/:ecosystemDomain", authenticatedUser, getCreatorBankDetails);
 router.put("/edit-account", authenticatedUser, editCreatorAccount);
 
 //Withdrawal routes
@@ -50,12 +51,15 @@ router.get("/get-withdrawal-requests/:ecosystemDomain", authenticatedUser, getWi
 router.get("/total-withdrawals-stats/:ecosystemDomain", authenticatedUser, totalWithdrawalStats);
 
 // bank verification
-router.get("/get-all-banks",  getAllBanks);
-router.post("/verify-bank-details",  verifyBankDetails);
+router.get("/get-all-banks", getAllBanks);
+router.post("/verify-bank-details", verifyBankDetails);
 
 //Affiliae add accounts
 router.post("/affiliate/add-my-account", authenticatedUser, saveAffiliateAccount);
 router.get("/affiliate/get-my-account/:affiliateId", authenticatedUser, getAffiliateBankDetails);
 router.put("/affiliate/edit-my-account", authenticatedUser, editAffiliateAccount);
+
+//Plan feature endpoints
+router.post("/create-plan", createPlan)
 
 module.exports = router;
