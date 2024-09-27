@@ -61,6 +61,7 @@ app.use("/api/v1/", require("./src/routes/admin.js"));
 app.use("/api/v1/", require("./src/routes/affiliate.js"));
 
 app.use("/api/v1/", require("./src/routes/community"));
+app.use("/api/v1/", require("./src/routes/gfa"));
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
