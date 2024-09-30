@@ -3,7 +3,7 @@ const router = express.Router();
 
 const {
   verifySubscription,
-  handleWebhook,
+  handleWebhooks,
 } = require("../controllers/PaymentController/Subscription");
 const createPlan = require("../controllers/PaymentController/planFeature");
 const {
@@ -40,11 +40,7 @@ router.post("/verify-subscription", verifySubscription);
 
 //WebHooks
 
-router.post(
-  "/webhook",
-  express.raw({ type: "application/json" }),
-  handleWebhook
-);
+router.post("/paystack/webhook", handleWebhooks);
 
 //ecosystemEarnings
 router.get(

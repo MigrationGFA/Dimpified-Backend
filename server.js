@@ -31,9 +31,6 @@ app.use((req, res, next) => {
 
 app.set("trust proxy", 1);
 
-//webhook
-app.use(express.raw({ type: "application/json" }));
-
 // Set the static folder for serving HTML, CSS, JS, etc.
 app.use(express.static(path.join(__dirname, "src")));
 app.use("/uploads", express.static("uploads"));
