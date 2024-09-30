@@ -1,9 +1,10 @@
 const https = require("https");
 const Subscription = require("../../models/Subscription");
 const Creator = require("../../models/Creator");
-const Affiliate = require("../../models/Affiliate")
-const AffiliateEarning = require("../../models/AffiliateEarning")
-const AffiliateEarningHistory = require("../../models/AffiliateEarningHistory")
+const Affiliate = require("../../models/Affiliate");
+const AffiliateEarning = require("../../models/AffiliateEarning");
+const AffiliateEarningHistory = require("../../models/AffiliateEarningHistory");
+const SubscriptionTransaction = require("../../models/subscriptionTransaction");
 
 // Function to verify payment using Paystack
 const verifyPayment = async (reference) => {
@@ -49,16 +50,9 @@ const verifySubscription = async (req, res) => {
     await Subscription.sync();
     await AffiliateEarning.sync();
     await AffiliateEarningHistory.sync();
+    await SubscriptionTransaction.sync();
+
     const { reference, creatorId, planType } = req.body;
-    const details = ["reference", "creatorId", "planType"];
-
-    for (const detail of details) {
-      if (!req.body[detail]) {
-        console.log(`${detail} is required`);
-        return res.status(400).json({ message: `${detail} is required` });
-      }
-    }
-
 
     const responseData = await verifyPayment(reference);
 
@@ -68,7 +62,8 @@ const verifySubscription = async (req, res) => {
       });
     }
 
-    const amount = responseData.data.amount / 100;
+    // Extract necessary data from the payment response
+    const amount = responseData.data.amount / 100; // Convert from kobo/cents to actual currency value
     const currency = responseData.data.currency;
     const status = responseData.data.status;
     const email = responseData.data.customer.email;
@@ -78,6 +73,21 @@ const verifySubscription = async (req, res) => {
     const metadata = responseData.data.metadata;
 
     if (status !== "success") {
+      await SubscriptionTransaction.create({
+        creatorId,
+        reference,
+        planCode: plan,
+        planType,
+        amount,
+        currency,
+        email,
+        startDate: null,
+        endDate: null,
+        interval,
+        sizeLimit: sizeLimitString,
+        status: "failed",
+      });
+
       return res.status(400).json({ message: "Payment verification failed" });
     }
 
@@ -103,6 +113,7 @@ const verifySubscription = async (req, res) => {
 
     const username = usernameField.value;
 
+    // Map interval to months
     const validPlanCodes = {
       monthly: 1,
       "Bi-annual": 6,
@@ -114,19 +125,28 @@ const verifySubscription = async (req, res) => {
       return res.status(400).json({ message: "Invalid plan interval" });
     }
 
+    // Calculate subscription dates
     const startDate = new Date();
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + months);
 
-    let subscription = await Subscription.findOne({ where: { creatorId } });
-    let countNumber;
+    let transaction = await SubscriptionTransaction.create({
+      creatorId,
+      reference,
+      planCode: plan,
+      planType,
+      amount,
+      currency,
+      email,
+      startDate,
+      endDate,
+      interval,
+      sizeLimit: sizeLimitString,
+      status: "successful",
+    });
 
+    let subscription = await Subscription.findOne({ where: { creatorId } });
     if (subscription) {
-      if(subscription.subscriptionCount !== 1){
-        
-        console.log("this is console", subscription.subscriptionCount )
-      }
-      subscription.subscriptionCount
       subscription = await subscription.update({
         planCode: plan,
         planType,
@@ -139,9 +159,8 @@ const verifySubscription = async (req, res) => {
         username,
         interval,
         status,
-        subscriptionCount: subscription.subscriptionCount + 1
+        subscriptionCount: subscription.subscriptionCount + 1,
       });
-      await subscription.save()
     } else {
       subscription = await Subscription.create({
         creatorId,
@@ -163,59 +182,64 @@ const verifySubscription = async (req, res) => {
     if (!creator) {
       return res.status(400).json({ message: "Creator does not exist" });
     }
-     let getAffiliateEarning = await AffiliateEarning.findOne({
-          where: {
-                affiliateId: creator.affiliateId
-          }
-        })
-        if(!getAffiliateEarning){
-          getAffiliateEarning = await AffiliateEarning.create({
-        affiliateId: creator.affiliateId,
-        Naira: 0,
-        Dollar: 0,
+
+    let getAffiliateEarning;
+    let createAffiliateHistory;
+
+    if (creator.affiliateId !== null) {
+      getAffiliateEarning = await AffiliateEarning.findOne({
+        where: { affiliateId: creator.affiliateId },
       });
+
+      if (!getAffiliateEarning) {
+        getAffiliateEarning = await AffiliateEarning.create({
+          affiliateId: creator.affiliateId,
+          Naira: 0,
+          Dollar: 0,
+        });
+      }
+
+      let affiliateShare;
+
+      if (subscription.subscriptionCount < 2) {
+        affiliateShare = (15 / 100) * amount;
+
+        switch (currency) {
+          case "NGN":
+            getAffiliateEarning.Naira = (
+              parseFloat(getAffiliateEarning.Naira) + parseFloat(affiliateShare)
+            ).toFixed(2);
+            break;
+          case "USD":
+            getAffiliateEarning.Dollar = (
+              parseFloat(getAffiliateEarning.Dollar) +
+              parseFloat(affiliateShare)
+            ).toFixed(2);
+            break;
+          default:
+            return res.status(400).json({ message: "Unsupported currency" });
         }
 
-    let affiliateShare;
-    let createAffiliateHistory
-    
-    if(creator.affiliateId !== null){
-      if(subscription.subscriptionCount < 2){
-        affiliateShare = (15 / 100) * amount;
-         switch (currency) {
-      case "NGN":
-        getAffiliateEarning.Naira = (parseFloat(getAffiliateEarning.Naira) + parseFloat(affiliateShare)).toFixed(2);
-        break;
-      case "USD":
-        getAffiliateEarning.Dollar = (parseFloat(getAffiliateEarning.Naira) + parseFloat(affiliateShare)).toFixed(2);
-        break;
-      default:
-        console.log("Unsupported currency");
-        return res.status(400).json({ message: "Unsupported currency" });
-    }
-        await getAffiliateEarning.save()
+        await getAffiliateEarning.save();
+
         createAffiliateHistory = await AffiliateEarningHistory.create({
-        affiliateId: creator.affiliateId,
-        userId: creatorId,
-        amount: parseFloat(affiliateShare).toFixed(2),
-        currency: currency,
-        planType: planType,
-        sizeLimit: sizeLimitString,
-        interval: interval
-       })
+          affiliateId: creator.affiliateId,
+          userId: creatorId,
+          amount: parseFloat(affiliateShare).toFixed(2),
+          currency: currency,
+          planType: planType,
+          sizeLimit: sizeLimitString,
+          interval: interval,
+        });
       }
     }
-
-    
-
-   
-    
 
     return res.status(201).json({
       message: "Subscription verified successfully",
       subscription,
       getAffiliateEarning,
-      createAffiliateHistory
+      createAffiliateHistory,
+      transaction,
     });
   } catch (error) {
     console.error("Error in verifySubscription function:", error);
@@ -225,4 +249,53 @@ const verifySubscription = async (req, res) => {
   }
 };
 
-module.exports = verifySubscription;
+const verifyPaystackSignature = (req) => {
+  const secret = process.env.PAYSTACK_SECRET_KEY;
+  const hash = crypto
+    .createHmac("sha512", secret)
+    .update(req.body)
+    .digest("hex");
+  const paystackSignature = req.headers["x-paystack-signature"];
+
+  return hash === paystackSignature;
+};
+
+const handleWebhook = async (req, res) => {
+  try {
+    if (!verifyPaystackSignature(req)) {
+      return res.status(401).send("Unauthorized - Invalid Paystack signature");
+    }
+
+    const event = JSON.parse(req.body);
+
+    switch (event.event) {
+      case "subscription.create":
+        console.log("New subscription created:", event.data);
+
+        break;
+
+      case "subscription.renew":
+        console.log("Subscription renewed:", event.data);
+
+        break;
+
+      case "subscription.expiring":
+        console.log("Subscription expiring soon:", event.data);
+        break;
+
+      case "subscription.disable":
+        console.log("Subscription disabled:", event.data);
+        break;
+
+      default:
+        console.log("Unhandled event type:", event.event);
+    }
+
+    res.status(200).send("Webhook received and processed successfully");
+  } catch (error) {
+    console.error("Error in handleWebhook function:", error);
+    res.status(500).send("Server error");
+  }
+};
+
+module.exports = { verifySubscription, handleWebhook };
