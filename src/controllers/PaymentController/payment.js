@@ -11,6 +11,8 @@ const User = require("../../models/EcosystemUser");
 const Booking = require("../../models/DimpBooking");
 const sendBookingPaymentConfirmationEmail = require("../../utils/bookingpaymentNotification");
 const GFACommision = require("../../models/GFACommision")
+const EcosystemUser = require("../../models/EcosystemUser")
+const bcrypt = require("bcryptjs");
 
 const VAT_RATE = 0.075;
 const thirdPartyVerification = async (reference, provider) => {
@@ -297,6 +299,7 @@ const verifyBookingPayment = async (req, res) => {
       await Transaction.sync();
     await CreatorEarning.sync();
     await PurchasedItem.sync();
+    
     const { provider, reference, bookingId, ecosystemDomain,  email, providerCharge, companyCharge } = req.body;
     console.log("this is first")
     const details = [
@@ -376,6 +379,21 @@ const verifyBookingPayment = async (req, res) => {
       });
     }
 
+    let getUser = await EcosystemUser.findOne({
+      where: {
+        email: booking.email,
+        ecosystemDomain: booking.ecosystemDomain,
+      }
+    })
+    
+    if(!getUser){
+      getUser = await EcosystemUser.create({
+        email: booking.email,
+        ecosystemDomain: booking.ecosystemDomain,
+        username: booking.name,
+        password: await bcrypt.hash(`${booking.email}`, 10)
+      })
+    }
 
         const userTransaction = await Transaction.create({
       email: booking.email,
@@ -385,7 +403,7 @@ const verifyBookingPayment = async (req, res) => {
       paymentMethod: provider,
       transactionDate: new Date(),
       itemTitle: "Booking",
-      userId: 1,
+      userId: getUser.id,
       creatorId: creatorEarning.creatorId,
       status: responseData.data.status,
       currency: currency,
