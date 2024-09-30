@@ -59,6 +59,7 @@ app.use("/api/v1/", require("./src/routes/serviceRequest"));
 app.use("/api/v1/", require("./src/routes/booking"));
 app.use("/api/v1/", require("./src/routes/admin.js"));
 app.use("/api/v1/", require("./src/routes/affiliate.js"));
+app.use("/api/v1/", require("./src/routes/newCreator.js"));
 
 app.use("/api/v1/", require("./src/routes/community"));
 
