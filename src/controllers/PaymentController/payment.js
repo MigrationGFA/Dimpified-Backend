@@ -10,9 +10,9 @@ const { sequelize } = require("../../config/dbConnect");
 const User = require("../../models/EcosystemUser");
 const Booking = require("../../models/DimpBooking");
 const sendBookingPaymentConfirmationEmail = require("../../utils/bookingpaymentNotification");
-const GFACommision = require("../../models/GFACommision")
-const EcosystemUser = require("../../models/EcosystemUser")
-const bcrypt = require("bcryptjs");
+const GFACommision = require("../../models/GFACommision");
+const EcosystemUser = require("../../models/EcosystemUser");
+const bcrypt = require("bcryptjs")
 
 const VAT_RATE = 0.075;
 const thirdPartyVerification = async (reference, provider) => {
@@ -177,7 +177,7 @@ const VerifyPayment = async (req, res) => {
       itemTitle,
       userId,
       creatorId,
-      status:  responseData.data.status,
+      status: responseData.data.status,
       currency: responseData.data.currency,
     });
 
@@ -294,14 +294,21 @@ const VerifyPayment = async (req, res) => {
 
 const verifyBookingPayment = async (req, res) => {
   console.log("verifyBookingPayment function called");
- 
+
   try {
-      await Transaction.sync();
+    await Transaction.sync();
     await CreatorEarning.sync();
     await PurchasedItem.sync();
-    
-    const { provider, reference, bookingId, ecosystemDomain,  email, providerCharge, companyCharge } = req.body;
-    console.log("this is first")
+    const {
+      provider,
+      reference,
+      bookingId,
+      ecosystemDomain,
+      email,
+      providerCharge,
+      companyCharge,
+    } = req.body;
+    console.log("this is first");
     const details = [
       "provider",
       "reference",
@@ -309,9 +316,9 @@ const verifyBookingPayment = async (req, res) => {
       "ecosystemDomain",
       "email",
       "providerCharge",
-      "companyCharge"
+      "companyCharge",
     ];
-    console.log("this is second")
+    console.log("this is second");
     for (const detail of details) {
       if (!req.body[detail]) {
         return res.status(400).json({ message: `${detail} is required` });
@@ -338,7 +345,7 @@ const verifyBookingPayment = async (req, res) => {
     }
 
     let verifiedAmount;
-    const getAmount = responseData.data.amount ;
+    const getAmount = responseData.data.amount;
     if (provider === "paystack") {
       verifiedAmount = getAmount - companyCharge - providerCharge;
       if (verifiedAmount !== amount) {
@@ -357,20 +364,18 @@ const verifyBookingPayment = async (req, res) => {
       return res.status(400).json({ message: "Unsupported payment provider" });
     }
 
-
-
     // Update the booking payment status to "paid"
     booking.paymentStatus = "Paid";
     await booking.save(); // Save the changes to the booking document
 
     const currency = responseData.data.currency;
 
-    console.log("this is here")
+    console.log("this is here");
 
     let creatorEarning = await CreatorEarning.findOne({
       where: { ecosystemDomain },
     });
-     if (!creatorEarning) {
+    if (!creatorEarning) {
       creatorEarning = await CreatorEarning.create({
         creatorId: ecosystem.creatorId,
         ecosystemDomain,
@@ -383,19 +388,19 @@ const verifyBookingPayment = async (req, res) => {
       where: {
         email: booking.email,
         ecosystemDomain: booking.ecosystemDomain,
-      }
-    })
-    
-    if(!getUser){
+      },
+    });
+
+    if (!getUser) {
       getUser = await EcosystemUser.create({
         email: booking.email,
         ecosystemDomain: booking.ecosystemDomain,
         username: booking.name,
-        password: await bcrypt.hash(`${booking.email}`, 10)
-      })
+        password: await bcrypt.hash(`${booking.email}`, 10),
+      });
     }
 
-        const userTransaction = await Transaction.create({
+    const userTransaction = await Transaction.create({
       email: booking.email,
       itemId: booking.bookingId,
       itemType: "Service",
@@ -408,10 +413,10 @@ const verifyBookingPayment = async (req, res) => {
       status: responseData.data.status,
       currency: currency,
     });
-    console.log("this is transaction", userTransaction)
+    console.log("this is transaction", userTransaction);
 
-      const purchasedItem = await PurchasedItem.create({
-      userId: 1,
+    const purchasedItem = await PurchasedItem.create({
+      userId: getUser.id,
       itemType: "Service",
       itemId: booking.bookingId,
       itemAmount: verifiedAmount,
@@ -420,9 +425,7 @@ const verifyBookingPayment = async (req, res) => {
       ecosystemDomain,
     });
 
-   
-
-   let gfaCommission = await GFACommision.findOne();
+    let gfaCommission = await GFACommision.findOne();
     if (!gfaCommission) {
       gfaCommission = await GFACommision.create({
         Naira: 0,
@@ -432,21 +435,29 @@ const verifyBookingPayment = async (req, res) => {
 
     switch (currency) {
       case "NGN":
-        creatorEarning.Naira = (parseFloat(creatorEarning.Naira) + parseFloat(verifiedAmount)).toFixed(2);
-        gfaCommission.Naira =  (parseFloat(gfaCommission.Naira) + parseFloat(companyCharge)).toFixed(2);
+        creatorEarning.Naira = (
+          parseFloat(creatorEarning.Naira) + parseFloat(verifiedAmount)
+        ).toFixed(2);
+        gfaCommission.Naira = (
+          parseFloat(gfaCommission.Naira) + parseFloat(companyCharge)
+        ).toFixed(2);
         break;
       case "USD":
-        creatorEarning.Dollar = (parseFloat(creatorEarning.Naira) + parseFloat(verifiedAmount)).toFixed(2);
-        gfaCommission.Dollar =  (parseFloat(gfaCommission.Dollar) + parseFloat(companyCharge)).toFixed(2);
+        creatorEarning.Dollar = (
+          parseFloat(creatorEarning.Naira) + parseFloat(verifiedAmount)
+        ).toFixed(2);
+        gfaCommission.Dollar = (
+          parseFloat(gfaCommission.Dollar) + parseFloat(companyCharge)
+        ).toFixed(2);
         break;
       default:
         console.log("Unsupported currency");
         return res.status(400).json({ message: "Unsupported currency" });
     }
 
-    console.log("this is creator earning", creatorEarning)
+    console.log("this is creator earning", creatorEarning);
 
-    await gfaCommission.save()
+    await gfaCommission.save();
     await creatorEarning.save();
     await sendBookingPaymentConfirmationEmail({
       email: booking.email,
@@ -463,12 +474,10 @@ const verifyBookingPayment = async (req, res) => {
   } catch (error) {
     console.error("Error in verifyBookingPayment function:", error);
     res.status(500).json({
-      
-      message: "An error occurred during booking payment verification", error
+      message: "An error occurred during booking payment verification",
+      error,
     });
   }
 };
-
-
 
 module.exports = { VerifyPayment, verifyBookingPayment };
