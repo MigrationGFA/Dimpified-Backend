@@ -29,16 +29,17 @@ app.use((req, res, next) => {
   next();
 });
 
-app.set('trust proxy', 1);
+app.set("trust proxy", 1);
 
-
+//webhook
+app.use(express.raw({ type: "application/json" }));
 
 // Set the static folder for serving HTML, CSS, JS, etc.
 app.use(express.static(path.join(__dirname, "src")));
 app.use("/uploads", express.static("uploads"));
 
-app.get('/files/ms14991499.txt', (req, res) => {
-  res.sendFile(path.join(__dirname,'uploads', 'ms14991499.txt.json'));
+app.get("/files/ms14991499.txt", (req, res) => {
+  res.sendFile(path.join(__dirname, "uploads", "ms14991499.txt.json"));
 });
 
 app.use(limiter);
