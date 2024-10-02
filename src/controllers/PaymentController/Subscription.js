@@ -1,4 +1,5 @@
 const https = require("https");
+const crypto = require("crypto");
 const Subscription = require("../../models/Subscription");
 const Creator = require("../../models/Creator");
 const Affiliate = require("../../models/Affiliate");
@@ -249,53 +250,144 @@ const verifySubscription = async (req, res) => {
   }
 };
 
-const verifyPaystackSignature = (req) => {
+const handleWebhooks = async (req, res) => {
   const secret = process.env.PAYSTACK_SECRET_KEY;
   const hash = crypto
     .createHmac("sha512", secret)
-    .update(req.body)
+    .update(JSON.stringify(req.body))
     .digest("hex");
-  const paystackSignature = req.headers["x-paystack-signature"];
 
-  return hash === paystackSignature;
-};
+  // Verify signature
+  if (hash !== req.headers["x-paystack-signature"]) {
+    return res.status(400).json({ message: "Invalid signature" });
+  }
 
-const handleWebhook = async (req, res) => {
+  const event = req.body.event;
+  const { data } = req.body;
+
   try {
-    if (!verifyPaystackSignature(req)) {
-      return res.status(401).send("Unauthorized - Invalid Paystack signature");
+    if (event === "subscription.charge.success") {
+      const { customer, plan_object, amount, currency, status, reference } =
+        data;
+      const planCode = plan_object.plan_code;
+      const email = customer.email;
+      const sizeLimitString = plan_object.name;
+      const interval = plan_object.interval;
+
+      // Find or create subscription record
+      let subscription = await Subscription.findOne({
+        where: { email, planCode },
+      });
+
+      const startDate = new Date();
+      const endDate = new Date();
+      const validPlanCodes = { monthly: 1, "Bi-annual": 6, annual: 12 };
+      const months = validPlanCodes[interval] || 0;
+      endDate.setMonth(endDate.getMonth() + months);
+
+      if (subscription) {
+        // Update existing subscription
+        await subscription.update({
+          startDate,
+          endDate,
+          amount: amount / 100,
+          currency,
+          sizeLimit: sizeLimitString,
+          interval,
+          status: "active",
+          subscriptionCount: subscription.subscriptionCount + 1,
+        });
+
+        console.log("Subscription updated successfully");
+      } else {
+        // Create new subscription
+        subscription = await Subscription.create({
+          creatorId: null,
+          username: customer.first_name,
+          planCode,
+          planType: plan_object.name,
+          amount: amount / 100,
+          currency,
+          status: "active",
+          email,
+          startDate,
+          endDate,
+          interval,
+          sizeLimit: sizeLimitString,
+          subscriptionCount: 1,
+        });
+
+        console.log("New subscription created successfully");
+      }
+
+      await SubscriptionTransaction.create({
+        creatorId: subscription.creatorId || null,
+        reference,
+        planCode,
+        planType: plan_object.name,
+        amount: amount / 100,
+        currency,
+        status,
+        email,
+        startDate,
+        endDate,
+        interval,
+        sizeLimit: sizeLimitString,
+        subscriptionCount: subscription.subscriptionCount,
+      });
+
+      return res
+        .status(200)
+        .json({ message: "Subscription charge success processed" });
     }
 
-    const event = JSON.parse(req.body);
+    if (event === "subscription.disable") {
+      const { customer, plan_object } = data;
+      const email = customer.email;
+      const planCode = plan_object.plan_code;
 
-    switch (event.event) {
-      case "subscription.create":
-        console.log("New subscription created:", event.data);
+      const subscription = await Subscription.findOne({
+        where: { email, planCode },
+      });
 
-        break;
+      if (!subscription) {
+        return res.status(404).json({ message: "Subscription not found" });
+      }
 
-      case "subscription.renew":
-        console.log("Subscription renewed:", event.data);
+      await subscription.update({
+        status: "canceled",
+      });
 
-        break;
+      await SubscriptionTransaction.create({
+        creatorId: subscription.creatorId || null,
+        reference: null,
+        planCode,
+        planType: plan_object.name,
+        amount: 0,
+        currency: subscription.currency,
+        status: "canceled",
+        email,
+        startDate: subscription.startDate,
+        endDate: subscription.endDate,
+        interval: subscription.interval,
+        sizeLimit: subscription.sizeLimit,
+        subscriptionCount: subscription.subscriptionCount,
+      });
 
-      case "subscription.expiring":
-        console.log("Subscription expiring soon:", event.data);
-        break;
+      console.log(
+        `Subscription canceled for creator ${subscription.creatorId}`
+      );
 
-      case "subscription.disable":
-        console.log("Subscription disabled:", event.data);
-        break;
-
-      default:
-        console.log("Unhandled event type:", event.event);
+      return res
+        .status(200)
+        .json({ message: "Subscription canceled successfully" });
     }
 
-    res.status(200).send("Webhook received and processed successfully");
+    return res.status(200).json({ message: "Event type not handled" });
   } catch (error) {
-    console.error("Error in handleWebhook function:", error);
-    res.status(500).send("Server error");
+    console.error("Error in handleWebhooks:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
-module.exports = { verifySubscription, handleWebhook };
+module.exports = { verifySubscription, handleWebhooks };
