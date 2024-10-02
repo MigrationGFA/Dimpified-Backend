@@ -49,7 +49,7 @@ const gfaLoginCreator = async (req, res) => {
       const myToken = await CreatorToken.create({
         accessToken,
         refreshToken,
-        userId: creator.id,
+        userId: user.id,
         userAgent,
         accessTokenExpiration,
         refreshTokenExpiration,
