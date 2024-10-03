@@ -117,7 +117,7 @@ const creatorSignup = async (req, res) => {
       const accessToken = generateAccessToken(newCreator.id, newCreator.role);
       const refreshToken = generateRefreshToken(newCreator.id, newCreator.role);
 
-      const creatorSubset = {
+      const user = {
         creatorId: newCreator.id,
 
         fullName: newCreatorProfile.fullName,
@@ -133,7 +133,7 @@ const creatorSignup = async (req, res) => {
           message: "Creator created successfully",
           accessToken,
           refreshToken,
-          creatorSubset,
+          user,
         });
     }
   } catch (error) {
