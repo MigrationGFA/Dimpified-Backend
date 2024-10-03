@@ -175,7 +175,7 @@ const affiliateLogin = async (req, res) => {
     const getProfile = await AffiliateProfile.findOne({
       where: { affiliateId: affiliate.id },
     });
-    console.log("this is profile", getProfile);
+   
     if (getProfile) {
       setProfile = true;
     } else {

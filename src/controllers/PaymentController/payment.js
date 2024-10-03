@@ -12,7 +12,9 @@ const Booking = require("../../models/DimpBooking");
 const sendBookingPaymentConfirmationEmail = require("../../utils/bookingpaymentNotification");
 const GFACommision = require("../../models/GFACommision");
 const EcosystemUser = require("../../models/EcosystemUser");
-const bcrypt = require("bcryptjs")
+const bcrypt = require("bcryptjs");
+const sendBookingConfirmationPaidEmail = require("../../utils/sendBoookingConfirmationEmailPaid");
+const Creator = require("../../models/Creator");
 
 const VAT_RATE = 0.075;
 const thirdPartyVerification = async (reference, provider) => {
@@ -459,12 +461,23 @@ const verifyBookingPayment = async (req, res) => {
 
     await gfaCommission.save();
     await creatorEarning.save();
+    const creator = await Creator.findByPk(creatorEarning.creatorId);
+
     await sendBookingPaymentConfirmationEmail({
-      email: booking.email,
+      email: creator.email,
       bookingId: booking.bookingId,
       paymentAmount: verifiedAmount,
       paymentDate: new Date().toISOString(),
       paymentMethod: provider,
+    });
+
+    await sendBookingConfirmationPaidEmail({
+      email: booking.email,
+      bookingId: booking.bookingId,
+      date: booking.date,
+      time: booking.time,
+      name: booking.name,
+      service: booking.service,
     });
 
     return res.status(201).json({
