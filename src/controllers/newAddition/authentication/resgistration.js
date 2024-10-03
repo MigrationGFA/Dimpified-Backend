@@ -21,9 +21,6 @@ const creatorSignup = async (req, res) => {
       gender,
       dateOfBirth,
       password,
-      state,
-      localGovernment,
-      country,
       role,
       refCode,
       organizationName,
@@ -98,9 +95,6 @@ const creatorSignup = async (req, res) => {
         phoneNumber,
         gender,
         dateOfBirth: new Date(dateOfBirth), // Ensure date is correctly formatted
-        state,
-        localGovernment,
-        country,
         creatorId: newCreator.id, // Ensure this is a Number
       });
 
@@ -119,7 +113,6 @@ const creatorSignup = async (req, res) => {
 
       const user = {
         creatorId: newCreator.id,
-
         fullName: newCreatorProfile.fullName,
         email: newCreator.email,
         affiliateId: newCreator.affiliateId,
@@ -127,14 +120,12 @@ const creatorSignup = async (req, res) => {
         profile: true,
       };
 
-      return res
-        .status(201)
-        .json({
-          message: "Creator created successfully",
-          accessToken,
-          refreshToken,
-          user,
-        });
+      return res.status(201).json({
+        message: "Creator created successfully",
+        accessToken,
+        refreshToken,
+        user,
+      });
     }
   } catch (error) {
     console.error("Error:", error);
