@@ -3,51 +3,53 @@ const crypto = require("crypto");
 const Creator = require("../../../models/Creator");
 const sendVerificationOTPCreator = require("../../../utils/sendVerificationOTPCreator");
 const sendWelcomeEmailCreator = require("../../../utils/creatorWelcome");
+const CreatorProfile = require("../../../models/CreatorProfile");
+const {
+  generateAccessToken,
+  generateRefreshToken,
+} = require("../../../utils/generateToken");
 
 const creatorSignup = async (req, res) => {
   try {
     await Creator.sync();
+    console.log("body:", req.body);
 
     const {
-      firstName,
-      surName,
-      otherName,
+      fullName,
       email,
       phoneNumber,
       gender,
       dateOfBirth,
       password,
-      confirmPassword,
+      state,
+      localGovernment,
+      country,
       role,
+      refCode,
+      organizationName,
     } = req.body;
-    const details = ["email", "password", "role"];
 
-    for (const detail of details) {
-      if (!req.body[detail]) {
-        return res.status(400).json({ msg: `${detail} is required` });
+    const requiredFields = ["email", "password", "role"];
+
+    for (const field of requiredFields) {
+      if (!req.body[field]) {
+        return res.status(400).json({ msg: `${field} is required` });
       }
     }
 
     const duplicateCreator = await Creator.findOne({
-      where: {
-        email: email,
-      },
+      where: { email: email },
     });
 
     if (duplicateCreator) {
       // If the email is not verified, update the creator account
       if (!duplicateCreator.isVerified) {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const generateOTP = () => {
-          return Math.floor(100000 + Math.random() * 900000); // Generates a 6-digit OTP
-        };
+        const OTP = Math.floor(100000 + Math.random() * 900000); // Generates a 6-digit OTP
 
-        const OTP = generateOTP();
-
-
-        // Update creator information using the instance method 'update'
-        const updateCreator = await duplicateCreator.update({
-          organizationName: firstName,
+        // Update creator information
+        await duplicateCreator.update({
+          organizationName,
           password: hashedPassword,
           verificationToken: OTP,
           role,
@@ -55,7 +57,7 @@ const creatorSignup = async (req, res) => {
 
         // Send verification email
         await sendVerificationOTPCreator({
-          organizationName: firstName,
+          organizationName: fullName, // This might be better as creator.organizationName
           email: email,
           verificationToken: OTP,
           origin: process.env.ORIGIN,
@@ -71,37 +73,68 @@ const creatorSignup = async (req, res) => {
       }
     } else {
       // If the creator doesn't exist, create a new creator
-      const generateOTP = () => {
-        return Math.floor(100000 + Math.random() * 900000);
-      };
-      const OTP = generateOTP();
+      const OTP = Math.floor(100000 + Math.random() * 900000);
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      let affiliateId;
-      if (refCode === "not available") {
-        affiliateId = null;
-      } else {
-        affiliateId = refCode;
-      }
-
-      const newCreator = await Creator.create({
-        organizationName: firstName,
+      const affiliateId = refCode === "not available" ? null : refCode;
+      const creatorBody = {
+        organizationName,
         email,
         affiliateId,
         password: hashedPassword,
         verificationToken: OTP,
         isVerified: false,
         role,
+        step: 1,
+      };
+      console.log("creatorBody:", creatorBody);
+      const newCreator = await Creator.create(creatorBody);
+
+      // Create a CreatorProfile without organizationName
+      const newCreatorProfile = new CreatorProfile({
+        fullName,
+        email,
+        organizationName,
+        phoneNumber,
+        gender,
+        dateOfBirth: new Date(dateOfBirth), // Ensure date is correctly formatted
+        state,
+        localGovernment,
+        country,
+        creatorId: newCreator.id, // Ensure this is a Number
       });
-      console.log("creator:", newCreator);
+
+      await newCreatorProfile.save();
+
+      // Send verification email
       await sendVerificationOTPCreator({
-        organizationName: firstName,
+        organizationName: fullName, // This might be better as creator.organizationName
         email: email,
-        verificationToken: verificationToken,
+        verificationToken: OTP,
         origin: process.env.ORIGIN,
       });
 
-      return res.status(201).json({ message: "Creator created successfully" });
+      const accessToken = generateAccessToken(newCreator.id, newCreator.role);
+      const refreshToken = generateRefreshToken(newCreator.id, newCreator.role);
+
+      const creatorSubset = {
+        creatorId: newCreator.id,
+
+        fullName: newCreatorProfile.fullName,
+        email: newCreator.email,
+        affiliateId: newCreator.affiliateId,
+        role: newCreator.role,
+        profile: true,
+      };
+
+      return res
+        .status(201)
+        .json({
+          message: "Creator created successfully",
+          accessToken,
+          refreshToken,
+          creatorSubset,
+        });
     }
   } catch (error) {
     console.error("Error:", error);
@@ -113,9 +146,7 @@ const verifyOTPCreator = async (req, res) => {
   const { email, OTP } = req.body;
 
   if (!email || !OTP) {
-    return res
-      .status(400)
-      .json({ msg: "Email and OTP are required" });
+    return res.status(400).json({ msg: "Email and OTP are required" });
   }
 
   try {
@@ -124,7 +155,7 @@ const verifyOTPCreator = async (req, res) => {
     if (!creator) {
       return res.status(404).json({ msg: "Creator not found" });
     }
-console.log("creator:",creator)
+
     if (creator.isVerified) {
       return res.status(200).json({ msg: "Email has already been verified" });
     }
@@ -135,10 +166,17 @@ console.log("creator:",creator)
 
     creator.isVerified = true;
     creator.verificationToken = "";
+    creator.step = 2;
     await creator.save();
 
+    const creatorProfile = await CreatorProfile.findOne({
+      creatorId: creator.id,
+    });
+
+    console.log("creatorprofileotp:", creatorProfile);
+
     await sendWelcomeEmailCreator({
-      organizationName: creator.organizationName,
+      organizationName: creatorProfile.fullName,
       email: email,
     });
 
@@ -149,4 +187,17 @@ console.log("creator:",creator)
   }
 };
 
-module.exports = { creatorSignup, verifyOTPCreator };
+const getCreators = async (req, res) => {
+  try {
+    const creators = await Creator.findAll({
+      order: [["createdAt", "DESC"]], // Sorting by `createdAt` in descending order
+    });
+
+    res.status(200).json({ creators });
+  } catch (error) {
+    console.error("Error :", error);
+    res.status(500).json({ msg: "Server error", error: error.message });
+  }
+};
+
+module.exports = { creatorSignup, verifyOTPCreator, getCreators };
