@@ -85,6 +85,11 @@ const ecosystemSchema = new mongoose.Schema({
     type: [socialMediaSchema],
     default: []
   },
+  completed: {
+    type: String,
+    enum: ["true", "false", ],
+    default: "false",
+  },
   createdAt: {
     type: Date,
     default: Date.now,
