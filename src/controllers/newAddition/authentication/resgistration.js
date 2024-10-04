@@ -96,7 +96,7 @@ const creatorSignup = async (req, res) => {
         step: duplicateCreator.step
       };
         return res
-          .status(409)
+          .status(200)
           .json({ 
             message: "Email address is associated with an account",
             accessToken,
