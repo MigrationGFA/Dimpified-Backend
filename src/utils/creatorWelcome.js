@@ -182,7 +182,10 @@ const sendWelcomeEmailCreator = async ({ organizationName, email }) => {
             <section class="section-content">
               <div class="experince">
                 <p>Welcome to Dimpified!</p>
-                <img src="https://res.cloudinary.com/diz6tdgeo/image/upload/v1725638667/dimp_rwgeri.png" alt="person" />
+                <img 
+                alt="Dimpified Logo"
+                        src="https://res.cloudinary.com/diz6tdgeo/image/upload/v1725638667/dimp_rwgeri.png"
+                        style="height: 60px" />
               </div>
               <p>Hello ${organizationName},</p>
               <p>
@@ -207,7 +210,7 @@ const sendWelcomeEmailCreator = async ({ organizationName, email }) => {
               </div>
               <div class="click">
                 <a
-                  href="https://dimpified.com/"
+                  href="https://dimpified.com/creator/signin"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
