@@ -68,6 +68,11 @@ const Creator = sequelize.define(
       allowNull: true,
       defaultValue: [],
     },
+    step: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 5,
+    },
     transactionNumber: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
