@@ -81,6 +81,15 @@ const ecosystemSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  country: {
+     type: String,
+  },
+   state: {
+     type: String,
+  },
+   localgovernment: {
+     type: String,
+  },
   socialMedia: {
     type: [socialMediaSchema],
     default: []

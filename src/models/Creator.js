@@ -45,15 +45,15 @@ const Creator = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    affiliateId: {
-      type: DataTypes.INTEGER,
-      allowNull: true, // Users may not be affiliated
-      references: {
-        model: "Affiliate", // References the 'Affiliate' model
-        key: "id",
-      },
-      onDelete: "SET NULL", // When an affiliate is deleted, set affiliateId to null
+   affiliateId: {
+    type: DataTypes.INTEGER,
+    allowNull: true, // Users may not be affiliated
+    references: {
+      model: "Affiliate", // References the 'Affiliate' model
+      key: 'id',
     },
+    onDelete: 'SET NULL', // When an affiliate is deleted, set affiliateId to null
+  },
     role: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -82,5 +82,7 @@ const Creator = sequelize.define(
     tableName: "Creator",
   }
 );
+
+
 
 module.exports = Creator;
