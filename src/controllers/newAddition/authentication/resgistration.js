@@ -9,6 +9,8 @@ const {
   generateRefreshToken,
 } = require("../../../utils/generateToken");
 
+const Ecosystem = require("../../../models/Ecosystem")
+
 const creatorSignup = async (req, res) => {
   try {
     await Creator.sync();
@@ -30,7 +32,7 @@ const creatorSignup = async (req, res) => {
 
     for (const field of requiredFields) {
       if (!req.body[field]) {
-        return res.status(400).json({ msg: `${field} is required` });
+        return res.status(400).json({ message: `${field} is required` });
       }
     }
 
@@ -59,14 +61,48 @@ const creatorSignup = async (req, res) => {
           verificationToken: OTP,
           origin: process.env.ORIGIN,
         });
+        const accessToken = generateAccessToken(duplicateCreator.id, duplicateCreator.role);
+      const refreshToken = generateRefreshToken(duplicateCreator.id, duplicateCreator.role);
+
+      const user = {
+        creatorId: duplicateCreator.id,
+        fullName: duplicateCreator.fullName,
+        email: duplicateCreator.email,
+        affiliateId: duplicateCreator.affiliateId,
+        role: duplicateCreator.role,
+        profile: true,
+        step: duplicateCreator.step
+      };
 
         return res
           .status(201)
-          .json({ message: "Verification email resent successfully" });
+          .json({ 
+            message: "Verification email resent successfully",
+            accessToken,
+            refreshToken,
+            user,
+          });
       } else {
+        const accessToken = generateAccessToken(duplicateCreator.id, duplicateCreator.role);
+      const refreshToken = generateRefreshToken(duplicateCreator.id, duplicateCreator.role);
+
+      const user = {
+        creatorId: duplicateCreator.id,
+        fullName: duplicateCreator.fullName,
+        email: duplicateCreator.email,
+        affiliateId: duplicateCreator.affiliateId,
+        role: duplicateCreator.role,
+        profile: true,
+        step: duplicateCreator.step
+      };
         return res
           .status(409)
-          .json({ message: "Email address is associated with an account" });
+          .json({ 
+            message: "Email address is associated with an account",
+            accessToken,
+            refreshToken,
+            user,
+          });
       }
     } else {
       // If the creator doesn't exist, create a new creator
@@ -118,6 +154,7 @@ const creatorSignup = async (req, res) => {
         affiliateId: newCreator.affiliateId,
         role: newCreator.role,
         profile: true,
+        step: newCreator.step
       };
 
       return res.status(201).json({
@@ -137,22 +174,18 @@ const verifyOTPCreator = async (req, res) => {
   const { email, OTP } = req.body;
 
   if (!email || !OTP) {
-    return res.status(400).json({ msg: "Email and OTP are required" });
+    return res.status(400).json({ message: "Email and OTP are required" });
   }
 
   try {
     const creator = await Creator.findOne({ where: { email: email } });
 
     if (!creator) {
-      return res.status(404).json({ msg: "Creator not found" });
-    }
-
-    if (creator.isVerified) {
-      return res.status(200).json({ msg: "Email has already been verified" });
+      return res.status(404).json({ message: "Creator not found" });
     }
 
     if (creator.verificationToken !== OTP) {
-      return res.status(400).json({ msg: "Invalid OTP" });
+      return res.status(400).json({ message: "Invalid OTP" });
     }
 
     creator.isVerified = true;
@@ -164,14 +197,12 @@ const verifyOTPCreator = async (req, res) => {
       creatorId: creator.id,
     });
 
-    console.log("creatorprofileotp:", creatorProfile);
-
     await sendWelcomeEmailCreator({
       organizationName: creatorProfile.fullName,
       email: email,
     });
 
-    return res.status(200).json({ msg: "Email verified successfully" });
+    return res.status(200).json({ message: "Email verified successfully" });
   } catch (error) {
     console.error("Error verifying email:", error);
     res.status(500).json({ msg: "Server error", error: error.message });
@@ -191,4 +222,70 @@ const getCreators = async (req, res) => {
   }
 };
 
-module.exports = { creatorSignup, verifyOTPCreator, getCreators };
+const createBusinessDetails = async(req, res) => {
+  const {
+    creatorId,
+    ecosystemName,
+    ecosystemDomain,
+    targetAudienceSector,
+    mainObjective,
+    contact,
+    address,
+    ecosystemDescription,
+    country,
+    state, 
+    localGovernment,
+  } = req.body;
+
+  const requiredFields = [
+    "creatorId",
+    "ecosystemName",
+    "ecosystemDomain",
+    "targetAudienceSector",
+    "mainObjective",
+    "contact",
+    "address",
+    "ecosystemDescription",
+    "country",
+    "state", 
+    "localGovernment",
+  ];
+
+  for (const field of requiredFields) {
+    if (!req.body[field]) {
+      return res.status(400).json({ message: `${field} is required` });
+    }
+  }
+  try {
+    const creator = await Creator.findByPk(creatorId);
+    if (!creator) {
+      return res.status(404).json({ message: "Creator not found" });
+    }
+
+    let ecosystem;
+         ecosystem = new Ecosystem({
+          creatorId,
+          ecosystemName,
+          ecosystemDomain,
+          contact,
+          mainObjective,
+          steps: 1,
+          targetAudienceSector,
+          address,
+          ecosystemDescription,
+          country,
+          state, 
+          localGovernment,
+          status: "draft",
+        });
+        await ecosystem.save();
+        return res
+          .status(201)
+          .json({ message: "Ecosystem about information saved", ecosystem });
+  } catch (error) {
+    console.error("Error :", error);
+    res.status(500).json({ msg: "Server error", error: error.message });
+  }
+}
+
+module.exports = { creatorSignup, verifyOTPCreator, getCreators, createBusinessDetails };
