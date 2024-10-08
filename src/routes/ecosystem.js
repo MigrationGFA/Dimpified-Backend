@@ -8,6 +8,7 @@ const {
   getMyEcosystem,
   creatorEcosystemDashboardOverview,
   creatorEcosystemSummary,
+  getAboutEcosystem
 } = require("../controllers/EcosystemController/createEcosystem");
 
 const multer = require("multer");
@@ -105,6 +106,9 @@ router.get("/ecosystem-user-last-four-product/:userId/:ecosystemDomain", authent
 router.get("/ecosystem-user-product-page/:userId/:ecosystemDomain", authenticatedUser, getMyProductPage)
 //Product PayOut
 router.get("/ecosystem-user-purchase-payout/:userId/:ecosystemDomain", authenticatedUser, productPayOut)
+
+// get ecosystem
+router.get("/get-business-info/:creatorId", getAboutEcosystem)
 
 
 module.exports = router;
