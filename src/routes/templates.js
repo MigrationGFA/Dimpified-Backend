@@ -15,6 +15,10 @@ const {
   getGeneralTemplate,
 } = require("../controllers/EcosystemController/generalTemplate");
 
+const {
+  createNewTemplate
+} = require("../controllers/newAddition/Template/createTemplate")
+
 const upload = multer({
   storage: storageTemplate,
   limits: {
@@ -57,5 +61,8 @@ router.post("/create/reserved-template", createReservedTemplate);
 router.post("/create/general-template", createGeneralTemplate);
 router.get("/reserved-template/:templateId", getReservedTemplate);
 router.get("/general-template/:templateId", getGeneralTemplate);
+
+// new edition
+router.post("/create-template", createNewTemplate);
 
 module.exports = router;
