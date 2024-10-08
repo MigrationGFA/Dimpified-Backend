@@ -328,8 +328,35 @@ const changeBookingStatusToCompleted = async (req, res) => {
   }
 };
 
+const getBookingByDate = async (req, res) => {
+  try {
+    const { date,ecosystemDomain, } = req.params;
+    const bookingDate = date ? new Date(date) : new Date();
+
+    //const formattedDate = bookingDate.toISOString().split("T")[0];
+
+    console.log("params:",req.params)
+    const bookings = await Booking.find({
+      date: bookingDate,
+      ecosystemDomain
+    });
+
+    if (!bookings.length) {
+      return res
+        .status(404)
+        .json({ message: "No bookings found for this date" });
+    }
+
+    return res.status(200).json({ bookings });
+  } catch (error) {
+    console.log("Error:", error);
+    res.status(500).json({ message: "Failed to get bookings", error });
+  }
+};
+
 module.exports = {
   createBooking,
+  getBookingByDate,
   getBookings,
   bookingOverview,
   changeBookingStatusToCompleted,
