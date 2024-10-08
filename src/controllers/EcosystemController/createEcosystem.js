@@ -270,6 +270,30 @@ const creatorEcosystemSummary = async (req, res) => {
   }
 };
 
+const getAboutEcosystem = async ( req, res) => {
+  const { creatorId } = req.params;
+
+  if (!creatorId) {
+    return res.status(400).json({ message: "creatorId is required" });
+  }
+  try {
+    const getEcosystem = await Ecosystem.findOne({
+      creatorId: creatorId
+    })
+    if(!getEcosystem){
+      return res.status(200).json({
+     message: "business info not found"
+    });
+    }
+    res.status(200).json({
+      getEcosystem
+    });
+  } catch (error) {
+     console.error("Error retrieving ecosystem summary:", error);
+    res.status(500).json({ message: "Internal server error", error });
+  }
+}
+
 module.exports = {
   aboutEcosystem,
   ecosystemDelete,
@@ -277,4 +301,5 @@ module.exports = {
   getMyEcosystem,
   creatorEcosystemDashboardOverview,
   creatorEcosystemSummary,
+  getAboutEcosystem
 };
