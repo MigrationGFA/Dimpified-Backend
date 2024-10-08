@@ -263,10 +263,12 @@ const createBusinessDetails = async(req, res) => {
     }
   }
   try {
-    const creator = await Creator.findByPk(creatorId);
+    let creator = await Creator.findByPk(creatorId);
     if (!creator) {
       return res.status(404).json({ message: "Creator not found" });
     }
+    creator.step = 3
+
 
     let ecosystem;
          ecosystem = new Ecosystem({
@@ -285,6 +287,7 @@ const createBusinessDetails = async(req, res) => {
           status: "draft",
         });
         await ecosystem.save();
+        await creator.save()
         return res
           .status(201)
           .json({ message: "Ecosystem about information saved", ecosystem });
