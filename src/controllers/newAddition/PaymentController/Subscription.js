@@ -52,8 +52,7 @@ const verifySubscription = async (req, res) => {
     await AffiliateEarningHistory.sync();
     await SubscriptionTransaction.sync();
 
-    const { reference, creatorId, planType, sizeLimit, plan, interval } =
-      req.body;
+    const { reference, creatorId, planType, sizeLimit, interval } = req.body;
 
     // Verify payment
     const responseData = await verifyPayment(reference);
