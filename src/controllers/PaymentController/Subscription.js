@@ -63,6 +63,7 @@ const verifySubscription = async (req, res) => {
       });
     }
 
+    console.log(responseData);
     // Extract necessary data from the payment response
     const amount = responseData.data.amount / 100; // Convert from kobo/cents to actual currency value
     const currency = responseData.data.currency;
@@ -252,142 +253,109 @@ const verifySubscription = async (req, res) => {
 
 const handleWebhooks = async (req, res) => {
   const secret = process.env.PAYSTACK_SECRET_KEY;
-  const hash = crypto
-    .createHmac("sha512", secret)
-    .update(JSON.stringify(req.body))
-    .digest("hex");
 
-  // Verify signature
-  if (hash !== req.headers["x-paystack-signature"]) {
-    return res.status(400).json({ message: "Invalid signature" });
+  const generatedSignature = generatePaystackSignature(secret, req.body);
+
+  const incomingSignature = req.headers["x-paystack-signature"];
+
+  if (generatedSignature !== incomingSignature) {
+    console.error("Invalid Paystack webhook signature");
+    return res
+      .status(400)
+      .json({ message: "Invalid Paystack webhook signature" });
   }
 
-  const event = req.body.event;
-  const { data } = req.body;
+  const event = req.body;
 
-  try {
-    if (event === "subscription.charge.success") {
-      const { customer, plan_object, amount, currency, status, reference } =
-        data;
-      const planCode = plan_object.plan_code;
-      const email = customer.email;
-      const sizeLimitString = plan_object.name;
-      const interval = plan_object.interval;
+  if (
+    event.event === "subscription.charge.success" ||
+    event.event === "subscription.charge.failed"
+  ) {
+    const reference = event.data.reference;
+    const status = event.data.status;
+    const creatorId = event.data.metadata.creatorId;
+    const planCode = event.data.plan_object.plan_code;
+    const email = event.data.customer.email;
+    const interval = event.data.plan_object.interval;
+    const amount = event.data.amount / 100;
+    const isSuccessful = status === "success";
 
-      // Find or create subscription record
-      let subscription = await Subscription.findOne({
-        where: { email, planCode },
-      });
+    try {
+      const paymentVerification = await verifyPayment(reference);
 
-      const startDate = new Date();
-      const endDate = new Date();
-      const validPlanCodes = { monthly: 1, "Bi-annual": 6, annual: 12 };
-      const months = validPlanCodes[interval] || 0;
-      endDate.setMonth(endDate.getMonth() + months);
-
-      if (subscription) {
-        // Update existing subscription
-        await subscription.update({
-          startDate,
-          endDate,
-          amount: amount / 100,
-          currency,
-          sizeLimit: sizeLimitString,
-          interval,
-          status: "active",
-          subscriptionCount: subscription.subscriptionCount + 1,
-        });
-
-        console.log("Subscription updated successfully");
-      } else {
-        // Create new subscription
-        subscription = await Subscription.create({
-          creatorId: null,
-          username: customer.first_name,
-          planCode,
-          planType: plan_object.name,
-          amount: amount / 100,
-          currency,
-          status: "active",
-          email,
-          startDate,
-          endDate,
-          interval,
-          sizeLimit: sizeLimitString,
-          subscriptionCount: 1,
-        });
-
-        console.log("New subscription created successfully");
-      }
-
-      await SubscriptionTransaction.create({
-        creatorId: subscription.creatorId || null,
-        reference,
-        planCode,
-        planType: plan_object.name,
-        amount: amount / 100,
-        currency,
-        status,
-        email,
-        startDate,
-        endDate,
-        interval,
-        sizeLimit: sizeLimitString,
-        subscriptionCount: subscription.subscriptionCount,
-      });
-
-      return res
-        .status(200)
-        .json({ message: "Subscription charge success processed" });
-    }
-
-    if (event === "subscription.disable") {
-      const { customer, plan_object } = data;
-      const email = customer.email;
-      const planCode = plan_object.plan_code;
-
-      const subscription = await Subscription.findOne({
-        where: { email, planCode },
-      });
+      let subscription = await Subscription.findOne({ where: { creatorId } });
 
       if (!subscription) {
         return res.status(404).json({ message: "Subscription not found" });
       }
 
-      await subscription.update({
-        status: "canceled",
-      });
+      const startDate = new Date();
+      const endDate = new Date();
+      const intervalMonths = getIntervalMonths(interval);
+      endDate.setMonth(endDate.getMonth() + intervalMonths);
 
       await SubscriptionTransaction.create({
-        creatorId: subscription.creatorId || null,
-        reference: null,
+        creatorId,
+        reference,
         planCode,
-        planType: plan_object.name,
-        amount: 0,
-        currency: subscription.currency,
-        status: "canceled",
+        amount,
+        startDate,
+        planType: event.data.plan_object.name,
+        endDate,
+        currency: event.data.currency || "NGN",
         email,
-        startDate: subscription.startDate,
-        endDate: subscription.endDate,
-        interval: subscription.interval,
-        sizeLimit: subscription.sizeLimit,
-        subscriptionCount: subscription.subscriptionCount,
+        interval,
+        status: isSuccessful ? "successful" : "failed",
+        sizeLimit: event.data.plan_object.name,
       });
 
-      console.log(
-        `Subscription canceled for creator ${subscription.creatorId}`
-      );
+      if (isSuccessful) {
+        subscription = await subscription.update({
+          startDate,
+          endDate,
+          status: "active",
+          subscriptionCount: subscription.subscriptionCount + 1,
+        });
 
-      return res
-        .status(200)
-        .json({ message: "Subscription canceled successfully" });
+        return res.status(200).json({
+          message: "Subscription updated successfully",
+          subscription,
+        });
+      } else {
+        return res.status(400).json({
+          message: "Recurring charge failed",
+        });
+      }
+    } catch (error) {
+      console.error("Error updating subscription for recurring charge:", error);
+      return res.status(500).json({
+        message: "An error occurred while updating subscription",
+      });
     }
-
-    return res.status(200).json({ message: "Event type not handled" });
-  } catch (error) {
-    console.error("Error in handleWebhooks:", error);
-    return res.status(500).json({ message: "Internal server error" });
   }
+
+  res.sendStatus(200);
+};
+
+const generatePaystackSignature = (secret, payload) => {
+  const jsonPayload = JSON.stringify(payload);
+
+  const hash = crypto
+    .createHmac("sha512", secret)
+    .update(jsonPayload)
+    .digest("hex");
+
+  return hash;
+};
+
+const getIntervalMonths = (interval) => {
+  const intervals = {
+    monthly: 1,
+    "Bi-annual": 6,
+    annual: 12,
+  };
+
+  return intervals[interval] || 0;
 };
 
 module.exports = { verifySubscription, handleWebhooks };
