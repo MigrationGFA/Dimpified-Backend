@@ -40,6 +40,12 @@ const creatorSignup = async (req, res) => {
       where: { email: email },
     });
 
+    let creatorName = fullName
+      const getProfile = await CreatorProfile.findOne({creatorId: duplicateCreator.id})
+      if(getProfile){
+        creatorName = getProfile.fullName
+      }
+
     if (duplicateCreator) {
       // If the email is not verified, update the creator account
       if (!duplicateCreator.isVerified) {
@@ -63,10 +69,10 @@ const creatorSignup = async (req, res) => {
         });
         const accessToken = generateAccessToken(duplicateCreator.id, duplicateCreator.role);
       const refreshToken = generateRefreshToken(duplicateCreator.id, duplicateCreator.role);
-
+      
       const user = {
         creatorId: duplicateCreator.id,
-        fullName: duplicateCreator.fullName,
+        fullName: creatorName,
         email: duplicateCreator.email,
         affiliateId: duplicateCreator.affiliateId,
         role: duplicateCreator.role,
@@ -88,7 +94,7 @@ const creatorSignup = async (req, res) => {
 
       const user = {
         creatorId: duplicateCreator.id,
-        fullName: duplicateCreator.fullName,
+        fullName: creatorName,
         email: duplicateCreator.email,
         affiliateId: duplicateCreator.affiliateId,
         role: duplicateCreator.role,
