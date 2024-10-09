@@ -104,7 +104,6 @@ const creatorLogin = async (req, res) => {
     const creatorEcosystem = await Ecosystem.findOne({
       creatorId: creator.id,
     });
-    creator.step = 4;
 
     let ecosystemDomain = null;
     if (creatorEcosystem) {
@@ -122,6 +121,7 @@ const creatorLogin = async (req, res) => {
       interest: hasInterests,
       profile: setProfile,
       plan: plan,
+      step: creator.step,
       ecosystemDomain: ecosystemDomain,
     };
 
