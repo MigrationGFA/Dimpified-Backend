@@ -104,10 +104,12 @@ const creatorLogin = async (req, res) => {
     const creatorEcosystem = await Ecosystem.findOne({
       creatorId: creator.id,
     });
+    creator.step = 4;
 
     let ecosystemDomain = null;
     if (creatorEcosystem) {
       ecosystemDomain = creatorEcosystem.ecosystemDomain;
+      console.log(ecosystemDomain);
     }
 
     // Subset of Creator's data for response
@@ -120,7 +122,7 @@ const creatorLogin = async (req, res) => {
       interest: hasInterests,
       profile: setProfile,
       plan: plan,
-      ecosystemDomain,
+      ecosystemDomain: ecosystemDomain,
     };
 
     return res.status(200).json({

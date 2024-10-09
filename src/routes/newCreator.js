@@ -11,7 +11,7 @@ const {
 const router = express.Router();
 
 router.post("/creator/signup", creatorSignup);
-router.post("/creator/login", creatorLogin);
+router.post("/creator/sign-in", creatorLogin);
 router.post("/creator/verify-otp", verifyOTPCreator);
 router.post("/creator/business-details", createBusinessDetails);
 router.get("/all-creators", getCreators);
