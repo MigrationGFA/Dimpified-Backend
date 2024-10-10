@@ -268,6 +268,7 @@ const createBusinessDetails = async(req, res) => {
       return res.status(404).json({ message: "Creator not found" });
     }
     creator.step = 3
+    creator.organizationName = ecosystemName
 
 
     let ecosystem;
