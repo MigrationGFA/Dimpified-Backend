@@ -7,6 +7,7 @@ const {
   generateAccessToken,
   generateRefreshToken,
 } = require("../../../utils/generateToken");
+const CreatorProfile = require("../../../models/CreatorProfile");
 
 const creatorLogin = async (req, res) => {
   try {
@@ -111,10 +112,20 @@ const creatorLogin = async (req, res) => {
       console.log(ecosystemDomain);
     }
 
+    let fullName = null;
+    const getProfile = await CreatorProfile.findOne({
+        creatorId: creator.id
+    })
+
+    if(getProfile){
+      fullName = getProfile.fullName
+    }
+
     // Subset of Creator's data for response
     const creatorSubset = {
       CreatorId: creator.id,
       organizationName: creator.organizationName,
+      fullName: fullName,
       email: creator.email,
       role: creator.role,
       image: creator.imageUrl,
