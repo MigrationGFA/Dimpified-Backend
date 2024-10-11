@@ -123,7 +123,7 @@ const creatorLogin = async (req, res) => {
 
     // Subset of Creator's data for response
     const creatorSubset = {
-      CreatorId: creator.id,
+      creatorId: creator.id,
       organizationName: creator.organizationName,
       fullName: fullName,
       email: creator.email,
