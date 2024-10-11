@@ -3,6 +3,7 @@ const Booking = require("../../models/DimpBooking");
 const Ecosystem = require("../../models/Ecosystem");
 const sendBookingConfirmationEmail = require("../../utils/bookingNotification");
 const EcosystemUser = require("../../models/EcosystemUser");
+const CreatorTemplate = require("../../models/creatorTemplate");
 const sendBookingConfirmationUnpaidEmail = require("../../utils/sendBookingConfirmationUnpaid");
 
 const createBooking = async (req, res) => {
@@ -55,7 +56,7 @@ const createBooking = async (req, res) => {
 
     if (existingBooking) {
       return res.status(400).json({
-        message: "The selected date and time are already booked .",
+        message: "The selected date and time are already booked.",
       });
     }
 
@@ -87,7 +88,7 @@ const createBooking = async (req, res) => {
     const creator = await Creator.findByPk(ecosystem.creatorId);
 
     if (!creator) {
-      return res.status(404).json({ messsage: "Creator not found" });
+      return res.status(404).json({ message: "Creator not found" });
     }
     const newUser = await Booking.findOne({
       email,
@@ -108,6 +109,15 @@ const createBooking = async (req, res) => {
       date,
       time,
     });
+console.log("ecosystem:",ecosystem)
+
+
+    // Get creator's business logo and address from the template
+    const creatorTemplate = await CreatorTemplate.findOne({ ecosystemDomain });
+    console.log("logo:",creatorTemplate.navbar.logo)
+    const logo = creatorTemplate.navbar.logo; // Business logo
+    const businessAddress = ecosystem.address; // Business address
+    const businessName = creator.organizationName; // Business name
 
     await sendBookingConfirmationUnpaidEmail({
       email,
@@ -118,6 +128,9 @@ const createBooking = async (req, res) => {
       date,
       time,
       paymentStatus: newBooking.paymentStatus,
+      businessName, // Passing the business name
+      businessAddress, // Passing the business address
+      logo, // Passing the logo
     });
 
     console.log(creator);
@@ -330,15 +343,15 @@ const changeBookingStatusToCompleted = async (req, res) => {
 
 const getBookingByDate = async (req, res) => {
   try {
-    const { date,ecosystemDomain, } = req.params;
+    const { date, ecosystemDomain } = req.params;
     const bookingDate = date ? new Date(date) : new Date();
 
     //const formattedDate = bookingDate.toISOString().split("T")[0];
 
-    console.log("params:",req.params)
+    console.log("params:", req.params);
     const bookings = await Booking.find({
       date: bookingDate,
-      ecosystemDomain
+      ecosystemDomain,
     });
 
     if (!bookings.length) {
