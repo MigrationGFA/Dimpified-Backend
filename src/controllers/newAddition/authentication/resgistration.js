@@ -31,7 +31,9 @@ const creatorSignup = async (req, res) => {
       organizationName,
     } = req.body;
 
-    const requiredFields = ["email", "password", "role"];
+    const requiredFields = [
+      "fullName", "email", "password", "role", "phoneNumber", "dateOfBirth", "organizationName", "gender", "refCode"
+    ];
 
     for (const field of requiredFields) {
       if (!req.body[field]) {
@@ -42,8 +44,15 @@ const creatorSignup = async (req, res) => {
     const duplicateCreator = await Creator.findOne({
       where: { email: email },
     });
-    console.log("creator:", duplicateCreator);
-    let creatorName = fullName;
+
+    let creatorName = fullName
+    if(duplicateCreator){
+       const getProfile = await CreatorProfile.findOne({creatorId: duplicateCreator.id})
+      if(getProfile){
+        creatorName = getProfile.fullName
+      }
+    }
+     
 
     if (duplicateCreator) {
       // If the email is not verified, update the creator account
@@ -186,7 +195,7 @@ const creatorSignup = async (req, res) => {
     }
   } catch (error) {
     console.error("Error:", error);
-    res.status(500).json({ message: "Internal Server Error", detail: error });
+    res.status(500).json({ message: "Internal Server Error", detail: error.message });
   }
 };
 
