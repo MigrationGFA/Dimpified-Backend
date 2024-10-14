@@ -28,7 +28,9 @@ const creatorSignup = async (req, res) => {
       organizationName,
     } = req.body;
 
-    const requiredFields = ["email", "password", "role"];
+    const requiredFields = [
+      "fullName", "email", "password", "role", "phoneNumber", "dateOfBirth", "organizationName", "gender", "refCode"
+    ];
 
     for (const field of requiredFields) {
       if (!req.body[field]) {
@@ -41,10 +43,13 @@ const creatorSignup = async (req, res) => {
     });
 
     let creatorName = fullName
-      const getProfile = await CreatorProfile.findOne({creatorId: duplicateCreator.id})
+    if(duplicateCreator){
+       const getProfile = await CreatorProfile.findOne({creatorId: duplicateCreator.id})
       if(getProfile){
         creatorName = getProfile.fullName
       }
+    }
+     
 
     if (duplicateCreator) {
       // If the email is not verified, update the creator account
@@ -172,7 +177,7 @@ const creatorSignup = async (req, res) => {
     }
   } catch (error) {
     console.error("Error:", error);
-    res.status(500).json({ message: "Internal Server Error", detail: error });
+    res.status(500).json({ message: "Internal Server Error", detail: error.message });
   }
 };
 
@@ -268,6 +273,7 @@ const createBusinessDetails = async(req, res) => {
       return res.status(404).json({ message: "Creator not found" });
     }
     creator.step = 3
+    creator.organizationName = ecosystemName
 
 
     let ecosystem;
