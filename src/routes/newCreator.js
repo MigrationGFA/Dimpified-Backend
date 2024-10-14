@@ -12,6 +12,7 @@ const {
   weeklyBookingStats,
   weeklyIncomeStats,
 } = require("../controllers/newAddition/PaymentController/Statistics");
+const authenticatedUser = require("../middleware/authentication");
 const router = express.Router();
 
 router.post("/creator/signup", creatorSignup);
@@ -21,7 +22,15 @@ router.post("/creator/business-details", createBusinessDetails);
 router.get("/all-creators", getCreators);
 
 // Statistics
-router.get("/booking-stats/:ecosystemDomain", weeklyBookingStats);
-router.get("/income-stats/:ecosystemDomain", weeklyIncomeStats);
+router.get(
+  "/booking-stats/:ecosystemDomain",
+  authenticatedUser,
+  weeklyBookingStats
+);
+router.get(
+  "/income-stats/:ecosystemDomain",
+  authenticatedUser,
+  weeklyIncomeStats
+);
 
 module.exports = router;
