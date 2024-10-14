@@ -9,7 +9,10 @@ const {
   generateRefreshToken,
 } = require("../../../utils/generateToken");
 
-const Ecosystem = require("../../../models/Ecosystem")
+const Ecosystem = require("../../../models/Ecosystem");
+const sendForgotPasswordEmail = require("../../../utils/sendForgottenPassword");
+const sendResetPasswordAlert = require("../../../utils/sendPasswordAlert");
+const sendForgotPasswordOTP = require("../../../utils/sendPasswordResetOTP");
 
 const creatorSignup = async (req, res) => {
   try {
@@ -72,48 +75,63 @@ const creatorSignup = async (req, res) => {
           verificationToken: OTP,
           origin: process.env.ORIGIN,
         });
-        const accessToken = generateAccessToken(duplicateCreator.id, duplicateCreator.role);
-      const refreshToken = generateRefreshToken(duplicateCreator.id, duplicateCreator.role);
-      
-      const user = {
-        creatorId: duplicateCreator.id,
-        fullName: creatorName,
-        email: duplicateCreator.email,
-        affiliateId: duplicateCreator.affiliateId,
-        role: duplicateCreator.role,
-        profile: true,
-        step: duplicateCreator.step
-      };
+        const accessToken = generateAccessToken(
+          duplicateCreator.id,
+          duplicateCreator.role
+        );
+        const refreshToken = generateRefreshToken(
+          duplicateCreator.id,
+          duplicateCreator.role
+        );
 
-        return res
-          .status(201)
-          .json({ 
-            message: "Verification email resent successfully",
-            accessToken,
-            refreshToken,
-            user,
-          });
+        const getProfile = await CreatorProfile.findOne({
+          creatorId: duplicateCreator.id,
+        });
+        if (getProfile) {
+          creatorName = getProfile.fullName;
+        }
+
+        const user = {
+          creatorId: duplicateCreator.id,
+          fullName: creatorName,
+          email: duplicateCreator.email,
+          affiliateId: duplicateCreator.affiliateId,
+          role: duplicateCreator.role,
+          profile: true,
+          step: duplicateCreator.step,
+        };
+
+        return res.status(201).json({
+          message: "Verification email resent successfully",
+          accessToken,
+          refreshToken,
+          user,
+        });
       } else {
-        const accessToken = generateAccessToken(duplicateCreator.id, duplicateCreator.role);
-      const refreshToken = generateRefreshToken(duplicateCreator.id, duplicateCreator.role);
+        const accessToken = generateAccessToken(
+          duplicateCreator.id,
+          duplicateCreator.role
+        );
+        const refreshToken = generateRefreshToken(
+          duplicateCreator.id,
+          duplicateCreator.role
+        );
 
-      const user = {
-        creatorId: duplicateCreator.id,
-        fullName: creatorName,
-        email: duplicateCreator.email,
-        affiliateId: duplicateCreator.affiliateId,
-        role: duplicateCreator.role,
-        profile: true,
-        step: duplicateCreator.step
-      };
-        return res
-          .status(200)
-          .json({ 
-            message: "Email address is associated with an account",
-            accessToken,
-            refreshToken,
-            user,
-          });
+        const user = {
+          creatorId: duplicateCreator.id,
+          fullName: creatorName,
+          email: duplicateCreator.email,
+          affiliateId: duplicateCreator.affiliateId,
+          role: duplicateCreator.role,
+          profile: true,
+          step: duplicateCreator.step,
+        };
+        return res.status(200).json({
+          message: "Email address is associated with an account",
+          accessToken,
+          refreshToken,
+          user,
+        });
       }
     } else {
       // If the creator doesn't exist, create a new creator
@@ -165,7 +183,7 @@ const creatorSignup = async (req, res) => {
         affiliateId: newCreator.affiliateId,
         role: newCreator.role,
         profile: true,
-        step: newCreator.step
+        step: newCreator.step,
       };
 
       return res.status(201).json({
@@ -233,7 +251,7 @@ const getCreators = async (req, res) => {
   }
 };
 
-const createBusinessDetails = async(req, res) => {
+const createBusinessDetails = async (req, res) => {
   const {
     creatorId,
     ecosystemName,
@@ -244,7 +262,7 @@ const createBusinessDetails = async(req, res) => {
     address,
     ecosystemDescription,
     country,
-    state, 
+    state,
     localGovernment,
   } = req.body;
 
@@ -258,7 +276,7 @@ const createBusinessDetails = async(req, res) => {
     "address",
     "ecosystemDescription",
     "country",
-    "state", 
+    "state",
     "localGovernment",
   ];
 
@@ -272,35 +290,127 @@ const createBusinessDetails = async(req, res) => {
     if (!creator) {
       return res.status(404).json({ message: "Creator not found" });
     }
-    creator.step = 3
-    creator.organizationName = ecosystemName
-
+    creator.step = 3;
+    creator.organizationName = ecosystemName;
 
     let ecosystem;
-         ecosystem = new Ecosystem({
-          creatorId,
-          ecosystemName,
-          ecosystemDomain,
-          contact,
-          mainObjective,
-          steps: 1,
-          targetAudienceSector,
-          address,
-          ecosystemDescription,
-          country,
-          state, 
-          localGovernment,
-          status: "draft",
-        });
-        await ecosystem.save();
-        await creator.save()
-        return res
-          .status(201)
-          .json({ message: "Ecosystem about information saved", ecosystem });
+    ecosystem = new Ecosystem({
+      creatorId,
+      ecosystemName,
+      ecosystemDomain,
+      contact,
+      mainObjective,
+      steps: 1,
+      targetAudienceSector,
+      address,
+      ecosystemDescription,
+      country,
+      state,
+      localGovernment,
+      status: "draft",
+    });
+    await ecosystem.save();
+    await creator.save();
+    return res
+      .status(201)
+      .json({ message: "Ecosystem about information saved", ecosystem });
   } catch (error) {
     console.error("Error :", error);
     res.status(500).json({ msg: "Server error", error: error.message });
   }
-}
+};
 
-module.exports = { creatorSignup, verifyOTPCreator, getCreators, createBusinessDetails };
+const forgotPassword = async (req, res) => {
+  const email = req.body.email;
+
+  try {
+    const creator = await Creator.findOne({ where: { email } });
+    if (!creator) {
+      return res.status(404).json({ message: "Creator not found" });
+    }
+    console.log("creator:", creator);
+
+    const OTP = Math.floor(100000 + Math.random() * 900000);
+    const resetTokenExpirationTime = 30 * 60 * 1000; // 30 minutes in milliseconds
+    const expirationDate = Date.now() + resetTokenExpirationTime;
+
+    creator.passwordToken = OTP;
+    creator.passwordTokenExpirationDate = expirationDate;
+
+    await creator.save();
+
+    const creatorProfile = await CreatorProfile.findOne({
+      email,
+    });
+    if (!creatorProfile) {
+      return res.status(404).json({ message: "CreatorProfile not found" });
+    }
+    console.log("creatorProfile:", creatorProfile);
+
+    sendForgotPasswordOTP({
+      username: creatorProfile.fullName,
+      email,
+     OTP,
+      origin: process.env.ORIGIN,
+    });
+
+    res.status(200).json({ message: "Password reset email sent succesfully" });
+  } catch (error) {
+    console.error("Error :", error);
+    res.status(500).json({ msg: "Server error", error: error.message });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  const { email, OTP, password } = req.body;
+
+   const requiredFields = ["email", "password", "OTP"];
+
+    for (const field of requiredFields) {
+      if (!req.body[field]) {
+        return res.status(400).json({ message: `${field} is required` });
+      }
+    }
+  try {
+    const creator = await Creator.findOne({ where: { email } });
+    if (!creator) {
+      return res.status(404).json({ message: "Creator not found" });
+    }
+    if (creator.passwordToken !== OTP) {
+      return res.status(400).json({ message: "Invalid password token" });
+    }
+    if (creator.passwordTokenExpirationDate < Date.now()) {
+      return res.status(400).json({ message: "Reset token has expired" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    creator.password = hashedPassword;
+    creator.passwordToken = "";
+    creator.passwordTokenExpirationDate = null;
+
+    await creator.save();
+    const creatorProfile = await CreatorProfile.findOne({
+      creatorId: creator.id,
+    });
+
+    await sendResetPasswordAlert({
+      username: creatorProfile.fullName,
+      email,
+      origin: process.env.ORIGIN,
+    });
+
+    res.status(200).json({ message: "Passwored reset succesfully" });
+  } catch (error) {
+    console.error("Error :", error);
+    res.status(500).json({ msg: "Server error", error: error.message });
+  }
+};
+
+module.exports = {
+  creatorSignup,
+  verifyOTPCreator,
+  getCreators,
+  createBusinessDetails,
+  forgotPassword,
+  resetPassword,
+};
