@@ -6,6 +6,8 @@ const {
   createBusinessDetails,
   forgotPassword,
   resetPassword,
+  resendOTPCreator,
+  verifyResetPasswordOtp,
 } = require("../controllers/newAddition/authentication/resgistration");
 const {
   creatorLogin,
@@ -23,7 +25,9 @@ router.post("/creator/verify-otp", verifyOTPCreator);
 router.post("/creator/business-details", createBusinessDetails);
 router.get("/all-creators", getCreators);
 router.post("/creator/forgot/password", forgotPassword);
+router.post("/creator/verify-reset-otp", verifyResetPasswordOtp);
 router.patch("/creator/reset/password", resetPassword);
+router.post("/creator/resend-otp", resendOTPCreator);
 
 // Statistics
 router.get(
