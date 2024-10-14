@@ -7,12 +7,12 @@ const weeklyBookingStats = async (req, res) => {
   const { ecosystemDomain } = req.params;
   const currentDate = new Date();
 
+  // Start and end of the current month
   const startOfMonth = new Date(
     currentDate.getFullYear(),
     currentDate.getMonth(),
     1
   );
-
   const week1End = new Date(
     currentDate.getFullYear(),
     currentDate.getMonth(),
@@ -135,11 +135,19 @@ const weeklyBookingStats = async (req, res) => {
       },
     ]);
 
+    // Create a mapping of week labels to bookings
     const bookingsMap = bookingsPerWeek.reduce((acc, cur) => {
       acc[cur.week] = cur.totalBookings;
       return acc;
     }, {});
 
+    // Calculate total bookings for the entire month
+    const totalMonthlyBookings = bookingsPerWeek.reduce(
+      (total, cur) => total + cur.totalBookings,
+      0
+    );
+
+    // Final results for each week
     const finalResults = weekLabels.map((label) => ({
       week: label,
       totalBookings: bookingsMap[label] || 0,
@@ -147,6 +155,7 @@ const weeklyBookingStats = async (req, res) => {
 
     res.json({
       month: currentMonthName,
+      totalMonthlyBookings, // Add the total monthly bookings to the response
       bookings: finalResults,
     });
   } catch (error) {
@@ -155,10 +164,73 @@ const weeklyBookingStats = async (req, res) => {
   }
 };
 
+// const weeklyIncomeStats = async (req, res) => {
+//   const { ecosystemDomain } = req.params;
+//   const currentDate = new Date();
+
+//   const startOfMonth = new Date(
+//     currentDate.getFullYear(),
+//     currentDate.getMonth(),
+//     1
+//   );
+//   const endOfMonth = new Date(
+//     currentDate.getFullYear(),
+//     currentDate.getMonth() + 1,
+//     0
+//   );
+//   const totalWeeks = Math.ceil(
+//     (endOfMonth.getDate() - startOfMonth.getDate() + 1) / 7
+//   );
+
+//   const weeklyIncome = {};
+//   for (let i = 1; i <= totalWeeks; i++) {
+//     weeklyIncome[`Week ${i}`] = 0.0;
+//   }
+
+//   try {
+//     const incomePerWeek = await Transaction.findAll({
+//       where: {
+//         ecosystemDomain: ecosystemDomain,
+//         itemTitle: "Booking",
+//         status: "Paid",
+//         transactionDate: {
+//           [Op.between]: [startOfMonth, endOfMonth],
+//         },
+//       },
+//       attributes: [
+//         [
+//           literal(`FLOOR((DAYOFMONTH(transactionDate) - 1) / 7) + 1`),
+//           "weekNumber",
+//         ],
+//         [fn("SUM", col("amount")), "totalIncome"],
+//       ],
+//       group: ["weekNumber"],
+//       order: [[literal("weekNumber"), "ASC"]],
+//     });
+
+//     incomePerWeek.forEach((item) => {
+//       const weekNumber = item.get("weekNumber");
+//       weeklyIncome[`Week ${weekNumber}`] = parseFloat(item.get("totalIncome"));
+//     });
+
+//     res.json({
+//       month: currentDate.toLocaleString("default", { month: "long" }),
+//       weeklyIncome,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching weekly income stats:", error);
+//     res.status(500).json({
+//       message: "An error occurred while fetching income stats",
+//       error,
+//     });
+//   }
+// };
+
 const weeklyIncomeStats = async (req, res) => {
   const { ecosystemDomain } = req.params;
   const currentDate = new Date();
 
+  // Start and end of the current month
   const startOfMonth = new Date(
     currentDate.getFullYear(),
     currentDate.getMonth(),
@@ -169,16 +241,20 @@ const weeklyIncomeStats = async (req, res) => {
     currentDate.getMonth() + 1,
     0
   );
+
+  // Calculate the number of weeks in the current month
   const totalWeeks = Math.ceil(
     (endOfMonth.getDate() - startOfMonth.getDate() + 1) / 7
   );
 
+  // Initialize an object to store weekly income
   const weeklyIncome = {};
   for (let i = 1; i <= totalWeeks; i++) {
     weeklyIncome[`Week ${i}`] = 0.0;
   }
 
   try {
+    // Fetch income per week
     const incomePerWeek = await Transaction.findAll({
       where: {
         ecosystemDomain: ecosystemDomain,
@@ -199,14 +275,20 @@ const weeklyIncomeStats = async (req, res) => {
       order: [[literal("weekNumber"), "ASC"]],
     });
 
+    // Sum up the total income per week
+    let totalMonthlyIncome = 0;
     incomePerWeek.forEach((item) => {
       const weekNumber = item.get("weekNumber");
-      weeklyIncome[`Week ${weekNumber}`] = parseFloat(item.get("totalIncome"));
+      const income = parseFloat(item.get("totalIncome"));
+      weeklyIncome[`Week ${weekNumber}`] = income;
+      totalMonthlyIncome += income;
     });
 
+    // Send the response with weekly income and total monthly income
     res.json({
       month: currentDate.toLocaleString("default", { month: "long" }),
       weeklyIncome,
+      totalMonthlyIncome, // Add total monthly income to the response
     });
   } catch (error) {
     console.error("Error fetching weekly income stats:", error);
