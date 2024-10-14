@@ -7,6 +7,7 @@ const sendBookingConfirmationPaidEmail = async ({
   service,
   date,
   time,
+  paymentStatus,
 }) => {
   const formattedDate = new Date(date).toLocaleDateString();
   const message = `
