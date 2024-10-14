@@ -12,7 +12,6 @@ const weeklyBookingStats = async (req, res) => {
     currentDate.getMonth(),
     1
   );
-
   const week1End = new Date(
     currentDate.getFullYear(),
     currentDate.getMonth(),
@@ -140,6 +139,11 @@ const weeklyBookingStats = async (req, res) => {
       return acc;
     }, {});
 
+    const totalMonthlyBookings = bookingsPerWeek.reduce(
+      (total, cur) => total + cur.totalBookings,
+      0
+    );
+
     const finalResults = weekLabels.map((label) => ({
       week: label,
       totalBookings: bookingsMap[label] || 0,
@@ -147,6 +151,7 @@ const weeklyBookingStats = async (req, res) => {
 
     res.json({
       month: currentMonthName,
+      totalMonthlyBookings,
       bookings: finalResults,
     });
   } catch (error) {
@@ -169,6 +174,7 @@ const weeklyIncomeStats = async (req, res) => {
     currentDate.getMonth() + 1,
     0
   );
+
   const totalWeeks = Math.ceil(
     (endOfMonth.getDate() - startOfMonth.getDate() + 1) / 7
   );
@@ -199,14 +205,18 @@ const weeklyIncomeStats = async (req, res) => {
       order: [[literal("weekNumber"), "ASC"]],
     });
 
+    let totalMonthlyIncome = 0;
     incomePerWeek.forEach((item) => {
       const weekNumber = item.get("weekNumber");
-      weeklyIncome[`Week ${weekNumber}`] = parseFloat(item.get("totalIncome"));
+      const income = parseFloat(item.get("totalIncome"));
+      weeklyIncome[`Week ${weekNumber}`] = income;
+      totalMonthlyIncome += income;
     });
 
     res.json({
       month: currentDate.toLocaleString("default", { month: "long" }),
       weeklyIncome,
+      totalMonthlyIncome,
     });
   } catch (error) {
     console.error("Error fetching weekly income stats:", error);
