@@ -32,7 +32,15 @@ const creatorSignup = async (req, res) => {
     } = req.body;
 
     const requiredFields = [
-      "fullName", "email", "password", "role", "phoneNumber", "dateOfBirth", "organizationName", "gender", "refCode"
+      "fullName",
+      "email",
+      "password",
+      "role",
+      "phoneNumber",
+      "dateOfBirth",
+      "organizationName",
+      "gender",
+      "refCode",
     ];
 
     for (const field of requiredFields) {
@@ -45,14 +53,15 @@ const creatorSignup = async (req, res) => {
       where: { email: email },
     });
 
-    let creatorName = fullName
-    if(duplicateCreator){
-       const getProfile = await CreatorProfile.findOne({creatorId: duplicateCreator.id})
-      if(getProfile){
-        creatorName = getProfile.fullName
+    let creatorName = fullName;
+    if (duplicateCreator) {
+      const getProfile = await CreatorProfile.findOne({
+        creatorId: duplicateCreator.id,
+      });
+      if (getProfile) {
+        creatorName = getProfile.fullName;
       }
     }
-     
 
     if (duplicateCreator) {
       // If the email is not verified, update the creator account
@@ -195,7 +204,9 @@ const creatorSignup = async (req, res) => {
     }
   } catch (error) {
     console.error("Error:", error);
-    res.status(500).json({ message: "Internal Server Error", detail: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal Server Error", detail: error.message });
   }
 };
 
@@ -331,11 +342,10 @@ const forgotPassword = async (req, res) => {
     console.log("creator:", creator);
 
     const OTP = Math.floor(100000 + Math.random() * 900000);
-    const resetTokenExpirationTime = 30 * 60 * 1000; // 30 minutes in milliseconds
+    const resetTokenExpirationTime = 5 * 60 * 1000; // 30 minutes in milliseconds
     const expirationDate = Date.now() + resetTokenExpirationTime;
 
     creator.passwordToken = OTP;
-    creator.passwordTokenExpirationDate = expirationDate;
 
     await creator.save();
 
@@ -345,12 +355,12 @@ const forgotPassword = async (req, res) => {
     if (!creatorProfile) {
       return res.status(404).json({ message: "CreatorProfile not found" });
     }
-    console.log("creatorProfile:", creatorProfile);
+    console.log("creator:", creator);
 
     sendForgotPasswordOTP({
       username: creatorProfile.fullName,
       email,
-     OTP,
+      OTP,
       origin: process.env.ORIGIN,
     });
 
@@ -361,16 +371,16 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-const resetPassword = async (req, res) => {
-  const { email, OTP, password } = req.body;
+const verifyResetPasswordOtp = async (req, res) => {
+  const { email, OTP } = req.body;
 
-   const requiredFields = ["email", "password", "OTP"];
+  const requiredFields = ["email", "OTP"];
 
-    for (const field of requiredFields) {
-      if (!req.body[field]) {
-        return res.status(400).json({ message: `${field} is required` });
-      }
+  for (const field of requiredFields) {
+    if (!req.body[field]) {
+      return res.status(400).json({ message: `${field} is required` });
     }
+  }
   try {
     const creator = await Creator.findOne({ where: { email } });
     if (!creator) {
@@ -379,19 +389,53 @@ const resetPassword = async (req, res) => {
     if (creator.passwordToken !== OTP) {
       return res.status(400).json({ message: "Invalid password token" });
     }
+
+    creator.passwordToken = "";
+
+    const resetTokenExpirationTime = 5 * 60 * 1000; // 30 minutes in milliseconds
+    const expirationDate = Date.now() + resetTokenExpirationTime;
+
+    creator.passwordTokenExpirationDate = expirationDate;
+
+    await creator.save();
+    console.log("creator:", creator);
+
+    res.status(200).json({ message: "OTP successfully verified" });
+  } catch (error) {
+    console.error("Error :", error);
+    res.status(500).json({ msg: "Server error", error: error.message });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  const { email, password } = req.body;
+
+  const requiredFields = ["email", "password"];
+
+  for (const field of requiredFields) {
+    if (!req.body[field]) {
+      return res.status(400).json({ message: `${field} is required` });
+    }
+  }
+  try {
+    const creator = await Creator.findOne({ where: { email } });
+    if (!creator) {
+      return res.status(404).json({ message: "Creator not found" });
+    }
+
     if (creator.passwordTokenExpirationDate < Date.now()) {
       return res.status(400).json({ message: "Reset token has expired" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     creator.password = hashedPassword;
-    creator.passwordToken = "";
     creator.passwordTokenExpirationDate = null;
 
     await creator.save();
     const creatorProfile = await CreatorProfile.findOne({
       creatorId: creator.id,
     });
+    console.log("creator:", creator);
 
     await sendResetPasswordAlert({
       username: creatorProfile.fullName,
@@ -399,10 +443,57 @@ const resetPassword = async (req, res) => {
       origin: process.env.ORIGIN,
     });
 
-    res.status(200).json({ message: "Passwored reset succesfully" });
+    res.status(200).json({ message: "Password reset succesfully" });
   } catch (error) {
     console.error("Error :", error);
     res.status(500).json({ msg: "Server error", error: error.message });
+  }
+};
+
+const resendOTPCreator = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+
+  try {
+    const creator = await Creator.findOne({ where: { email: email } });
+
+    if (!creator) {
+      return res
+        .status(404)
+        .json({ msg: "No account is associated with this email address" });
+    }
+
+    if (creator.isVerified) {
+      return res.status(400).json({ msg: "Email address has been verified" });
+    }
+
+    const newVerificationToken = crypto.randomBytes(40).toString("hex");
+    creator.verificationToken = newVerificationToken;
+
+    await creator.save();
+
+    const origin = process.env.ORIGIN;
+
+    const creatorProfile = await CreatorProfile.findOne({
+      creatorId: creator.id,
+    });
+
+    await sendVerificationOTPCreator({
+      organizationName: creatorProfile.fullName,
+      email: email,
+      verificationToken: OTP,
+      origin: process.env.ORIGIN,
+    });
+
+    res.status(200).json({ message: "New verification email sent" });
+  } catch (error) {
+    console.error("Error during resending email:", error);
+    res
+      .status(500)
+      .json({ message: "Internal Server Error", detail: error.message });
   }
 };
 
@@ -410,7 +501,9 @@ module.exports = {
   creatorSignup,
   verifyOTPCreator,
   getCreators,
+  resendOTPCreator,
   createBusinessDetails,
   forgotPassword,
   resetPassword,
+  verifyResetPasswordOtp,
 };
