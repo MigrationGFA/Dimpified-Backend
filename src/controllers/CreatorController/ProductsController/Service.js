@@ -63,7 +63,7 @@ const createService = async (req, res) => {
       ecosystemDomain,
       format,
       currency,
-      services
+      services,
     });
 
     await service.save();
@@ -81,7 +81,7 @@ const getAllServices = async (req, res) => {
     const services = await Service.find({ ecosystemDomain }).sort({
       createdAt: -1,
     });
-
+    console.log("tick");
     if (services.length === 0) {
       return res
         .status(200)
@@ -111,4 +111,107 @@ const getAService = async (req, res) => {
   }
 };
 
-module.exports = { createService, getAllServices, getAService };
+const editServiceDetailsAndAddService = async (req, res) => {
+  try {
+    const { serviceId } = req.params;
+    const {
+      category,
+      subCategory,
+      header,
+      description,
+      format,
+      currency,
+      newService,
+    } = req.body;
+
+    // Check if the service exists
+    const service = await Service.findById(serviceId);
+    if (!service) {
+      return res.status(404).json({ message: "Service not found" });
+    }
+
+    // Update the main service fields
+    service.category = category !== undefined ? category : service.category;
+    service.subCategory =
+      subCategory !== undefined ? subCategory : service.subCategory;
+    service.header = header !== undefined ? header : service.header;
+    service.description =
+      description !== undefined ? description : service.description;
+    service.format = format !== undefined ? format : service.format;
+    service.currency = currency !== undefined ? currency : service.currency;
+
+    // Add new sub-service if provided
+    if (newService) {
+      service.services.push(newService);
+    }
+
+    // Save the updated service
+    await service.save();
+
+    res.status(200).json({ message: "Service updated successfully", service });
+  } catch (error) {
+    console.error("Error updating service:", error);
+    res.status(500).json({ message: "Internal server error", error });
+  }
+};
+
+const editSubService = async (req, res) => {
+  try {
+    const { serviceId } = req.params;
+    const {
+      subServiceId,
+      name,
+      shortDescription,
+      price,
+      deliveryTime,
+      priceFormat,
+      serviceImage,
+    } = req.body;
+
+    // Find the main service
+    const service = await Service.findById(serviceId);
+    if (!service) {
+      return res.status(404).json({ message: "Service not found" });
+    }
+
+    // Find the specific sub-service
+    const subService = service.services.find(
+      (s) => s._id.toString() === subServiceId.toString()
+    );
+    if (!subService) {
+      return res.status(404).json({ message: "Sub-service not found" });
+    }
+
+    // Update the sub-service fields
+    subService.name = name !== undefined ? name : subService.name;
+    subService.shortDescription =
+      shortDescription !== undefined
+        ? shortDescription
+        : subService.shortDescription;
+    subService.price = price !== undefined ? price : subService.price;
+    subService.deliveryTime =
+      deliveryTime !== undefined ? deliveryTime : subService.deliveryTime;
+    subService.priceFormat =
+      priceFormat !== undefined ? priceFormat : subService.priceFormat;
+    subService.serviceImage =
+      serviceImage !== undefined ? serviceImage : subService.serviceImage;
+
+    // Save the updated service
+    await service.save();
+
+    res
+      .status(200)
+      .json({ message: "Sub-service updated successfully", service });
+  } catch (error) {
+    console.error("Error updating sub-service:", error);
+    res.status(500).json({ message: "Internal server error", error });
+  }
+};
+
+module.exports = {
+  createService,
+  getAllServices,
+  getAService,
+  editServiceDetailsAndAddService,
+  editSubService,
+};
