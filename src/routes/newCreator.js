@@ -8,6 +8,7 @@ const {
   resetPassword,
   resendOTPCreator,
   verifyResetPasswordOtp,
+  resendPasswordResetOTP,
 } = require("../controllers/newAddition/authentication/resgistration");
 const {
   creatorLogin,
@@ -28,6 +29,7 @@ router.post("/creator/forgot/password", forgotPassword);
 router.post("/creator/verify-reset-otp", verifyResetPasswordOtp);
 router.patch("/creator/reset/password", resetPassword);
 router.post("/creator/resend-otp", resendOTPCreator);
+router.post("/creator/resend-password-otp", resendPasswordResetOTP);
 
 // Statistics
 router.get(

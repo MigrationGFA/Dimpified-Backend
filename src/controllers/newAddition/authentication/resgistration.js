@@ -342,8 +342,6 @@ const forgotPassword = async (req, res) => {
     console.log("creator:", creator);
 
     const OTP = Math.floor(100000 + Math.random() * 900000);
-    const resetTokenExpirationTime = 5 * 60 * 1000; // 30 minutes in milliseconds
-    const expirationDate = Date.now() + resetTokenExpirationTime;
 
     creator.passwordToken = OTP;
 
@@ -365,6 +363,47 @@ const forgotPassword = async (req, res) => {
     });
 
     res.status(200).json({ message: "Password reset email sent succesfully" });
+  } catch (error) {
+    console.error("Error :", error);
+    res.status(500).json({ msg: "Server error", error: error.message });
+  }
+};
+
+const resendPasswordResetOTP = async (req, res) => {
+  const email = req.body.email;
+
+  try {
+    const creator = await Creator.findOne({ where: { email } });
+    if (!creator) {
+      return res.status(404).json({ message: "Creator not found" });
+    }
+    console.log("creator:", creator);
+
+    const OTP = Math.floor(100000 + Math.random() * 900000);
+
+    creator.passwordToken = OTP;
+    creator.passwordTokenExpirationDate = null;
+
+    await creator.save();
+
+    const creatorProfile = await CreatorProfile.findOne({
+      email,
+    });
+    if (!creatorProfile) {
+      return res.status(404).json({ message: "CreatorProfile not found" });
+    }
+    console.log("creator:", creator);
+
+    sendForgotPasswordOTP({
+      username: creatorProfile.fullName,
+      email,
+      OTP,
+      origin: process.env.ORIGIN,
+    });
+
+    res
+      .status(200)
+      .json({ message: "Password reset email resent succesfully" });
   } catch (error) {
     console.error("Error :", error);
     res.status(500).json({ msg: "Server error", error: error.message });
@@ -506,4 +545,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   verifyResetPasswordOtp,
+  resendPasswordResetOTP,
 };
