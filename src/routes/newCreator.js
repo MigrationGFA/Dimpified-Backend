@@ -15,6 +15,8 @@ const {
 const {
   weeklyBookingStats,
   weeklyIncomeStats,
+  lastSixMonthsSales,
+  dailySuccessfulTransaction,
 } = require("../controllers/newAddition/PaymentController/Statistics");
 const authenticatedUser = require("../middleware/authentication");
 const router = express.Router();
@@ -39,6 +41,17 @@ router.get(
   "/income-stats/:ecosystemDomain",
   authenticatedUser,
   weeklyIncomeStats
+);
+
+router.get(
+  "/daily-successful/:ecosystemDomain",
+  authenticatedUser,
+  dailySuccessfulTransaction
+);
+router.get(
+  "/total-monthly-sales/:ecosystemDomain",
+  authenticatedUser,
+  lastSixMonthsSales
 );
 
 module.exports = router;
