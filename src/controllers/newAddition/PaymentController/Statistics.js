@@ -1,6 +1,7 @@
 const Booking = require("../../../models/DimpBooking");
 const Transaction = require("../../../models/ecosystemTransaction");
 const { Op, fn, col, literal } = require("sequelize");
+const moment = require("moment");
 const { sequelize } = require("../../../config/dbConnect");
 
 const weeklyBookingStats = async (req, res) => {
@@ -227,4 +228,145 @@ const weeklyIncomeStats = async (req, res) => {
   }
 };
 
-module.exports = { weeklyBookingStats, weeklyIncomeStats };
+const dailySuccessfulTransaction = async (req, res) => {
+  try {
+    const { ecosystemDomain } = req.params;
+    const currentDate = new Date();
+
+    const startOfDay = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      currentDate.getDate(),
+      0,
+      0,
+      0
+    );
+
+    const endOfDay = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      currentDate.getDate(),
+      23,
+      59,
+      59
+    );
+
+    const totalAmount = await Transaction.sum("amount", {
+      where: {
+        ecosystemDomain: ecosystemDomain,
+        status: "successful",
+        transactionDate: {
+          [Op.between]: [startOfDay, endOfDay],
+        },
+      },
+    });
+
+    res.json({
+      message: "Total successful transactions for today",
+      totalAmount: totalAmount || 0,
+    });
+  } catch (error) {
+    console.error("Error fetching today's transactions:", error);
+    res.status(500).json({
+      message: "Error fetching today's transactions",
+      error,
+    });
+  }
+};
+
+const lastSixMonthsSales = async (req, res) => {
+  try {
+    const { ecosystemDomain } = req.params;
+
+    if (!ecosystemDomain) {
+      return res.status(400).json({ message: "ecosystemDomain is required" });
+    }
+
+    const currentMonth = moment().startOf("month");
+    const fiveMonthsAgo = moment().subtract(5, "months").startOf("month");
+
+    const salesData = await Booking.aggregate([
+      {
+        $match: {
+          date: {
+            $gte: fiveMonthsAgo.toDate(),
+            $lte: currentMonth.endOf("month").toDate(),
+          },
+          paymentStatus: "Paid",
+          ecosystemDomain: ecosystemDomain,
+        },
+      },
+      {
+        $group: {
+          _id: { year: { $year: "$date" }, month: { $month: "$date" } },
+          totalSales: { $sum: "$price" },
+        },
+      },
+      {
+        $sort: { "_id.year": -1, "_id.month": -1 },
+      },
+    ]);
+
+    const allMonthsInRange = generateMonthRange(fiveMonthsAgo, currentMonth);
+
+    salesData.forEach((data) => {
+      const monthName = moment()
+        .month(data._id.month - 1)
+        .year(data._id.year)
+        .format("MMMM YYYY");
+
+      const matchingMonth = allMonthsInRange.find((m) => m.month === monthName);
+      if (matchingMonth) {
+        matchingMonth.totalSales = data.totalSales;
+      }
+    });
+
+    const currentMonthSales = allMonthsInRange[5]?.totalSales || 0;
+    const lastMonthSales = allMonthsInRange[4]?.totalSales || 0;
+
+    // Calculate percentage difference
+    const percentageDifference = calculatePercentageDifference(
+      currentMonthSales,
+      lastMonthSales
+    );
+
+    const response = {
+      currentMonthSales,
+      lastMonthSales,
+      percentageDifference,
+      salesWithMonthNames: allMonthsInRange,
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+const generateMonthRange = (start, end) => {
+  const months = [];
+  const current = moment(start);
+
+  while (current.isSameOrBefore(end, "month")) {
+    months.push({
+      month: current.format("MMMM YYYY"),
+      totalSales: 0, //
+    });
+    current.add(1, "month");
+  }
+
+  return months;
+};
+
+const calculatePercentageDifference = (current, previous) => {
+  if (previous === 0) return current === 0 ? 0 : 100;
+  return ((current - previous) / previous) * 100;
+};
+
+module.exports = {
+  weeklyBookingStats,
+  weeklyIncomeStats,
+  dailySuccessfulTransaction,
+  lastSixMonthsSales,
+};

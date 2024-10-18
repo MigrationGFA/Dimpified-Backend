@@ -6,6 +6,7 @@ const {
   createTemplate,
   getAnEcosystemTemplate,
   createCreatorTemplate,
+  editCreatorTemplate,
 } = require("../controllers/EcosystemController/createTemplate");
 const multer = require("multer");
 const {
@@ -16,8 +17,8 @@ const {
 } = require("../controllers/EcosystemController/generalTemplate");
 
 const {
-  createNewTemplate
-} = require("../controllers/newAddition/Template/createTemplate")
+  createNewTemplate,
+} = require("../controllers/newAddition/Template/createTemplate");
 
 const upload = multer({
   storage: storageTemplate,
@@ -56,6 +57,7 @@ router.post(
 router.get("/getTemplate/:ecosystemDomain", getAnEcosystemTemplate);
 
 router.post("/ecosystem/create-creator-template", createCreatorTemplate);
+router.post("/ecosystem/edit-creator-template/:ecosystemDomain", editCreatorTemplate);
 
 router.post("/create/reserved-template", createReservedTemplate);
 router.post("/create/general-template", createGeneralTemplate);

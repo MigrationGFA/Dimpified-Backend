@@ -8,6 +8,7 @@ const {
   resetPassword,
   resendOTPCreator,
   verifyResetPasswordOtp,
+  resendPasswordResetOTP,
 } = require("../controllers/newAddition/authentication/resgistration");
 const {
   creatorLogin,
@@ -15,6 +16,8 @@ const {
 const {
   weeklyBookingStats,
   weeklyIncomeStats,
+  lastSixMonthsSales,
+  dailySuccessfulTransaction,
 } = require("../controllers/newAddition/PaymentController/Statistics");
 const authenticatedUser = require("../middleware/authentication");
 const router = express.Router();
@@ -28,6 +31,7 @@ router.post("/creator/forgot/password", forgotPassword);
 router.post("/creator/verify-reset-otp", verifyResetPasswordOtp);
 router.patch("/creator/reset/password", resetPassword);
 router.post("/creator/resend-otp", resendOTPCreator);
+router.post("/creator/resend-password-otp", resendPasswordResetOTP);
 
 // Statistics
 router.get(
@@ -39,6 +43,17 @@ router.get(
   "/income-stats/:ecosystemDomain",
   authenticatedUser,
   weeklyIncomeStats
+);
+
+router.get(
+  "/daily-successful/:ecosystemDomain",
+  authenticatedUser,
+  dailySuccessfulTransaction
+);
+router.get(
+  "/total-monthly-sales/:ecosystemDomain",
+  authenticatedUser,
+  lastSixMonthsSales
 );
 
 module.exports = router;

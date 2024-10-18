@@ -105,6 +105,7 @@ const getAnEcosystemTemplate = async (req, res) => {
     const ecosystem = await Ecosystem.findOne({
       ecosystemDomain: ecosystemDomain,
     });
+    console.log("ecosystem:",ecosystem)
 
     if (!ecosystem) {
       return res.status(404).json({ message: "Ecosystem not found" });
@@ -119,12 +120,10 @@ const getAnEcosystemTemplate = async (req, res) => {
       return res.status(404).json({ message: "Template not found" });
     }
 
-    return res
-      .status(200)
-      .json({
-        templateDetails: template,
-        aboutUsDetails: ecosystem
-      });
+    return res.status(200).json({
+      templateDetails: template,
+      aboutUsDetails: ecosystem,
+    });
   } catch (error) {
     console.error("Error retrieving template from ecosystem: ", error);
     return res.status(500).json({ error: "Internal server error" });
@@ -195,8 +194,70 @@ const createCreatorTemplate = async (req, res) => {
   }
 };
 
+const editCreatorTemplate = async (req, res) => {
+  try {
+    const { ecosystemDomain } = req.params;
+    const {
+      navbar,
+      hero,
+      aboutUs,
+      Vision,
+      Statistics,
+      Patrners,
+      Events,
+      Gallery,
+      LargeCta,
+      Team,
+      Blog,
+      Reviews,
+      contactUs,
+      faq,
+      faqStyles,
+      footer,
+    } = req.body;
+
+    // Check if the template exists
+    const template = await CreatorTemplate.findOne({ ecosystemDomain });
+    if (!template) {
+      return res.status(404).json({ message: "Template not found" });
+    }
+
+    // Update the template fields
+    template.navbar = navbar !== undefined ? navbar : template.navbar;
+    template.hero = hero !== undefined ? hero : template.hero;
+    template.aboutUs = aboutUs !== undefined ? aboutUs : template.aboutUs;
+    template.Vision = Vision !== undefined ? Vision : template.Vision;
+    template.Statistics =
+      Statistics !== undefined ? Statistics : template.Statistics;
+    template.Patrners = Patrners !== undefined ? Patrners : template.Patrners;
+    template.Events = Events !== undefined ? Events : template.Events;
+    template.Gallery = Gallery !== undefined ? Gallery : template.Gallery;
+    template.LargeCta = LargeCta !== undefined ? LargeCta : template.LargeCta;
+    template.Team = Team !== undefined ? Team : template.Team;
+    template.Blog = Blog !== undefined ? Blog : template.Blog;
+    template.Reviews = Reviews !== undefined ? Reviews : template.Reviews;
+    template.contactUs =
+      contactUs !== undefined ? contactUs : template.contactUs;
+    template.faq = faq !== undefined ? faq : template.faq;
+    template.faqStyles =
+      faqStyles !== undefined ? faqStyles : template.faqStyles;
+    template.footer = footer !== undefined ? footer : template.footer;
+
+    // Save the updated template
+    await template.save();
+
+    res
+      .status(200)
+      .json({ message: "Template updated successfully", template });
+  } catch (error) {
+    console.error("Error updating template:", error);
+    res.status(500).json({ message: "Internal server error", error });
+  }
+};
+
 module.exports = {
   createTemplate,
   getAnEcosystemTemplate,
   createCreatorTemplate,
+  editCreatorTemplate,
 };

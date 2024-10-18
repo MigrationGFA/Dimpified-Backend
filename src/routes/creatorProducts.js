@@ -11,6 +11,8 @@ const {
   createService,
   getAllServices,
   getAService,
+  editServiceDetailsAndAddService,
+  editSubService,
 } = require("../controllers/CreatorController/ProductsController/Service");
 const {
   createDigitalProduct,
@@ -19,9 +21,7 @@ const {
   getAllEcosystemDigitalProducts,
 } = require("../controllers/CreatorController/ProductsController/digitalProduct");
 
-const 
-  authenticatedUser
- = require("../middleware/authentication")
+const authenticatedUser = require("../middleware/authentication");
 
 const upload = multer({
   storage: storageCourse,
@@ -37,21 +37,25 @@ const backgroundUpload = multer({
   },
 });
 // Course creation endpoint
-router.post("/create-course", authenticatedUser, upload.single("image"), createCourse);
-router.get("/ecosystem-courses/:ecosystemDomain",  getEcosystemCourse);
+router.post(
+  "/create-course",
+  authenticatedUser,
+  upload.single("image"),
+  createCourse
+);
+router.get("/ecosystem-courses/:ecosystemDomain", getEcosystemCourse);
 router.get(
   "/ecosystem-single-course/:ecosystemDomain/:courseId",
-   
+
   getAnEcosystemCourseDetails
 );
 
 // service creation endpoint
-router.post(
-  "/create-service",
-   authenticatedUser,
-  createService
-);
-router.get("/get-all-services/:ecosystemDomain",  getAllServices);
+router.post("/create-service", authenticatedUser, createService);
+router.put("/edit-service-details/:serviceId", editServiceDetailsAndAddService);
+router.put("/edit-service/:serviceId", editSubService);
+
+router.get("/get-all-services/:ecosystemDomain", getAllServices);
 router.get("/get-a-service/:serviceId", getAService);
 
 // digital product endpoints
@@ -60,7 +64,7 @@ router.post(
   backgroundUpload.array("backgroundCover"),
   createDigitalProduct
 );
-router.get("/get-all-digital-products/:creatorId",  getAllDigitalProducts);
+router.get("/get-all-digital-products/:creatorId", getAllDigitalProducts);
 router.get(
   "/get-all-ecosystem-digital-products/:ecosystemDomain",
   getAllEcosystemDigitalProducts
