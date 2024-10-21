@@ -113,7 +113,7 @@ const getAService = async (req, res) => {
 
 const editServiceDetailsAndAddService = async (req, res) => {
   try {
-    const { serviceId } = req.params;
+    
     const {
       category,
       subCategory,
@@ -122,6 +122,7 @@ const editServiceDetailsAndAddService = async (req, res) => {
       format,
       currency,
       newService,
+      serviceId 
     } = req.body;
 
     // Check if the service exists
@@ -157,7 +158,7 @@ const editServiceDetailsAndAddService = async (req, res) => {
 
 const editSubService = async (req, res) => {
   try {
-    const { serviceId } = req.params;
+  
     const {
       subServiceId,
       name,
@@ -166,6 +167,7 @@ const editSubService = async (req, res) => {
       deliveryTime,
       priceFormat,
       serviceImage,
+      serviceId 
     } = req.body;
 
     // Find the main service
