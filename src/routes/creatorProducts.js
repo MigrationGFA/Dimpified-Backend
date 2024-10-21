@@ -52,8 +52,8 @@ router.get(
 
 // service creation endpoint
 router.post("/create-service", authenticatedUser, createService);
-router.put("/edit-service-details/:serviceId", editServiceDetailsAndAddService);
-router.put("/edit-service/:serviceId", editSubService);
+router.put("/edit-service-details", editServiceDetailsAndAddService);
+router.put("/edit-service", editSubService);
 
 router.get("/get-all-services/:ecosystemDomain", getAllServices);
 router.get("/get-a-service/:serviceId", getAService);
