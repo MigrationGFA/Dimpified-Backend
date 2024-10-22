@@ -324,7 +324,6 @@ const lastSixMonthsSales = async (req, res) => {
     const currentMonthSales = allMonthsInRange[5]?.totalSales || 0;
     const lastMonthSales = allMonthsInRange[4]?.totalSales || 0;
 
-    // Calculate percentage difference
     const percentageDifference = calculatePercentageDifference(
       currentMonthSales,
       lastMonthSales
@@ -343,6 +342,91 @@ const lastSixMonthsSales = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+const monthlyBookingStats = async (req, res) => {
+  try {
+    const { ecosystemDomain } = req.params;
+
+    if (!ecosystemDomain) {
+      return res.status(400).json({ message: "ecosystemDomain is required" });
+    }
+
+    const currentMonth = moment().startOf("month");
+    const fiveMonthsAgo = moment().subtract(5, "months").startOf("month");
+
+    // Query to get total bookings from the last 6 months filtered by ecosystemDomain
+    const bookingsData = await Booking.aggregate([
+      {
+        $match: {
+          date: {
+            $gte: fiveMonthsAgo.toDate(),
+            $lte: currentMonth.endOf("month").toDate(),
+          },
+          ecosystemDomain: ecosystemDomain,
+        },
+      },
+      {
+        $group: {
+          _id: { year: { $year: "$date" }, month: { $month: "$date" } },
+          totalBookings: { $sum: 1 }, // Count the bookings
+        },
+      },
+      {
+        $sort: { "_id.year": -1, "_id.month": -1 }, // Sort by most recent
+      },
+    ]);
+
+    // Create array with all months in the range (with zero bookings by default)
+    const allMonthsInRange = generateMonthlyBookingRange(
+      fiveMonthsAgo,
+      currentMonth
+    );
+
+    // Populate actual bookings data into allMonthsInRange
+    bookingsData.forEach((data) => {
+      const monthName = moment()
+        .month(data._id.month - 1)
+        .year(data._id.year)
+        .format("MMMM YYYY");
+
+      const matchingMonth = allMonthsInRange.find((m) => m.month === monthName);
+      if (matchingMonth) {
+        matchingMonth.totalBookings = data.totalBookings;
+      }
+    });
+
+    // Total all-time bookings
+    const allTimeTotalBookings = await Booking.countDocuments({
+      ecosystemDomain: ecosystemDomain,
+    });
+
+    // Prepare response data
+    const response = {
+      salesWithMonthNames: allMonthsInRange, // Last 5 months including current month
+      allTimeTotalBookings,
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error("Error fetching booking stats:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+function generateMonthlyBookingRange(startMonth, endMonth) {
+  const months = [];
+  let current = moment(startMonth);
+
+  while (current <= endMonth) {
+    months.push({
+      month: current.format("MMMM YYYY"),
+      totalBookings: 0,
+    });
+    current = current.add(1, "month");
+  }
+
+  return months;
+}
 
 const generateMonthRange = (start, end) => {
   const months = [];
@@ -369,4 +453,5 @@ module.exports = {
   weeklyIncomeStats,
   dailySuccessfulTransaction,
   lastSixMonthsSales,
+  monthlyBookingStats,
 };
