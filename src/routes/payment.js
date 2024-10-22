@@ -20,6 +20,7 @@ const {
 const {
   VerifyPayment,
   verifyBookingPayment,
+  transactionHistory,
 } = require("../controllers/PaymentController/payment");
 const {
   saveAffiliateAccount,
@@ -91,6 +92,8 @@ router.put(
   authenticatedUser,
   editAffiliateAccount
 );
+
+router.get("/transaction-history/:ecosystemDomain", transactionHistory);
 
 //Plan feature endpoints
 router.post("/create-plan", createPlan);

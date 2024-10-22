@@ -295,206 +295,6 @@ const VerifyPayment = async (req, res) => {
   }
 };
 
-// const verifyBookingPayment = async (req, res) => {
-//   console.log("verifyBookingPayment function called");
-
-//   try {
-//     await ecosystemTransaction.sync();
-//     await CreatorEarning.sync();
-//     await PurchasedItem.sync();
-//     const {
-//       provider,
-//       reference,
-//       bookingId,
-//       ecosystemDomain,
-//       email,
-//       providerCharge,
-//       companyCharge,
-//     } = req.body;
-//     console.log("this is first");
-//     const details = [
-//       "provider",
-//       "reference",
-//       "bookingId",
-//       "ecosystemDomain",
-//       "email",
-//       "providerCharge",
-//       "companyCharge",
-//     ];
-//     console.log("this is second");
-//     for (const detail of details) {
-//       if (!req.body[detail]) {
-//         return res.status(400).json({ message: `${detail} is required` });
-//       }
-//     }
-
-//     const booking = await Booking.findById(bookingId);
-//     if (!booking) {
-//       return res.status(404).json({ message: "Booking not found" });
-//     }
-//     const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
-//     if (!ecosystem) {
-//       return res.status(404).json({
-//         message: "Ecosystem not found",
-//       });
-//     }
-//     const amount = booking.price; // Assuming the booking has a totalAmount field
-//     const responseData = await thirdPartyVerification(reference, provider);
-
-//     if (!responseData || !responseData.data) {
-//       return res.status(400).json({
-//         message: "Payment verification failed, invalid response data",
-//       });
-//     }
-
-//     let verifiedAmount;
-//     const getAmount = responseData.data.amount;
-//     if (provider === "paystack") {
-//       verifiedAmount = getAmount - companyCharge - providerCharge;
-//       if (verifiedAmount !== amount) {
-//         return res.status(400).json({ message: "Payment verification failed" });
-//       }
-//     } else if (provider === "flutterwave") {
-//       verifiedAmount = getAmount - companyCharge - providerCharge;
-
-//       if (
-//         responseData.data.status !== "successful" ||
-//         verifiedAmount !== amount
-//       ) {
-//         return res.status(400).json({ message: "Payment verification failed" });
-//       }
-//     } else {
-//       return res.status(400).json({ message: "Unsupported payment provider" });
-//     }
-
-//     // Update the booking payment status to "paid"
-//     booking.paymentStatus = "Paid";
-//     await booking.save(); // Save the changes to the booking document
-
-//     const currency = responseData.data.currency;
-
-//     console.log("this is here");
-
-//     let creatorEarning = await CreatorEarning.findOne({
-//       where: { ecosystemDomain },
-//     });
-//     if (!creatorEarning) {
-//       creatorEarning = await CreatorEarning.create({
-//         creatorId: ecosystem.creatorId,
-//         ecosystemDomain,
-//         Naira: 0,
-//         Dollar: 0,
-//       });
-//     }
-
-//     let getUser = await EcosystemUser.findOne({
-//       where: {
-//         email: booking.email,
-//         ecosystemDomain: booking.ecosystemDomain,
-//       },
-//     });
-
-//     if (!getUser) {
-//       getUser = await EcosystemUser.create({
-//         email: booking.email,
-//         ecosystemDomain: booking.ecosystemDomain,
-//         username: booking.name,
-//         password: await bcrypt.hash(`${booking.email}`, 10),
-//       });
-//     }
-
-//     const userTransaction = await ecosystemTransaction.create({
-//       email: booking.email,
-//       ecosystemDomain,
-//       itemId: booking.bookingId,
-//       itemType: "Service",
-//       amount: verifiedAmount,
-//       paymentMethod: provider,
-//       transactionDate: new Date(),
-//       itemTitle: "Booking",
-//       userId: getUser.id,
-//       creatorId: creatorEarning.creatorId,
-//       status: responseData.data.status,
-//       currency: currency,
-//     });
-//     console.log("this is transaction", userTransaction);
-
-//     const purchasedItem = await PurchasedItem.create({
-//       userId: getUser.id,
-//       itemType: "Service",
-//       itemId: booking.bookingId,
-//       itemAmount: verifiedAmount,
-//       currency: currency,
-//       purchaseDate: new Date(),
-//       ecosystemDomain,
-//     });
-
-//     let gfaCommission = await GFACommision.findOne();
-//     if (!gfaCommission) {
-//       gfaCommission = await GFACommision.create({
-//         Naira: 0,
-//         Dollar: 0,
-//       });
-//     }
-
-//     switch (currency) {
-//       case "NGN":
-//         creatorEarning.Naira = (
-//           parseFloat(creatorEarning.Naira) + parseFloat(verifiedAmount)
-//         ).toFixed(2);
-//         gfaCommission.Naira = (
-//           parseFloat(gfaCommission.Naira) + parseFloat(companyCharge)
-//         ).toFixed(2);
-//         break;
-//       case "USD":
-//         creatorEarning.Dollar = (
-//           parseFloat(creatorEarning.Naira) + parseFloat(verifiedAmount)
-//         ).toFixed(2);
-//         gfaCommission.Dollar = (
-//           parseFloat(gfaCommission.Dollar) + parseFloat(companyCharge)
-//         ).toFixed(2);
-//         break;
-//       default:
-//         console.log("Unsupported currency");
-//         return res.status(400).json({ message: "Unsupported currency" });
-//     }
-
-//     console.log("this is creator earning", creatorEarning);
-
-//     await gfaCommission.save();
-//     await creatorEarning.save();
-//     const creator = await Creator.findByPk(creatorEarning.creatorId);
-
-//     await sendBookingPaymentConfirmationEmail({
-//       email: creator.email,
-//       bookingId: booking.bookingId,
-//       paymentAmount: verifiedAmount,
-//       paymentDate: new Date().toISOString(),
-//       paymentMethod: provider,
-//     });
-
-//     await sendBookingConfirmationPaidEmail({
-//       email: booking.email,
-//       bookingId: booking.bookingId,
-//       date: booking.date,
-//       time: booking.time,
-//       name: booking.name,
-//       service: booking.service,
-//     });
-
-//     return res.status(201).json({
-//       message: "Booking payment verified and updated to paid",
-//       booking,
-//     });
-//   } catch (error) {
-//     console.error("Error in verifyBookingPayment function:", error);
-//     res.status(500).json({
-//       message: "An error occurred during booking payment verification",
-//       error,
-//     });
-//   }
-// };
-
 const verifyBookingPayment = async (req, res) => {
   console.log("verifyBookingPayment function called");
 
@@ -738,4 +538,47 @@ const verifyBookingPayment = async (req, res) => {
   }
 };
 
-module.exports = { VerifyPayment, verifyBookingPayment };
+const transactionHistory = async (req, res) => {
+  try {
+    const { ecosystemDomain } = req.params;
+    // Check if ecosystemDomain is provided
+    if (!ecosystemDomain) {
+      return res.status(400).json({
+        success: false,
+        message: "ecosystemDomain is required",
+      });
+    }
+
+    const transactions = await ecosystemTransaction.findAll({
+      where: { ecosystemDomain },
+      attributes: { exclude: ["itemTitle", "createdAt", "updatedAt"] },
+      order: [["transactionDate", "DESC"]],
+      include: [
+        {
+          model: User,
+          attributes: ["username"], // Include only the username from User model
+        },
+      ],
+    });
+
+    if (transactions.length === 0) {
+      return res.status(404).json({
+        message: `No transactions found for ecosystemDomain: ${ecosystemDomain}`,
+      });
+    }
+
+    return res.status(200).json({
+      message: "Ecosystem transaction history fetched successfully",
+      data: transactions,
+    });
+  } catch (error) {
+    console.error("Error fetching ecosystem transaction history:", error);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching transaction history",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = { VerifyPayment, verifyBookingPayment, transactionHistory };
