@@ -5,6 +5,7 @@ const packageSchema = new mongoose.Schema({
   name: { type: String, required: true },
   shortDescription: { type: String, required: true },
   price: { type: Number, required: true },
+  homePrice: { type: Number, required: false },
   deliveryTime: { type: String, required: true },
   priceFormat: { type: String, required: true },
   serviceImage: { type: String, required: true },

@@ -41,7 +41,7 @@ const sendVerificationEmailAffiliate = async ({
              <tr>
               <td align="center" style="font-size: 20px; padding: 0 40px 40px">
                <p> <strong>OR</strong></p>
-               <p> copy and paste the link bel|ow in your browser</p>
+               <p> copy and paste the link below in your browser</p>
                 ${verifyEmailUrl}
               </td>
             </tr>

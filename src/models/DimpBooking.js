@@ -4,7 +4,7 @@ const bookingSchema = new mongoose.Schema(
   {
     bookingId: {
       type: String,
-      required: true,
+      required: false,
       unique: true,
     },
     ecosystemDomain: {

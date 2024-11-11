@@ -2,8 +2,7 @@ const { Sequelize } = require("sequelize");
 require("dotenv").config();
 
 const sequelize = new Sequelize(
-  "dimpified",
-  // process.env.DB_NAME,
+  "dimptesting",
   process.env.DB_USER,
   process.env.DB_PWD,
   {
@@ -23,7 +22,8 @@ const sequelize = new Sequelize(
 const connectDB = async () => {
   try {
     await sequelize.authenticate();
-    console.log("Connected to the MySQL Server with Sequelize");
+    await sequelize.sync();
+    console.log("Connected to the mysql Server with Sequelize");
   } catch (error) {
     console.error("Error connecting to server with Sequelize:", error);
   }

@@ -47,29 +47,13 @@ const SubscriptionTransaction = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
-    email: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    startDate: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    endDate: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    interval: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     sizeLimit: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    subscriptionCount: {
-      type: DataTypes.INTEGER,
-      defaultValue: 1,
+    ecosystemDomain: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
   },
   {

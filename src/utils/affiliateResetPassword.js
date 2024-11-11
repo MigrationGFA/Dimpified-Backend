@@ -4,7 +4,7 @@ const sendAffiliateResetPasswordAlert = async ({ userName, email, origin }) => {
   const supportURL = `${origin}/support`;
 
 
-   const message = `
+  const message = `
     <table width="100%" border="0" cellpadding="0" cellspacing="0" style="font-family: Arial, sans-serif;">
       <tr>
         <td align="center" style="padding: 20px 0; background-color:  #f8f8f8;">
@@ -48,7 +48,7 @@ const sendAffiliateResetPasswordAlert = async ({ userName, email, origin }) => {
   return sendEmail({
     to: email,
     subject: "Dimpified Afiliate Reset Password Alert",
-    html: `<h4>Hello, ${fullName}</h4>
+    html: `<h4>Hello, ${userName}</h4>
       ${message}
       `,
   });

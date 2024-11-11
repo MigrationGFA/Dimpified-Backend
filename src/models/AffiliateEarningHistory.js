@@ -19,7 +19,7 @@ const AffiliateEarningHistory = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-     amount: {
+    amount: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
@@ -31,7 +31,7 @@ const AffiliateEarningHistory = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
-     sizeLimit: {
+    sizeLimit: {
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -46,7 +46,13 @@ const AffiliateEarningHistory = sequelize.define(
   }
 );
 
-AffiliateEarningHistory.belongsTo(Affiliate, { foreignKey: "affiliateId", targetKey: "id" });
-AffiliateEarningHistory.belongsTo(Creator, { foreignKey: "userId", targetKey: "id" });
+AffiliateEarningHistory.belongsTo(Affiliate, {
+  foreignKey: "affiliateId",
+  targetKey: "id",
+});
+AffiliateEarningHistory.belongsTo(Creator, {
+  foreignKey: "userId",
+  targetKey: "id",
+});
 
-module.exports =  AffiliateEarningHistory;
+module.exports = AffiliateEarningHistory;

@@ -2,50 +2,53 @@ const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/dbConnect");
 const Creator = require("./Creator");
 
-
-const CreatorSupport = sequelize.define('CreatorSupport', {
+const CreatorSupport = sequelize.define(
+  "CreatorSupport",
+  {
     id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
     },
-    // userId: {
-    //     type: DataTypes.INTEGER,
-    //     allowNull: false,
-    // },
+
+    ecosystemDomain: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
     reason: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-            notEmpty: true,
-        },
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
     },
     message: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-            notEmpty: true,
-        },
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
     },
     creatorId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        // references: {
-        //     model: 'User',
-        //     key: 'id'
-        // }
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: Creator,
+        key: "id",
+      },
     },
     status: {
-        type: DataTypes.ENUM("pending", "completed"),
-        allowNull: false,
-        defaultValue: "pending",
+      type: DataTypes.ENUM("pending", "completed"),
+      allowNull: false,
+      defaultValue: "pending",
     },
-},
-    {
-        tableName: "CreatorSupport",
-        timestamps: true,
-    }
-)
+  },
+  {
+    tableName: "CreatorSupport",
+    timestamps: true,
+  }
+);
 
 CreatorSupport.belongsTo(Creator, { foreignKey: "creatorId", targetKey: "id" });
-module.exports = CreatorSupport
+module.exports = CreatorSupport;
