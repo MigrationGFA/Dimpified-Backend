@@ -177,7 +177,9 @@ const userWelcomeEmail = ({ username, email, ecosystemName, logo, login }) => {
         <body>
           <main class="container">
             <header class="header">
-              <img src=${logo} alt="logo" />
+              <img src="https://res.cloudinary.com/diz6tdgeo/image/upload/v1725638667/dimp_rwgeri.png" alt="logo" 
+              style="display: block; margin: 0 auto; height: 100px"
+              />
             </header>
             <section class="section-content">
               <div class="experince">

@@ -64,7 +64,11 @@ const Subscription = sequelize.define(
     },
     subscriptionCount: {
       type: DataTypes.INTEGER,
-      defaultValue: 1, // Default is 1, meaning it's their first subscription
+      defaultValue: 1, 
+      allowNull: false,
+    },
+    ecosystemDomain: {
+      type: DataTypes.STRING,
       allowNull: false,
     },
   },

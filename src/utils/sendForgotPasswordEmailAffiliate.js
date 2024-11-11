@@ -8,7 +8,7 @@ const sendForgotPasswordEmailAffiliate = async ({
 }) => {
   const resetPasswordUrl = `${origin}/affiliate/reset-password?token=${token}&email=${email}`;
 
-   const message = `
+  const message = `
     <table width="100%" border="0" cellpadding="0" cellspacing="0" style="font-family: Arial, sans-serif;">
       <tr>
         <td align="center" style="padding: 20px 0; background-color:  #f8f8f8;">
@@ -40,7 +40,7 @@ const sendForgotPasswordEmailAffiliate = async ({
              <tr>
               <td align="center" style="font-size: 20px;">
                <p> <strong>OR</strong></p>
-               <p> copy and paste the link bel|ow in your browser</p>
+               <p> copy and paste the link below in your browser</p>
                 ${resetPasswordUrl}
               </td>
             </tr>

@@ -5,130 +5,180 @@ const sendBookingConfirmationPaidEmail = async ({
   name,
   bookingId,
   service,
+  bookingType,
   date,
   time,
   paymentStatus,
+  businessName,
+  businessAddress,
+  logo,
 }) => {
   const formattedDate = new Date(date).toLocaleDateString();
-  const message = `
-    <!DOCTYPE html>
-    <html lang="en">
-      <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Booking Confirmation - Payment Received</title>
-        <style>
-          @import url("https://fonts.googleapis.com/css2?family=Outfit&display=swap");
 
-          body {
-            margin: 0;
-            padding: 20px;
-            font-family: "Outfit", sans-serif;
-            background-color: #f8f8f8;
-            line-height: 1.5;
-            min-height: 100%;
-            font-weight: normal;
-            font-size: 15px;
-            color: #2f3044;
-          }
+  const message = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Booking Confirmation - Payment Confirmed</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css?family=Nunito+Sans:400,700&display=swap");
 
-          p, h1, h2 {
-            line-height: 22.68px;
-          }
+    html,
+    body {
+      padding: 0;
+      margin: 0;
+      font-family: "Nunito Sans", Helvetica, Arial, sans-serif;
+      -webkit-text-size-adjust: none;
+    }
 
-          .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #ffffff;
-            padding: 45px 0;
-            border-radius: 24px;
-            margin: 40px auto;
-            max-width: 600px;
-            color: black;
-            font-size: 18px;
-            font-weight: 400;
-          }
+    a:hover {
+      color: #009ef7;
+    }
 
-          .header img {
-            width: 150px;
-            margin-bottom: 20px;
-          }
+    .container {
+      background-color: #f8f8f8;
+      line-height: 1.5;
+      min-height: 100%;
+      font-weight: normal;
+      font-size: 15px;
+      color: #2f3044;
+      margin: 0;
+      padding: 20px;
+    }
 
-          .section-content {
-            padding: 20px;
-            text-align: left;
-            width: 100%;
-          }
+    .email-wrapper {
+      background-color: #ffffff;
+      padding: 45px 0 34px 0;
+      border-radius: 24px;
+      margin: 40px auto;
+      max-width: 600px;
+    }
 
-          .section-content p {
-            font-size: 18px;
-            margin-bottom: 15px;
-          }
+    .header img {
+      height: 60px;
+    }
 
-          .section-content span {
-            color: #4033f5;
-            font-weight: 600;
-          }
+    .section-content {
+      font-size: 15px;
+      font-weight: normal;
+      margin-bottom: 27px;
+      line-height: 30px;
+      color: #333;
+    }
 
-          footer {
-            width: 100%;
-            background-color: #151a9a;
-            border-bottom-right-radius: 24px;
-            border-bottom-left-radius: 24px;
-            color: white;
-            font-weight: 700;
-            font-size: 18px;
-            text-align: center;
-            padding: 20px 0;
-          }
+    .section-content p {
+      margin-bottom: 2px;
+    }
 
-          footer p {
-            margin: 0;
-            font-size: 16px;
-            font-weight: 300;
-          }
+    .section-content strong {
+      color: #4033f5;
+    }
 
-          .button {
-            display: inline-block;
-            padding: 10px 20px;
-            font-size: 18px;
-            color: #ffffff;
-            background-color: #4033f5;
-            border-radius: 8px;
-            text-decoration: none;
-            margin-top: 20px;
-            text-align: center;
-          }
-        </style>
-      </head>
+    .footer-content {
+      font-size: 13px;
+      text-align: left;
+      padding: 10px 0 0 0;
+      font-weight: 500;
+      color: #7e8299;
+    }
 
-      <body>
-        <main class="container">
-          <header class="header">
-            <img src="https://res.cloudinary.com/diz6tdgeo/image/upload/v1725638667/dimp_rwgeri.png" alt="logo" />
-          </header>
-          <section class="section-content">
-            <p>Dear ${name},</p>
-            <p>Your booking has been received with the following details:</p>
-            <p><strong>Booking ID:</strong> ${bookingId}</p>
-            <p><strong>Service:</strong> ${service}</p>
-            <p><strong>Date:</strong> ${formattedDate}</p>
-            <p><strong>Time:</strong> ${time}</p>
-            <p><strong>Payment Status:</strong> ${paymentStatus}</p>
-            <p>Thank you for your payment. Your booking is now confirmed!</p>
-          </section>
-          <footer>
-            <p>&copy; 2024 Your Company. All rights reserved.</p>
-          </footer>
-        </main>
-      </body>
-    </html>
-  `;
+    .button {
+      display: inline-block;
+      padding: 10px 20px;
+      font-size: 18px;
+      color: #ffffff;
+      background-color: #4033f5;
+      border-radius: 8px;
+      text-decoration: none;
+      margin-top: 20px;
+      text-align: center;
+    }
 
-  return sendEmail({
+    @media only screen and (max-width: 600px) {
+      .container {
+        padding: 10px;
+      }
+
+      .email-wrapper {
+        padding: 20px 0 15px 0;
+      }
+
+      .section-content {
+        font-size: 16px;
+      }
+
+      .footer-content {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="email-wrapper">
+      <table
+        align="center"
+        border="0"
+        cellpadding="0"
+        cellspacing="0"
+        width="100%"
+        style="border-collapse: collapse"
+      >
+        <tbody>
+          <tr>
+            <td align="center" valign="center" style="text-align: center; padding-bottom: 10px;">
+              <div class="header">
+                <a href="#" rel="noopener">
+                  <img
+                    alt="${businessName} Logo"
+                    src="${logo}"
+                  />
+                </a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" valign="top" style="padding: 0 25px;">
+              <div class="section-content">
+                <p>Dear ${name},</p>
+                <p>Congratulations ${businessName}! You have received a new booking order from a client. Here are the details:</p>
+                <p><strong>Booking ID:</strong> ${bookingId}</p>
+                <p><strong>Service:</strong> ${service}</p>
+                <p><strong>Booking Type:</strong> ${bookingType}</p>
+                <p><strong>Date:</strong> ${formattedDate}</p>
+                <p><strong>Time:</strong> ${time}</p>
+                <p><strong>Payment Status:</strong> ${paymentStatus}</p>
+                <p>Please review the details and reach out to the client if you need any further information. Best of luck with your upcoming booking!</p>
+                <p>Thank you for using DIMP to set up your business online, and best of luck with your new booking!</p>
+                <p>Best regards,</p>
+                <p><em>The ${businessName} Team</em></p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" valign="center" style="border-top: 1px solid #e7e9ed; padding: 20px 25px 0 25px;">
+              <div class="footer-content">
+                <p>Thank you for choosing ${businessName}</p>
+                <p>&copy; 2024 ${businessName}. All rights Reserved.</p>
+                <p>${businessAddress}</p>
+                <p>
+                  <a href="#" style="color: #007BFF; text-decoration: none;">Privacy Policy</a> | 
+                  <a href="#" style="color: #007BFF; text-decoration: none;">Terms of Service</a>
+                </p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  await sendEmail({
     to: email,
-    subject: "Booking Confirmation - Payment Received",
+    subject: "Booking Confirmation - Payment confirmed",
     html: message,
   });
 };

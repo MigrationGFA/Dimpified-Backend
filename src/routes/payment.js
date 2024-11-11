@@ -1,98 +1,31 @@
 const express = require("express");
+const paymentController = require("../controllers/creatorController/Payment/Subscription");
+const withdrawRequest = require("../controllers/creatorController/Payment/Withdrawal");
+const bookingController = require("../controllers/creatorController/Payment/Features");
 const router = express.Router();
+const authenticatedUser  = require("../middleware/authentication")
 
-const {
-  verifySubscription,
-  handleWebhooks,
-} = require("../controllers/PaymentController/Subscription");
-const createPlan = require("../controllers/PaymentController/planFeature");
-const {
-  saveCreatorAccount,
-  getCreatorBankDetails,
-  editCreatorAccount,
-  ecosystemEarnings,
-} = require("../controllers/PaymentController/AccountController");
-const {
-  withdrawalRequest,
-  getWithdrawalRequests,
-  totalWithdrawalStats,
-} = require("../controllers/PaymentController/withdrawalController");
-const {
-  VerifyPayment,
-  verifyBookingPayment,
-} = require("../controllers/PaymentController/payment");
-const {
-  saveAffiliateAccount,
-  getAffiliateBankDetails,
-  editAffiliateAccount,
-} = require("../controllers/AffiliateController/affiliateAccount");
-// bank verification
-const {
-  getAllBanks,
-  verifyBankDetails,
-} = require("../controllers/PaymentController/Bank");
-
-const authenticatedUser = require("../middleware/authentication");
-
-router.post("/verify-payment", VerifyPayment);
-router.post("/verify-booking-payment", verifyBookingPayment);
-router.post("/verify-subscription", verifySubscription);
-
-//WebHooks
-
-router.post("/paystack/webhook", handleWebhooks);
-
-//ecosystemEarnings
-router.get(
-  "/ecosystem-earnings/:ecosystemDomain",
-  authenticatedUser,
-  ecosystemEarnings
+router.post(
+  "/payment/verify-subscription",
+  paymentController.verifySubscription
+);
+router.post(
+  "/payment/free-subscription",
+  paymentController.createLiteSubscribtion
 );
 
-// Creator Payment Details
-router.post("/save-bank-details", authenticatedUser, saveCreatorAccount);
-router.get(
-  "/bank-details/:ecosystemDomain",
-  authenticatedUser,
-  getCreatorBankDetails
+router.put(
+  "/payment/update-subscription",
+  paymentController.updateSubscription
 );
-router.put("/edit-account", authenticatedUser, editCreatorAccount);
 
-//Withdrawal routes
-router.post("/withdrawal-request", authenticatedUser, withdrawalRequest);
+router.post("/verify-booking-payment", bookingController.createBookingRecord);
+
 router.get(
   "/get-withdrawal-requests/:ecosystemDomain",
-  authenticatedUser,
-  getWithdrawalRequests
-);
-router.get(
-  "/total-withdrawals-stats/:ecosystemDomain",
-  authenticatedUser,
-  totalWithdrawalStats
+  withdrawRequest.withdrawalRequest
 );
 
-// bank verification
-router.get("/get-all-banks", getAllBanks);
-router.post("/verify-bank-details", verifyBankDetails);
 
-//Affiliae add accounts
-router.post(
-  "/affiliate/add-my-account",
-  authenticatedUser,
-  saveAffiliateAccount
-);
-router.get(
-  "/affiliate/get-my-account/:affiliateId",
-  authenticatedUser,
-  getAffiliateBankDetails
-);
-router.put(
-  "/affiliate/edit-my-account",
-  authenticatedUser,
-  editAffiliateAccount
-);
-
-//Plan feature endpoints
-router.post("/create-plan", createPlan);
 
 module.exports = router;
