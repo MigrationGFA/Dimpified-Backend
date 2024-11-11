@@ -5,9 +5,11 @@ const bookingController = require("../controllers/creatorController/Payment/Feat
 const router = express.Router();
 const authenticatedUser  = require("../middleware/authentication")
 
+
 router.post(
   "/payment/verify-subscription",
   paymentController.verifySubscription
+
 );
 router.post(
   "/payment/free-subscription",
