@@ -1,91 +1,78 @@
 const express = require("express");
 const router = express.Router();
+const multer = require("multer");
+const storage = multer.diskStorage({});
 
-const Register = require("../controllers/UserController/Authentication/register");
-const verifyEmail = require("../controllers/UserController/Authentication/verifyEmail");
-const resendEmail = require("../controllers/UserController/Authentication/resendEmail");
-const Login = require("../controllers/UserController/Authentication/login");
-const forgotPassword = require("../controllers/UserController/Authentication/forgotPassword");
-const resetPassword = require("../controllers/UserController/Authentication/resetPassword");
-const logout = require("../controllers/UserController/Authentication/logout");
-const creatorlogout = require("../controllers/CreatorController/Authentication/logout");
-const creatorLogin = require("../controllers/CreatorController/Authentication/login");
-const creatorResendEmail = require("../controllers/CreatorController/Authentication/resendEmail");
-const creatorVerifyEmail = require("../controllers/CreatorController/Authentication/verifyEmail");
-const creatorForgotPassword = require("../controllers/CreatorController/Authentication/forgotPassword");
-const creatorRegister = require("../controllers/CreatorController/Authentication/register");
-const creatorResetPassword = require("../controllers/CreatorController/Authentication/resetPassword");
-const onBoarding = require("../controllers/CreatorController/Authentication/onBoarding");
+const upload = multer({ storage });
 
+const authController = require("../controllers/creatorController/authentication/Category1/registration");
+const generalAuthService = require("../controllers/creatorController/authentication/generalAuth");
 const {
-  developerSignup,
-  developerLogin,
-  verifyEmailDeveloper,
-  developerLogOut,
-  forgotPasswordDeveloper,
-  resetPasswordDeveloper,
-} = require("../controllers/DeveloperController/registration");
-
-const {
+  resetPasswordLimiter,
   authLimiter,
-  resetPasswordLimiter,
-} = require("../middleware/RateLimiter");
+} = require("../middleware/RateLimter");
 
-//refreshToken
-const refreshCreatorToken = require("../middleware/refreshToken");
-const authenticateToken = require("../middleware/authenticationToken");
-const {
-  showUser
-} = require("../controllers/showUser")
+const auth = require("../controllers/affiliateController/Authentication/auth");
+// category 1 register endpoint
+router.post("/creator/signup", authController.creatorSignup);
+router.post("/creator/verify-otp", generalAuthService.verifyOTPCreator);
 
-// Ecosystem user endpoints
-router.post("/ecosystem-user/register", Register);
-router.post("/ecosystem-user/verify-email", verifyEmail);
-router.post("/ecosystem-user/resend-email", resetPasswordLimiter, resendEmail);
-router.post("/ecosystem-user/login", Login);
+// general registration flow
 router.post(
-  "/ecosystem-user/forgot-password",
+  "/creator/resend-otp",
   resetPasswordLimiter,
-  forgotPassword
+  generalAuthService.resendOTPCreator
+);
+router.post("/creator/sign-in", generalAuthService.creatorLogin);
+router.post("/creator/forgot/password", generalAuthService.forgotPassword);
+router.post(
+  "/creator/resend-password-otp",
+  resetPasswordLimiter,
+  generalAuthService.resendPasswordResetOTP
 );
 router.post(
-  "/ecosystem-user/reset-password",
-  resetPasswordLimiter,
-  resetPassword
+  "/creator/verify-reset-otp",
+  generalAuthService.verifyResetPasswordOtp
 );
-router.delete("/ecosystem-user/logout/:userId", logout);
+router.patch(
+  "/creator/reset/password",
+  resetPasswordLimiter,
+  generalAuthService.resetPassword
+);
+// Configure Multer for handling file uploads
 
-// creator endpoints
-router.post("/creator/register", authLimiter, creatorRegister);
-router.post("/onboarding", onBoarding);
-router.post("/creator/login", creatorLogin);
-router.delete("/creator/logout/:userId", creatorlogout);
-router.post("/creator/resend-email", resetPasswordLimiter, creatorResendEmail);
-router.post("/creator/verify-email", creatorVerifyEmail);
+router.patch(
+  "/creator/update-profile-image",
+  upload.single("image"), // 'image' is the field name in the form-data
+  generalAuthService.updateCreatorImage
+);
+
+// get ecosystem
+
+//Affiliate Authentication endpoints
+router.post("/affiliate/signup", authLimiter, auth.affiliateSignup);
+router.post("/affiliate/login", authLimiter, auth.affiliateLogin);
 router.post(
-  "/creator/forgot-password",
+  "/affiliate/resend-email",
   resetPasswordLimiter,
-  creatorForgotPassword
+  auth.resendEmailAffiliate
 );
 router.post(
-  "/creator/reset-password",
+  "/affiliate/reset-password",
   resetPasswordLimiter,
-  creatorResetPassword
+  auth.resetPasswordAffiliate
+);
+router.post(
+  "/affiliate/verify-email",
+  resetPasswordLimiter,
+  auth.verifyEmailAffiliate
+);
+router.post(
+  "/affiliate/forgot-password",
+  resetPasswordLimiter,
+  auth.forgotPasswordAffiliate
 );
 
-
-//developer endpoints
-router.post("/developer/registration", developerSignup);
-router.post("/developer/login", developerLogin);
-router.post("/developer/verify-email", verifyEmailDeveloper);
-router.delete("/developer/logout/:userId", developerLogOut);
-router.post("/developer/forgot-password", forgotPasswordDeveloper);
-router.post("/developer/reset-password", resetPasswordDeveloper);
-
-//refreshToken
-router.post("/auth/refresh-token", refreshCreatorToken);
-
-//show user
-router.get("/show-user", authenticateToken, showUser);
+//Get profile
 
 module.exports = router;

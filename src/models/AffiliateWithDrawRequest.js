@@ -63,10 +63,10 @@ const AffiliateWithdrawalRequest = sequelize.define(
   }
 );
 
-Affiliate.hasMany(WithdrawalRequest, { foreignKey: "affiliateId" });
+Affiliate.hasMany(AffiliateWithdrawalRequest, { foreignKey: "affiliateId" });
 AffiliateWithdrawalRequest.belongsTo(Affiliate, { foreignKey: "affiliateId" });
 
-Account.hasMany(WithdrawalRequest, { foreignKey: "accountId" });
+Account.hasMany(AffiliateWithdrawalRequest, { foreignKey: "accountId" });
 AffiliateWithdrawalRequest.belongsTo(Account, { foreignKey: "accountId" });
 
 module.exports = AffiliateWithdrawalRequest;

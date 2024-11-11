@@ -31,7 +31,9 @@ const AffiliateEarning = sequelize.define(
   }
 );
 
-AffiliateEarning.belongsTo(Affiliate, { foreignKey: "affiliateId", targetKey: "id" });
-
+AffiliateEarning.belongsTo(Affiliate, {
+  foreignKey: "affiliateId",
+  targetKey: "id",
+});
 
 module.exports = AffiliateEarning;

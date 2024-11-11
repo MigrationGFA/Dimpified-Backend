@@ -190,10 +190,6 @@ const sendWelcomeEmailAffiliate = async ({ userName, email }) => {
       <section class="section-content">
         <div class="experience">
           <p>Welcome to Dimpified!</p>
-          <img
-            src="https://res.cloudinary.com/diz6tdgeo/image/upload/v1726569659/person_ktzsgw.png"
-            alt="person"
-          />
         </div>
         <p>Hello ${userName},</p>
         <p>

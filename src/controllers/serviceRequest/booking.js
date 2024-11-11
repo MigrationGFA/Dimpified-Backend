@@ -86,6 +86,7 @@ const createBooking = async (req, res) => {
 
     await newBooking.save();
     const creator = await Creator.findByPk(ecosystem.creatorId);
+    console.log("creator:",creator)
 
     if (!creator) {
       return res.status(404).json({ message: "Creator not found" });

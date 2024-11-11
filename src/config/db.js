@@ -1,16 +1,4 @@
-// const mongoose = require("mongoose");
 
-// const db = async () => {
-//     try {
-//         // const conn = await mongoose.connect('mongodb://localhost:27017/uploads')
-//         const conn = await mongoose.connect('mongodb+srv://dorcasmakinde01:uH08gy4HwZpACXjC@wonderkid.ifaf8gw.mongodb.net/?retryWrites=true&w=majority')
-//         console.log(`MongoDb Connected: ${conn.connection.host}`)
-//     } catch (error) {
-//         console.log(error)
-//     }
-// }
-
-// module.exports = db
 
 const mongoose = require("mongoose");
 

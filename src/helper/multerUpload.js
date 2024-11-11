@@ -58,7 +58,7 @@ const storageForm = multer.diskStorage({
 
 const communityStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = path.join("uploads","communityFiles");
+    const uploadPath = path.join("uploads", "communityFiles");
 
     // Check if the directory structure exists. If not, create it recursively.
     fs.access(uploadPath, fs.constants.F_OK, (err) => {

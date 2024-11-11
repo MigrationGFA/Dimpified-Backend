@@ -19,7 +19,7 @@ const sendBookingConfirmationUnpaidEmail = async ({
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Booking Confirmation - Payment Pending</title>
+    <title>Booking Confirmation - Payment Confirmed</title>
     <style>
       @import url("https://fonts.googleapis.com/css?family=Nunito+Sans:400,700&display=swap");
 
@@ -142,14 +142,14 @@ const sendBookingConfirmationUnpaidEmail = async ({
               <td align="left" valign="top" style="padding: 0 25px;">
                 <div class="section-content">
                   <p>Dear <strong>${name}</strong>,</p>
-                  <p>Thank you for choosing ${businessName}! We're excited to inform you that your booking has been successfully received. Below are the details of your booking:</p>
+                  <p>Thank you for choosing ${businessName}! We're pleased to inform you that your booking has been successfully confirmed. Below are the details of your upcoming appointment:</p>
                   <p><strong>Booking ID:</strong> ${bookingId}</p>
                   <p><strong>Service:</strong> ${service}</p>
                   <p><strong>Booking Type:</strong> ${bookingType}</p>
                   <p><strong>Date:</strong> ${formattedDate}</p>
                   <p><strong>Time:</strong> ${time}</p>
                   <p><strong>Payment Status:</strong> ${paymentStatus}</p>
-                  <p>To secure your spot, please complete your payment at your earliest convenience. We look forward to providing you with top-notch service.</p>
+                  <p>Your spot is now secure, and we look forward to delivering top-notch service.</p>
                   <p>If you have any questions or need further assistance, don't hesitate to reach out to our support team. We're here to help!</p>
                   <p>Best regards,</p>
                   <p><em>The ${businessName} Team</em></p>
@@ -178,7 +178,7 @@ const sendBookingConfirmationUnpaidEmail = async ({
 
   await sendEmail({
     to: email,
-    subject: "Booking Confirmation - Payment Pending",
+    subject: "Appointment confirmation",
     html: message,
   });
 };

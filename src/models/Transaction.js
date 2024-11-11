@@ -17,6 +17,10 @@ const Transaction = sequelize.define("Transaction", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+   ecosystemDomain: { 
+    type: DataTypes.STRING, 
+    required: true 
+  },
   itemType: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -28,7 +32,7 @@ const Transaction = sequelize.define("Transaction", {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: User, // This should be the actual model, not a string
+      model: User, 
       key: "id",
     },
   },

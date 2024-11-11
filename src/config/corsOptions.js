@@ -8,7 +8,7 @@ const whiteList = [
   "https://dimp-test.azurewebsites.net"
 ];
 const allowedDomainsRegex = /^https?:\/\/([a-zA-Z0-9-]+\.)?(localhost|dimpified\.com)(:\d{1,5})?$/;
-
+ 
 const corsOptions = {
   origin: (origin, callback) => {
     if (whiteList.includes(origin) || allowedDomainsRegex.test(origin) || !origin) {
@@ -21,7 +21,6 @@ const corsOptions = {
   optionsSuccessStatus: 200,
   credentials: true,
 };
-
-
+ 
+ 
 module.exports = corsOptions;
-

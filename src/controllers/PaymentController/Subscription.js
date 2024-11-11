@@ -1,13 +1,12 @@
 const https = require("https");
 const crypto = require("crypto");
 const Subscription = require("../../models/Subscription");
-const Creator = require("../../models/Creator");
-const Affiliate = require("../../models/Affiliate");
 const AffiliateEarning = require("../../models/AffiliateEarning");
 const AffiliateEarningHistory = require("../../models/AffiliateEarningHistory");
+const Creator = require("../../models/Creator");
 const SubscriptionTransaction = require("../../models/subscriptionTransaction");
 
-// Function to verify payment using Paystack
+
 const verifyPayment = async (reference) => {
   const options = {
     hostname: "api.paystack.co",
@@ -48,15 +47,17 @@ const verifyPayment = async (reference) => {
 
 const verifySubscription = async (req, res) => {
   try {
+    // Sync models
     await Subscription.sync();
     await AffiliateEarning.sync();
     await AffiliateEarningHistory.sync();
     await SubscriptionTransaction.sync();
 
-    const { reference, creatorId, planType } = req.body;
+    const { reference, creatorId, planType, sizeLimit, plan, interval } =
+      req.body;
 
+    // Verify payment
     const responseData = await verifyPayment(reference);
-
     if (!responseData || !responseData.data) {
       return res.status(400).json({
         message: "Payment verification failed, invalid response data",
@@ -64,32 +65,40 @@ const verifySubscription = async (req, res) => {
     }
 
     console.log(responseData);
-    // Extract necessary data from the payment response
-    const amount = responseData.data.amount / 100; // Convert from kobo/cents to actual currency value
-    const currency = responseData.data.currency;
-    const status = responseData.data.status;
-    const email = responseData.data.customer.email;
-    const plan = responseData.data.plan_object.plan_code;
-    const sizeLimitString = responseData.data.plan_object.name;
-    const interval = responseData.data.plan_object.interval;
-    const metadata = responseData.data.metadata;
 
-    if (status !== "success") {
+    // Extract data from payment response
+    const amount = responseData.data.amount / 100;
+    const currency = responseData.data.currency;
+    const paymentStatus = responseData.data.status;
+    const email = responseData.data.customer.email;
+    const sizeLimitString = sizeLimit || responseData.data.plan_object?.name;
+    console.log(sizeLimitString);
+    const metadata = responseData.data.metadata;
+    const planCode =
+      plan || responseData.data.plan_object?.code || "default_plan";
+
+    // Calculate subscription duration based on interval from request
+    const validPlanCodes = { monthly: 1, "Bi-annually": 6, annually: 12 };
+    const months = validPlanCodes[interval.toLowerCase()] || 1;
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + months);
+
+    if (paymentStatus !== "success") {
       await SubscriptionTransaction.create({
         creatorId,
+        planCode,
         reference,
-        planCode: plan,
         planType,
         amount,
         currency,
         email,
-        startDate: null,
-        endDate: null,
+        startDate: startDate,
+        endDate: endDate,
         interval,
         sizeLimit: sizeLimitString,
         status: "failed",
       });
-
       return res.status(400).json({ message: "Payment verification failed" });
     }
 
@@ -106,7 +115,6 @@ const verifySubscription = async (req, res) => {
     const usernameField = metadata.custom_fields.find(
       (field) => field.display_name
     );
-
     if (!usernameField || !usernameField.value) {
       return res
         .status(400)
@@ -115,43 +123,29 @@ const verifySubscription = async (req, res) => {
 
     const username = usernameField.value;
 
-    // Map interval to months
-    const validPlanCodes = {
-      monthly: 1,
-      "Bi-annual": 6,
-      annual: 12,
-    };
-
-    const months = validPlanCodes[interval];
-    if (!months) {
-      return res.status(400).json({ message: "Invalid plan interval" });
-    }
-
-    // Calculate subscription dates
-    const startDate = new Date();
-    const endDate = new Date();
-    endDate.setMonth(endDate.getMonth() + months);
-
-    let transaction = await SubscriptionTransaction.create({
+    const transactionData = {
       creatorId,
       reference,
-      planCode: plan,
+      planCode,
       planType,
       amount,
       currency,
       email,
-      startDate,
-      endDate,
+      startDate: startDate,
+      endDate: endDate,
       interval,
       sizeLimit: sizeLimitString,
       status: "successful",
-    });
+    };
 
+    const transaction = await SubscriptionTransaction.create(transactionData);
+
+    // Handle subscription updates or creation
     let subscription = await Subscription.findOne({ where: { creatorId } });
     if (subscription) {
       subscription = await subscription.update({
-        planCode: plan,
         planType,
+        planCode,
         startDate,
         endDate,
         sizeLimit: sizeLimitString,
@@ -160,13 +154,13 @@ const verifySubscription = async (req, res) => {
         email,
         username,
         interval,
-        status,
+        status: "successful",
         subscriptionCount: subscription.subscriptionCount + 1,
       });
     } else {
       subscription = await Subscription.create({
         creatorId,
-        planCode: plan,
+        planCode,
         planType,
         startDate,
         endDate,
@@ -176,7 +170,7 @@ const verifySubscription = async (req, res) => {
         email,
         username,
         interval,
-        status,
+        status: "successful",
       });
     }
 
@@ -188,7 +182,7 @@ const verifySubscription = async (req, res) => {
     let getAffiliateEarning;
     let createAffiliateHistory;
 
-    if (creator.affiliateId !== null) {
+    if (creator.affiliateId !== null && paymentStatus === "success") {
       getAffiliateEarning = await AffiliateEarning.findOne({
         where: { affiliateId: creator.affiliateId },
       });
@@ -202,7 +196,6 @@ const verifySubscription = async (req, res) => {
       }
 
       let affiliateShare;
-
       if (subscription.subscriptionCount < 2) {
         affiliateShare = (15 / 100) * amount;
 
@@ -228,10 +221,10 @@ const verifySubscription = async (req, res) => {
           affiliateId: creator.affiliateId,
           userId: creatorId,
           amount: parseFloat(affiliateShare).toFixed(2),
-          currency: currency,
-          planType: planType,
+          currency,
+          planType,
           sizeLimit: sizeLimitString,
-          interval: interval,
+          interval,
         });
       }
     }
@@ -245,13 +238,13 @@ const verifySubscription = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in verifySubscription function:", error);
-    res
-      .status(500)
-      .json({ message: "An error occurred during subscription verification" });
+    res.status(500).json({
+      message: "An error occurred during subscription verification",
+    });
   }
 };
 
-const handleWebhooks = async (req, res) => {
+const handleWebhooksForRecurringCharges = async (req, res) => {
   const secret = process.env.PAYSTACK_SECRET_KEY;
 
   const generatedSignature = generatePaystackSignature(secret, req.body);
@@ -358,4 +351,7 @@ const getIntervalMonths = (interval) => {
   return intervals[interval] || 0;
 };
 
-module.exports = { verifySubscription, handleWebhooks };
+module.exports = {
+  verifySubscription,
+  handleWebhooksForRecurringCharges,
+};
