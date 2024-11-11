@@ -2,7 +2,7 @@ const { Sequelize } = require("sequelize");
 require("dotenv").config();
 
 const sequelize = new Sequelize(
-  "dimptesting",
+  "dimpified",
   process.env.DB_USER,
   process.env.DB_PWD,
   {
