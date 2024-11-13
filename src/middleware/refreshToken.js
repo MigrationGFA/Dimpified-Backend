@@ -15,13 +15,13 @@ const refreshCreatorToken = async (req, res) => {
  
   try {
     const payload = await isRefreshTokenValid(creatorToken);
-    console.log("payload", payload);
+    console.log("user payload", payload);
  
     const existingToken = await Token.findOne({
       where: { userId: payload.id, refreshToken: creatorToken },
       include: [{ model: Creator }],
     });
- 
+    console.log("this is user ", existingToken);
     if (!existingToken || !existingToken.Creator) {
       return res
         .status(401)

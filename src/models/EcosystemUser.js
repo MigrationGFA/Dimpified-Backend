@@ -21,7 +21,6 @@ const EcosystemUser = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
-        isEmail: true,
         notEmpty: true,
       },
     },
