@@ -7,6 +7,7 @@ const sendBookingConfirmationPaidEmail = require("../utils/sendBoookingConfirmat
 const moment = require("moment");
 const EcosystemUser = require("../models/EcosystemUser");
 const Notification = require("../models/ecosystemNotification");
+const bcrypt = require("bcryptjs");
 
 exports.createBooking = async (body) => {
   const {

@@ -452,7 +452,7 @@ exports.resetPassword = async ({ email, password }) => {
     origin: process.env.ORIGIN,
   });
 
-  return { status: 400, data: { message: "Password reset succesfully" } };
+  return { status: 200, data: { message: "Password reset succesfully" } };
 };
 
 // resent reset password otp
