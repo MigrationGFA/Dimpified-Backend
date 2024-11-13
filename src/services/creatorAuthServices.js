@@ -497,7 +497,9 @@ exports.resendPasswordResetOTP = async ({ email }) => {
 
 // verify reset password token
 exports.verifyResetPasswordOtp = async ({ email, OTP }) => {
+
   const details = ["email", "OTP"];
+
 
   for (const [key, value] of Object.entries(details)) {
     if (!value) {
