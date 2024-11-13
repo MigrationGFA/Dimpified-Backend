@@ -13,6 +13,7 @@ const {
 } = require("../middleware/RateLimter");
 
 const auth = require("../controllers/affiliateController/Authentication/auth");
+const refreshCreatorToken = require("../middleware/refreshCreatorToken");
 // category 1 register endpoint
 router.post("/creator/signup", authController.creatorSignup);
 router.post("/creator/verify-otp", generalAuthService.verifyOTPCreator);
@@ -74,5 +75,6 @@ router.post(
 );
 
 //Get profile
+router.post("/creator/refresh-token", refreshCreatorToken);
 
 module.exports = router;
