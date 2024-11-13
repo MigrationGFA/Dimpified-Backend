@@ -541,7 +541,7 @@ exports.updateCreatorImage = async ({ creatorId, image }) => {
     return { status: 404, data: { message: "Creator profile not found" } };
   }
 
-  const creator = await Creator.findByPk(creatorId)
+  const creator = await Creator.findByPk(creatorId);
   if (!creator) {
     return { status: 404, data: { message: "Creator not found" } };
   }
@@ -559,7 +559,7 @@ exports.updateCreatorImage = async ({ creatorId, image }) => {
     data: {
       message: "Profile image updated successfully",
       Profile: creatorProfile,
-      creator
+      creator,
     },
   };
 };
