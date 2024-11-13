@@ -1,0 +1,105 @@
+const express = require("express");
+const path = require("path");
+const router = express.Router();
+const ecosystemController = require("../controllers/creatorController/Ecosystem/businessDetails");
+const bookingController = require("../controllers/creatorController/Ecosystem/booking");
+const SupportController = require("../controllers/creatorController/Ecosystem/Supports");
+const authenticatedUser  = require("../middleware/authentication")
+
+// create about ecosystem
+router.post(
+  "/creator/business-details",
+  authenticatedUser,
+  ecosystemController.createBusinessDetails
+);
+
+// get ecosystem
+router.get(
+  "/get-business-info/:creatorId",
+  ecosystemController.getAboutEcosystem
+);
+// get ecosystem
+router.get(
+  "/website-details/:ecosystemDomain",
+  ecosystemController.websiteDetails
+);
+
+router.get(
+  "/booking-overview/:ecosystemDomain",
+   authenticatedUser,
+  bookingController.bookingOverview
+);
+
+router.get(
+  "/booking-stats/:ecosystemDomain",
+   authenticatedUser,
+  bookingController.weeklyBookingStats
+);
+
+router.get(
+  "/bookings-per-date/:ecosystemDomain/:date",
+   authenticatedUser,
+  bookingController.getBookingByDate
+);
+
+router.post("/create-booking", bookingController.createBooking);
+
+router.get(
+  "/monthly-booking-stats/:ecosystemDomain",
+   authenticatedUser,
+  bookingController.monthlyBookingStats
+);
+
+router.post("/check-domain", ecosystemController.checkDomainAvailability);
+
+// Support Request
+router.post("/creator-support", 
+   authenticatedUser,
+  SupportController.creatorSupports);
+
+router.get(
+  "/all-creator-support-requests/:ecosystemDomain",
+   authenticatedUser,
+  SupportController.getAllCreatorSupportsRequest
+);
+
+router.get(
+  "/support-request-by-a-creator/:ecosystemDomain",
+  authenticatedUser,
+  SupportController.getSupportRequestByDomain
+);
+
+// Withdrawal Request
+
+router.post("/withdrawal-request",
+  authenticatedUser,
+  ecosystemController.makeWithdrawalRequest);
+
+router.get(
+  "/get-withdrawal-requests/:ecosystemDomain",
+  authenticatedUser,
+  ecosystemController.getWithdrawalRequests
+);
+
+router.get(
+  "/total-withdrawals-stats/:ecosystemDomain",
+  authenticatedUser,
+  ecosystemController.totalWithdrawalStats
+);
+
+
+// Notifications
+router.put(
+  "/marked-as-read/:ecosystemDomain/:notificationId",
+  authenticatedUser,
+  ecosystemController.markNotificationAsViewed
+);
+
+// GET a notification
+router.get(
+  "/notifications/:ecosystemDomain",
+  authenticatedUser,
+  ecosystemController.getNotification
+);
+
+module.exports = router;
