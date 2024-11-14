@@ -5,7 +5,7 @@ const db = require("./src/config/db.js");
 const app = express();
 const cors = require("cors");
 const corsOptions = require("./src/config/corsOptions");
-const PORT = process.env.PORT || 7050;
+const PORT = process.env.PORT || 7070;
 const path = require("path");
 const { limiter } = require("./src/middleware/RateLimter");
 
