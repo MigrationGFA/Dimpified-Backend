@@ -33,3 +33,13 @@ exports.getSupportRequestByDomain = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+exports.dimpContactUs = async (req, res) => {
+  try {
+    const response = await ecosystemSupports.dimpContactUs(req.body);
+    return res.status(response.status).json(response.data);
+  } catch (error) {
+    console.error("Error creating contact us:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
