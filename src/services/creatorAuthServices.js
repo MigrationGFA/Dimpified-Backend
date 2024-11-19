@@ -182,7 +182,7 @@ exports.creatorSignup = async (body) => {
     role: newCreator.role,
     profile: true,
     step: newCreator.step,
-    phoneNumber: newCreator.phoneNumber
+    phoneNumber: phoneNumber
   };
 
   return {
