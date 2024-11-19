@@ -4,7 +4,7 @@ const router = express.Router();
 const ecosystemController = require("../controllers/creatorController/Ecosystem/businessDetails");
 const bookingController = require("../controllers/creatorController/Ecosystem/booking");
 const SupportController = require("../controllers/creatorController/Ecosystem/Supports");
-const authenticatedUser  = require("../middleware/authentication")
+const authenticatedUser = require("../middleware/authentication");
 
 // create about ecosystem
 router.post(
@@ -26,19 +26,19 @@ router.get(
 
 router.get(
   "/booking-overview/:ecosystemDomain",
-   authenticatedUser,
+  authenticatedUser,
   bookingController.bookingOverview
 );
 
 router.get(
   "/booking-stats/:ecosystemDomain",
-   authenticatedUser,
+  authenticatedUser,
   bookingController.weeklyBookingStats
 );
 
 router.get(
   "/bookings-per-date/:ecosystemDomain/:date",
-   authenticatedUser,
+  authenticatedUser,
   bookingController.getBookingByDate
 );
 
@@ -46,20 +46,22 @@ router.post("/create-booking", bookingController.createBooking);
 
 router.get(
   "/monthly-booking-stats/:ecosystemDomain",
-   authenticatedUser,
+  authenticatedUser,
   bookingController.monthlyBookingStats
 );
 
 router.post("/check-domain", ecosystemController.checkDomainAvailability);
 
 // Support Request
-router.post("/creator-support", 
-   authenticatedUser,
-  SupportController.creatorSupports);
+router.post(
+  "/creator-support",
+  authenticatedUser,
+  SupportController.creatorSupports
+);
 
 router.get(
   "/all-creator-support-requests/:ecosystemDomain",
-   authenticatedUser,
+  authenticatedUser,
   SupportController.getAllCreatorSupportsRequest
 );
 
@@ -71,9 +73,11 @@ router.get(
 
 // Withdrawal Request
 
-router.post("/withdrawal-request",
+router.post(
+  "/withdrawal-request",
   authenticatedUser,
-  ecosystemController.makeWithdrawalRequest);
+  ecosystemController.makeWithdrawalRequest
+);
 
 router.get(
   "/get-withdrawal-requests/:ecosystemDomain",
@@ -86,7 +90,6 @@ router.get(
   authenticatedUser,
   ecosystemController.totalWithdrawalStats
 );
-
 
 // Notifications
 router.put(
@@ -101,5 +104,8 @@ router.get(
   authenticatedUser,
   ecosystemController.getNotification
 );
+
+// Dimp Contact US
+router.post("/make-an-enquiry", SupportController.dimpContactUs);
 
 module.exports = router;
