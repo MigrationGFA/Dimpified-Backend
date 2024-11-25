@@ -15,7 +15,7 @@ const sendResetPasswordAlert = require("../utils/sendPasswordAlert");
 const CreatorToken = require("../models/CreatorToken");
 const Subscription = require("../models/Subscription");
 const Ecosystem = require("../models/Ecosystem");
-const sendSMSToPhpEndpoint = require('../helper/sendSms');
+const newsSendSMS = require("../helper/newSms")
 
 const cloudinary = require("cloudinary").v2;
 
@@ -70,7 +70,9 @@ exports.creatorSignup = async (body) => {
         role,
       });
 
-    await sendSMSToPhpEndpoint(phoneNumber, OTP)
+    const newPhoneNumber = formatPhoneNumber(phoneNumber)
+     const response = await  newsSendSMS(newPhoneNumber, `Dimp, Verify your account on dimp with ${OTP}`, "plain");
+    console.log("SMS sent successfully:", response);
 
       await sendVerificationOTPCreator({
         organizationName: fullName,
@@ -163,7 +165,9 @@ exports.creatorSignup = async (body) => {
     creatorId: newCreator.id,
   });
 
-  await sendSMSToPhpEndpoint(phoneNumber, OTP)
+  const newPhoneNumber = formatPhoneNumber(phoneNumber)
+   const response = await  newsSendSMS(newPhoneNumber , `Dimp, Verify your account on dimp with ${OTP}`, "plain");
+    console.log("SMS sent successfully:", response);
 
   await sendVerificationOTPCreator({
     organizationName: fullName,
@@ -340,8 +344,10 @@ exports.creatorLogin = async (req) => {
   }
 
   // Assuming setProfile is determined by certain fields being non-null
-  let setProfile =
-    creator.organizationName && creator.categoryInterest ? true : false;
+   const creatorProfile = await CreatorProfile.findOne({
+    creatorId: creator.id,
+  });
+  let setProfile = creatorProfile ? true : false;
 
   // Get Subscription Plan
   const getSubscription = await Subscription.findOne({
@@ -435,7 +441,8 @@ exports.resendOTPCreator = async ({ email, phoneNumber }) => {
     origin: process.env.ORIGIN,
   });
 
-  await sendSMSToPhpEndpoint(phoneNumber, newVerificationToken)
+   const newPhoneNumber = formatPhoneNumber(phoneNumber)
+  const response = await  newsSendSMS(newPhoneNumber , `Dimp, Verify your account on dimp with ${newVerificationToken}`, "plain");
 
   return { status: 200, data: { message: "New verification code sent" } };
 };
