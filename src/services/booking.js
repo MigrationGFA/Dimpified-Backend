@@ -187,7 +187,7 @@ exports.createBooking = async (body) => {
 
   if(creatorProfile){
     const newPhoneNumber = formatPhoneNumber(creatorProfile.phoneNumber)
-  const response = await  newsSendSMS(newPhoneNumber , `DIMP, New booking created by ${name} for  ${service} service on ${date} at ${time}. Booking ID: ${bookingId}`, "plain");
+  const response = await  newsSendSMS(newPhoneNumber , `DIMP, New booking order created by ${name} for  ${service} service on ${date} at ${time}. Booking ID: ${bookingId}`, "plain");
   }
 
   

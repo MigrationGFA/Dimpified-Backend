@@ -119,6 +119,22 @@ exports.creatorSignup = async (body) => {
         duplicateCreator.role
       );
 
+      const creatorProfile = await CreatorProfile.findOne({
+    creatorId: duplicateCreator.id,
+  });
+
+  if(!creatorProfile){
+    const newCreatorProfile = await CreatorProfile.create({
+    fullName,
+    email,
+    organizationName,
+    phoneNumber,
+    gender,
+    dateOfBirth: new Date(dateOfBirth),
+    creatorId: duplicateCreator.id,
+  });
+  }
+
       const user = {
         creatorId: duplicateCreator.id,
         fullName: fullName,
