@@ -30,6 +30,7 @@ app.use("/api/v1/", require("./src/routes/Earnings.js"));
 app.use("/api/v1/", require("./src/routes/ecosystem.js"));
 app.use("/api/v1/", require("./src/routes/affiliates.js"));
 app.use("/api/v1/", require("./src/routes/profileRoutes.js"));
+app.use("/api/v1/", require("./src/routes/admin.js"));
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
