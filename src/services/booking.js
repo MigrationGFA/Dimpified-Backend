@@ -190,8 +190,6 @@ exports.createBooking = async (body) => {
   const response = await  newsSendSMS(newPhoneNumber , `DIMP, New booking order created by ${name} for  ${service} service on ${date} at ${time}. Booking ID: ${bookingId}`, "plain");
   }
 
-  
-
   return {
     status: 200,
     data: { message: "Booking created successfully", booking: newBooking },

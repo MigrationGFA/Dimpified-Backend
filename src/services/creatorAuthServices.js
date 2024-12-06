@@ -71,7 +71,7 @@ exports.creatorSignup = async (body) => {
       });
 
     const newPhoneNumber = formatPhoneNumber(phoneNumber)
-     const response = await  newsSendSMS(newPhoneNumber, `Dimp, Verify your account on dimp with ${OTP}`, "plain");
+     const response = await  newsSendSMS(newPhoneNumber, `Use OTP ${OTP} to Verify your registration process on DIMP`, "plain");
     console.log("SMS sent successfully:", response);
 
       await sendVerificationOTPCreator({
@@ -182,7 +182,7 @@ exports.creatorSignup = async (body) => {
   });
 
   const newPhoneNumber = formatPhoneNumber(phoneNumber)
-   const response = await  newsSendSMS(newPhoneNumber , `Dimp, Verify your account on dimp with ${OTP}`, "plain");
+   const response = await  newsSendSMS(newPhoneNumber , `Use OTP ${OTP} to Verify your registration process on DIMP`, "plain");
     console.log("SMS sent successfully:", response);
 
   await sendVerificationOTPCreator({
@@ -252,7 +252,7 @@ exports.forgotPassword = async ({ email }) => {
   if (!email) {
     return { status: 400, data: { message: "Email is required" } };
   }
-
+  console.log("this is email", email)
   const creator = await Creator.findOne({ where: { email } });
   if (!creator) {
     return { status: 404, data: { message: "Creator not found" } };
@@ -274,6 +274,10 @@ exports.forgotPassword = async ({ email }) => {
   if (!creatorProfile) {
     return { status: 404, data: { message: "CreatorProfile not found" } };
   }
+
+  const newPhoneNumber = formatPhoneNumber(creatorProfile.phoneNumber)
+   const response = await  newsSendSMS(newPhoneNumber , `Use OTP ${OTP} to reset your password on DIMP`, "plain");
+    console.log("SMS sent successfully:", response);
 
   sendForgotPasswordOTP({
     username: creatorProfile.fullName,
@@ -458,7 +462,7 @@ exports.resendOTPCreator = async ({ email, phoneNumber }) => {
   });
 
    const newPhoneNumber = formatPhoneNumber(phoneNumber)
-  const response = await  newsSendSMS(newPhoneNumber , `Dimp, Verify your account on dimp with ${newVerificationToken}`, "plain");
+  const response = await  newsSendSMS(newPhoneNumber , `Use OTP ${newVerificationToken} to Verify your registration process on DIMP`, "plain");
 
   return { status: 200, data: { message: "New verification code sent" } };
 };
@@ -523,6 +527,10 @@ exports.resendPasswordResetOTP = async ({ email }) => {
   if (!creatorProfile) {
     return { status: 404, data: { message: "CreatorProfile not found" } };
   }
+
+    const newPhoneNumber = formatPhoneNumber(creatorProfile.phoneNumber)
+   const response = await  newsSendSMS(newPhoneNumber , `Use OTP ${OTP} to reset your password on DIMP`, "plain");
+    console.log("SMS sent successfully:", response);
 
   sendForgotPasswordOTP({
     username: creatorProfile.fullName,
