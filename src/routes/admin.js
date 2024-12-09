@@ -4,6 +4,9 @@ const adminController = require("../controllers/AdminController/dashboard");
 const adminSubscriptionController = require("../controllers/AdminController/subscription");
 const adminTransactionController = require("../controllers/AdminController/transaction");
 // const authenticatedUser = require("../middleware/authentication");
+const adminAuthController = require("../controllers/AdminController/authentication");
+const verifyAdmin = require("../middleware/adminAuth");
+const authenticatedAdmin = require("../middleware/adminAuthToken");
 
 const {
   monthlySubscriptions,
@@ -17,6 +20,19 @@ const { supportTickets } = require("../services/adminServices/supportTicket");
 const {
   ecosystemTransactions,
 } = require("../services/adminServices/transaction");
+
+router.post("/admin/registration", adminAuthController.adminRegister);
+router.post("/admin/login", adminAuthController.adminLogin);
+router.post("/admin/forgot-password", adminAuthController.forgotPassword);
+router.post("/admin/reset-password", adminAuthController.resetPassword);
+router.post(
+  "/admin/resend-password",
+  adminAuthController.resendPasswordResetOTP
+);
+router.post(
+  "/admin/verify-password",
+  adminAuthController.verifyResetPasswordOtp
+);
 
 router.get(
   "/admin/all-users",
