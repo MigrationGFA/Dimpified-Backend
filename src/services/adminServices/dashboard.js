@@ -64,33 +64,37 @@ exports.AdminSubscriptionCounts = async () => {
 };
 
 exports.dashboardUsersInformation = async () => {
-  // Step 1: Fetch creators (id, email)
+  // Fetch all creators with id, email, and isVerified status
   const creators = await Creator.findAll({
-    attributes: ["id", "email"],
+    attributes: ["id", "email", "isVerified"],
   });
 
   if (!creators.length) {
-    return { status: 200, data: [], message: "No creators found." };
+    return {
+      status: 200,
+      data: {
+        allTheUsers: [],
+        verifiedUsers: [],
+        unVerifiedUsers: [],
+      },
+      message: "No creators found.",
+    };
   }
 
   // Extract creator IDs
   const creatorIds = creators.map((creator) => creator.id);
 
-  // Step 2: Fetch profiles (phone number, full name)
+  // Fetch profiles (fullName)
   const creatorProfiles = await CreatorProfile.find({
     creatorId: { $in: creatorIds },
   }).select("creatorId fullName phoneNumber");
 
-  if (!creatorProfiles.length) {
-    return { status: 200, data: [], message: "No creator profiles found." };
-  }
-
-  // Step 3: Fetch ecosystems (ecosystemDomain and createdAt)
+  // Fetch ecosystems (ecosystemDomain)
   const ecosystems = await Ecosystem.find({
     creatorId: { $in: creatorIds },
   }).select("creatorId ecosystemDomain createdAt");
 
-  // Step 4: Map Ecosystem domains with createdAt to creatorId
+  // Map ecosystem domains to creatorId
   const ecosystemMap = ecosystems.reduce((map, ecosystem) => {
     if (!map[ecosystem.creatorId]) {
       map[ecosystem.creatorId] = [];
@@ -99,10 +103,11 @@ exports.dashboardUsersInformation = async () => {
       domain: ecosystem.ecosystemDomain,
       createdAt: ecosystem.createdAt,
     });
+
     return map;
   }, {});
 
-  // Step 5: Map profiles to creators
+  // Map profiles to creators
   const profileMap = creatorProfiles.reduce((map, profile) => {
     map[profile.creatorId] = {
       fullName: profile.fullName,
@@ -111,22 +116,28 @@ exports.dashboardUsersInformation = async () => {
     return map;
   }, {});
 
-  // Step 6: Build final response
-  const formattedUsers = creators
-    .filter((creator) => profileMap[creator.id]) // Only include creators with profiles
-    .map((creator) => {
-      const profile = profileMap[creator.id];
-      return {
-        email: creator.email,
-        fullName: profile.fullName,
-        phoneNumber: profile.phoneNumber,
-        ecosystems: ecosystemMap[creator.id] || [], // Include domain and createdAt
-      };
-    });
+  // Classify users into all, verified, and unverified
+  const allTheUsers = creators.map((creator) => {
+    return {
+      id: creator.id,
+      email: creator.email,
+      name: profileMap[creator.id] || null,
+      ecosystemDomains: ecosystemMap[creator.id] || [],
+      isVerified: creator.isVerified,
+    };
+  });
 
+  const verifiedUsers = allTheUsers.filter((user) => user.isVerified);
+  const unVerifiedUsers = allTheUsers.filter((user) => !user.isVerified);
+
+  // Return structured response
   return {
     status: 200,
-    data: formattedUsers,
+    data: {
+      allUsers,
+      verifiedUsers,
+      unVerifiedUsers,
+    },
   };
 };
 

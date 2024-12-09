@@ -1,11 +1,8 @@
 const {
   getAllEcosystemTransactions,
 } = require("../../controllers/AdminController/procedure");
-
-const CreatorProfile = require("../../models/CreatorProfile");
 const WithdrawalRequest = require("../../models/withdrawalRequest");
 const Account = require("../../models/Account");
-const Creator = require("../../models/Creator");
 
 exports.ecosystemTransactions = async (req, res) => {
   try {
@@ -24,93 +21,53 @@ exports.ecosystemTransactions = async (req, res) => {
 };
 
 exports.getWithdrawalDetails = async () => {
-  console.log("Starting to fetch withdrawal details...");
-
-  // Step 1: Fetch all withdrawal requests
-  const withdrawalDetails = await WithdrawalRequest.findAll({
+  const withdrawalRequests = await WithdrawalRequest.findAll({
+    attributes: ["id", "amount", "status", "requestedAt"],
     include: [
       {
         model: Account,
-        attributes: [
-          "ecosystemDomain",
-          "accountName",
-          "accountNumber",
-          "bankName",
-          "currency",
-        ],
+        attributes: ["accountName", "accountNumber", "bankName"],
       },
-      {
-        model: Creator,
-        attributes: ["id"], // Fetch creator IDs to ensure they're valid
-      },
-    ],
-    attributes: [
-      "id",
-      "amount",
-      "status",
-      "requestedAt",
-      "processedAt",
-      "creatorId",
     ],
     order: [["requestedAt", "DESC"]],
   });
-
-  console.log("Withdrawal Requests Found:", withdrawalDetails);
-
-  if (!withdrawalDetails.length) {
-    console.log("No withdrawal requests found.");
-    return { status: 200, data: [], message: "No withdrawal requests found." };
+  console.log("withdrawals", withdrawalRequests);
+  if (!withdrawalRequests.length) {
+    return {
+      status: 200,
+      data: {
+        message: " No withdrawal History found",
+      },
+    };
   }
 
-  // Step 2: Get creator IDs from withdrawal requests
-  const creatorIds = withdrawalDetails.map((request) => request.creatorId);
-  console.log("Creator IDs from WithdrawalRequest:", creatorIds);
-
-  // Step 3: Fetch CreatorProfiles for the given creator IDs
-  const creatorProfiles = await CreatorProfile.find({
-    creatorId: { $in: creatorIds },
-  })
-    .select("creatorId fullName")
-    .lean();
-
-  console.log("CreatorProfiles Found:", creatorProfiles);
-
-  // Step 4: Map CreatorProfiles by creatorId for quick lookup
-  const profileMap = creatorProfiles.reduce((acc, profile) => {
-    acc[profile.creatorId] = profile.fullName;
-    return acc;
-  }, {});
-
-  console.log("Mapped CreatorProfiles:", profileMap);
-
-  // Step 5: Format the data
-  const formattedData = withdrawalDetails.map((request) => {
-    const { amount, status, requestedAt, processedAt, creatorId } = request;
-    const fullName = profileMap[creatorId] || "Unknown Creator";
-    const ecosystemDomain = request.Account
-      ? request.Account.ecosystemDomain
-      : "Unknown";
-
-    // Extract date and time from requestedAt
-    const date = requestedAt.toISOString().split("T")[0];
-    const time = requestedAt.toISOString().split("T")[1].split(".")[0];
-
-    console.log(
-      `Processed Creator ID: ${creatorId}, Full Name: ${fullName}, Ecosystem Domain: ${ecosystemDomain}`
-    );
+  // Format the data
+  const formattedData = withdrawalRequests.map((request) => {
+    const { id, amount, status, requestedAt } = request;
+    const { accountName, accountNumber, bankName } = request.Account || {};
+    const date = new Date(requestedAt).toLocaleDateString();
+    const time = new Date(requestedAt).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
     return {
-      creatorId,
-      creatorFullName: fullName,
-      ecosystemDomain,
-      amountWithdrawn: amount,
+      id: id.toString().padStart(4, "0"), // Format ID as 4 digits
+      accountName,
+      accountNumber,
+      bankName,
       date,
       time,
+      amount: `₦${parseFloat(amount).toLocaleString()}`, // Format amount
       status,
     };
   });
 
-  console.log("Formatted Withdrawal Data:", formattedData);
-
-  return { status: 200, data: formattedData };
+  return {
+    status: 200,
+    data: {
+      status: true,
+      data: formattedData,
+    },
+  };
 };

@@ -1,469 +1,287 @@
-// const sendForgotPasswordOTP = require("../utils/sendPasswordResetOTP");
-// const sendResetPasswordAlert = require("../utils/sendPasswordAlert");
-// const Creator = require("../models/Creator");
-// const CreatorProfile = require("../models/CreatorProfile");
-// const adminUser = require("../../models/AdminUser")
-
-// // forgot password
-// exports.forgotPassword = async ({ email }) => {
-//   if (!email) {
-//     return { status: 400, data: { message: "Email is required" } };
-//   }
-//   console.log("this is email", email)
-//   const creator = await Creator.findOne({ where: { email } });
-//   if (!creator) {
-//     return { status: 404, data: { message: "Creator not found" } };
-//   }
-
-//   const OTP = Math.floor(100000 + Math.random() * 900000);
-//   const resetTokenExpirationTime = 5 * 60 * 1000;
-//   const expirationDate = Date.now() + resetTokenExpirationTime;
-
-//   creator.passwordToken = OTP;
-//   creator.passwordTokenExpirationDate = expirationDate;
-
-//   await creator.save();
-
-//   const creatorProfile = await CreatorProfile.findOne({
-//     email,
-//   });
-
-//   if (!creatorProfile) {
-//     return { status: 404, data: { message: "CreatorProfile not found" } };
-//   }
-
-//   // const newPhoneNumber = formatPhoneNumber(creatorProfile.phoneNumber)
-//   //  const response = await  newsSendSMS(newPhoneNumber , `Use OTP ${OTP} to reset your password on DIMP`, "plain");
-//   //   console.log("SMS sent successfully:", response);
-
-//   sendForgotPasswordOTP({
-//     username: creatorProfile.fullName,
-//     email,
-//     OTP,
-//     origin: process.env.ORIGIN,
-//   });
-//   return {
-//     status: 200,
-//     data: { message: "Password reset email sent succesfully" },
-//   };
-// };
-
-// exports.resetPassword = async ({ email, password }) => {
-//   const requiredFields = ["email", "password"];
-
-//   for (const [key, value] of Object.entries(requiredFields)) {
-//     if (!value) {
-//       return { status: 400, data: { message: `${key} is required` } };
-//     }
-//   }
-//   const creator = await Creator.findOne({ where: { email } });
-//   if (!creator) {
-//     return { status: 404, data: { message: "Creator not found" } };
-//   }
-//   if (creator.passwordTokenExpirationDate < Date.now()) {
-//     return { status: 400, data: { message: "Reset token has expired" } };
-//   }
-//   const hashedPassword = await bcrypt.hash(password, 10);
-//   creator.password = hashedPassword;
-//   creator.passwordTokenExpirationDate = null;
-
-//   await creator.save();
-//   const creatorProfile = await CreatorProfile.findOne({
-//     creatorId: creator.id,
-//   });
-
-//   await sendResetPasswordAlert({
-//     username: creatorProfile.fullName,
-//     email,
-//     origin: process.env.ORIGIN,
-//   });
-
-//   return { status: 200, data: { message: "Password reset succesfully" } };
-// };
-
-// // resent reset password otp
-// exports.resendPasswordResetOTP = async ({ email }) => {
-//   if (!email) {
-//     return { status: 400, data: { message: "email is required" } };
-//   }
-
-//   const creator = await Creator.findOne({ where: { email } });
-//   if (!creator) {
-//     return { status: 404, data: { message: "Creator not found" } };
-//   }
-
-//   const OTP = Math.floor(100000 + Math.random() * 900000);
-//   const resetTokenExpirationTime = 5 * 60 * 1000; // 5 minutes in milliseconds
-//   const expirationDate = Date.now() + resetTokenExpirationTime;
-
-//   creator.passwordToken = OTP;
-//   creator.passwordTokenExpirationDate = expirationDate;
-
-//   await creator.save();
-
-//   const creatorProfile = await CreatorProfile.findOne({
-//     email,
-//   });
-//   if (!creatorProfile) {
-//     return { status: 404, data: { message: "CreatorProfile not found" } };
-//   }
-
-//   sendForgotPasswordOTP({
-//     username: creatorProfile.fullName,
-//     email,
-//     OTP,
-//     origin: process.env.ORIGIN,
-//   });
-
-//   return {
-//     status: 200,
-//     data: { message: "Password reset email resent succesfully" },
-//   };
-// };
-
-// // verify reset password token
-// exports.verifyResetPasswordOtp = async ({ email, OTP }) => {
-//   const details = ["email", "OTP"];
-
-//   for (const [key, value] of Object.entries(details)) {
-//     if (!value) {
-//       return { status: 400, data: { message: `${key} is required` } };
-//     }
-//   }
-//   const creator = await Creator.findOne({ where: { email } });
-//   if (!creator) {
-//     return { status: 404, data: { message: "Creator not found" } };
-//   }
-//   if (creator.passwordToken !== OTP) {
-//     return { status: 400, data: { message: "Invalid password token" } };
-//   }
-
-//   creator.passwordToken = "";
-
-//   const resetTokenExpirationTime = 5 * 60 * 1000; // 30 minutes in milliseconds
-//   const expirationDate = Date.now() + resetTokenExpirationTime;
-
-//   creator.passwordTokenExpirationDate = expirationDate;
-
-//   await creator.save();
-//   console.log("creator:", creator);
-
-//   return { status: 200, data: { message: "OTP successfully verified" } };
-// };
-
-// exports.adminLogin = async (req) => {
-//   const { email, password } = req.body;
-//   const details = ["password", "email"];
-
-//   for (const [key, value] of Object.entries(details)) {
-//     if (!value) {
-//       return { status: 400, data: { message: `${key} is required` } };
-//     }
-//   }
-
-//   const creator = await Creator.findOne({ where: { email: email } });
-//   if (!creator) {
-//     return { status: 401, data: { message: "Invalid email Credential" } };
-//   }
-
-//   const isPasswordValid = await bcrypt.compare(password, creator.password);
-//   if (!isPasswordValid) {
-//     return { status: 401, data: { message: "Invalid password Credential" } };
-//   }
-
-//   if (!creator.isVerified) {
-//     return {
-//       status: 401,
-//       data: { message: "Please check your email to verify your account" },
-//     };
-//   }
-
-//   const creatorTokens = await CreatorToken.findOne({
-//     where: { userId: creator.id },
-//   });
-
-//   const userAgent = req.headers["user-agent"];
-//   const hasInterests =
-//     creator.categoryInterest && creator.categoryInterest !== null
-//       ? "yes"
-//       : "no";
-
-//   let accessToken, refreshToken;
-
-//   if (creatorTokens) {
-//     const accessTokenExpiration = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
-//     const refreshTokenExpiration = new Date(
-//       Date.now() + 14 * 24 * 60 * 60 * 1000
-//     ); // 14 days from now
-//     accessToken = generateAccessToken(creator.id, creator.role);
-//     refreshToken = generateRefreshToken(creator.id, creator.role);
-//     await creatorTokens.update({
-//       userAgent,
-//       accessToken,
-//       refreshToken,
-//       accessTokenExpiration,
-//       refreshTokenExpiration,
-//     });
-//   } else {
-//     accessToken = generateAccessToken(creator.id, creator.role);
-//     refreshToken = generateRefreshToken(creator.id, creator.role);
-//     const accessTokenExpiration = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
-//     const refreshTokenExpiration = new Date(
-//       Date.now() + 14 * 24 * 60 * 60 * 1000
-//     ); // 14 days from now
-
-//     const myToken = await CreatorToken.create({
-//       accessToken,
-//       refreshToken,
-//       userId: creator.id,
-//       userAgent,
-//       accessTokenExpiration,
-//       refreshTokenExpiration,
-//       type: "Creator",
-//     });
-//   }
-
-//   // Assuming setProfile is determined by certain fields being non-null
-//    const creatorProfile = await CreatorProfile.findOne({
-//     creatorId: creator.id,
-//   });
-//   let setProfile = creatorProfile ? true : false;
-
-//   // Get Subscription Plan
-//   const getSubscription = await Subscription.findOne({
-//     where: {
-//       creatorId: creator.id,
-//     },
-//   });
-
-//   let plan;
-//   if (!getSubscription) {
-//     plan = "Lite";
-//   } else {
-//     plan = getSubscription.planType;
-//   }
-
-//   const creatorEcosystem = await Ecosystem.findOne({
-//     creatorId: creator.id,
-//   });
-
-//   let ecosystemDomain = null;
-//   if (creatorEcosystem) {
-//     ecosystemDomain = creatorEcosystem.ecosystemDomain;
-//     console.log(ecosystemDomain);
-//   }
-
-//   let fullName = null;
-//   const getProfile = await CreatorProfile.findOne({
-//     creatorId: creator.id,
-//   });
-
-//   if (getProfile) {
-//     fullName = getProfile.fullName;
-//   }
-
-//   // Subset of Creator's data for response
-//   const creatorSubset = {
-//     creatorId: creator.id,
-//     organizationName: creator.organizationName,
-//     fullName: fullName,
-//     email: creator.email,
-//     role: creator.role,
-//     image: creator.imageUrl,
-//     interest: hasInterests,
-//     profile: setProfile,
-//     plan: plan,
-//     step: creator.step,
-//     ecosystemDomain: ecosystemDomain,
-//   };
-
-//   return {
-//     status: 200,
-//     data: {
-//       message: "Login successful",
-//       accessToken,
-//       refreshToken,
-//       user: creatorSubset,
-//     },
-//   };
-// };
-
-// exports.adminRegister = async (body) => {
-//   const {
-//     fullName,
-//     email,
-//     password,
-//     role,
-//     refCode,
-//     organizationName,
-//     phoneNumber,
-//     gender,
-//     dateOfBirth,
-//   } = body;
-
-//   const requiredFields = ["email", "password", "role"];
-
-//   for (const field of requiredFields) {
-//     if (!body[field]) {
-//       return { status: 400, data: { message: `${field} is required` } };
-//     }
-//   }
-
-//   const duplicateCreator = await Creator.findOne({ where: { email } });
-//   if (duplicateCreator) {
-//     if (!duplicateCreator.isVerified) {
-//       const hashedPassword = await bcrypt.hash(password, 10);
-//       const OTP = Math.floor(100000 + Math.random() * 900000);
-
-//       await duplicateCreator.update({
-//         organizationName,
-//         password: hashedPassword,
-//         verificationToken: OTP,
-//         role,
-//       });
-
-//     const newPhoneNumber = formatPhoneNumber(phoneNumber)
-//      const response = await  newsSendSMS(newPhoneNumber, `Use OTP ${OTP} to Verify your registration process on DIMP`, "plain");
-//     console.log("SMS sent successfully:", response);
-
-//       await sendVerificationOTPCreator({
-//         organizationName: fullName,
-//         email,
-//         verificationToken: OTP,
-//         origin: process.env.ORIGIN,
-//       });
-
-//       const accessToken = generateAccessToken(
-//         duplicateCreator.id,
-//         duplicateCreator.role
-//       );
-//       const refreshToken = generateRefreshToken(
-//         duplicateCreator.id,
-//         duplicateCreator.role
-//       );
-
-//       const user = {
-//         creatorId: duplicateCreator.id,
-//         fullName: fullName,
-//         email: duplicateCreator.email,
-//         role: duplicateCreator.role,
-//         profile: true,
-//         step: duplicateCreator.step,
-//         phoneNumber: phoneNumber
-//       };
-
-//       return {
-//         status: 201,
-//         data: {
-//           message: "Verification email resent successfully",
-//           accessToken,
-//           refreshToken,
-//           user,
-//         },
-//       };
-//     } else {
-//       const accessToken = generateAccessToken(
-//         duplicateCreator.id,
-//         duplicateCreator.role
-//       );
-//       const refreshToken = generateRefreshToken(
-//         duplicateCreator.id,
-//         duplicateCreator.role
-//       );
-
-//       const creatorProfile = await CreatorProfile.findOne({
-//     creatorId: duplicateCreator.id,
-//   });
-
-//   if(!creatorProfile){
-//     const newCreatorProfile = await CreatorProfile.create({
-//     fullName,
-//     email,
-//     organizationName,
-//     phoneNumber,
-//     gender,
-//     dateOfBirth: new Date(dateOfBirth),
-//     creatorId: duplicateCreator.id,
-//   });
-//   }
-
-//       const user = {
-//         creatorId: duplicateCreator.id,
-//         fullName: fullName,
-//         email: duplicateCreator.email,
-//         role: duplicateCreator.role,
-//         profile: true,
-//         step: duplicateCreator.step,
-//         phoneNumber: phoneNumber
-//       };
-
-//       return {
-//         status: 409,
-//         data: {
-//           message: "Email address is associated with an account",
-//           accessToken,
-//           refreshToken,
-//           user,
-//         },
-//       };
-//     }
-//   }
-
-//   const hashedPassword = await bcrypt.hash(password, 10);
-//   const OTP = Math.floor(100000 + Math.random() * 900000);
-
-//   const newCreator = await Creator.create({
-//     organizationName,
-//     email,
-//     password: hashedPassword,
-//     verificationToken: OTP,
-//     isVerified: false,
-//     role,
-//     step: 1,
-//     affiliateId: refCode === "not available" ? null : refCode,
-//   });
-
-//   const newCreatorProfile = await CreatorProfile.create({
-//     fullName,
-//     email,
-//     organizationName,
-//     phoneNumber,
-//     gender,
-//     dateOfBirth: new Date(dateOfBirth),
-//     creatorId: newCreator.id,
-//   });
-
-//   const newPhoneNumber = formatPhoneNumber(phoneNumber)
-//    const response = await  newsSendSMS(newPhoneNumber , `Use OTP ${OTP} to Verify your registration process on DIMP`, "plain");
-//     console.log("SMS sent successfully:", response);
-
-//   await sendVerificationOTPCreator({
-//     organizationName: fullName,
-//     email,
-//     verificationToken: OTP,
-//     origin: process.env.ORIGIN,
-//   });
-
-//   const accessToken = generateAccessToken(newCreator.id, newCreator.role);
-//   const refreshToken = generateRefreshToken(newCreator.id, newCreator.role);
-
-//   const user = {
-//     creatorId: newCreator.id,
-//     fullName: newCreatorProfile.fullName,
-//     email: newCreator.email,
-//     role: newCreator.role,
-//     profile: true,
-//     step: newCreator.step,
-//     phoneNumber: phoneNumber
-//   };
-
-//   return {
-//     status: 201,
-//     data: {
-//       message: "Creator created successfully",
-//       accessToken,
-//       refreshToken,
-//       user,
-//     },
-//   };
-// };
+const sendForgotPasswordOTP = require("../../utils/sendPasswordResetOTP");
+const sendResetPasswordAlert = require("../../utils/sendPasswordAlert");
+const sendVerificationEmail = require("../../utils/sendVerificationEmailAdmin");
+const bcrypt = require("bcryptjs");
+const AdminUser = require("../../models/AdminUser");
+const {
+  generateAccessToken,
+  generateRefreshToken,
+} = require("../../utils/generateToken");
+const AdminToken = require("../../models/AdminToken");
+
+exports.adminRegister = async (body) => {
+  const { fullName, email, password, role } = body;
+
+  // Validate required fields
+  const requiredFields = ["email", "password", "role", "fullName"];
+  for (const field of requiredFields) {
+    if (!body[field]) {
+      return { status: 400, data: { message: `${field} is required` } };
+    }
+  }
+
+  // Check if AdminUser already exists
+  const duplicateAdmin = await AdminUser.findOne({ where: { email } });
+  if (duplicateAdmin) {
+    return {
+      status: 409,
+      data: {
+        message: "Email address is already associated with an account",
+      },
+    };
+  }
+
+  // Create a new AdminUser
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const newAdmin = await AdminUser.create({
+    fullName,
+    email,
+    password: hashedPassword,
+    isVerified: false,
+    role,
+  });
+
+  return {
+    status: 201,
+    data: {
+      message: "Admin registered successfully.",
+      user: {
+        adminId: newAdmin.id,
+        fullName: newAdmin.fullName,
+        email: newAdmin.email,
+        role: newAdmin.role,
+      },
+    },
+  };
+};
+
+exports.adminLogin = async (body) => {
+  const { email, password } = body;
+
+  // Validate required fields
+  if (!email || !password) {
+    return {
+      status: 400,
+      data: { message: "Email and password are required" },
+    };
+  }
+
+  // Find admin by email
+  const admin = await AdminUser.findOne({ where: { email } });
+  if (!admin) {
+    return { status: 401, data: { message: "Invalid email credentials" } };
+  }
+
+  // Check password validity
+  const isPasswordValid = await bcrypt.compare(password, admin.password);
+  if (!isPasswordValid) {
+    return { status: 401, data: { message: "Invalid password credentials" } };
+  }
+
+  // Generate access and refresh tokens
+  const accessTokenExpiration = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+  const refreshTokenExpiration = new Date(
+    Date.now() + 14 * 24 * 60 * 60 * 1000
+  ); // 14 days
+  const accessToken = generateAccessToken(admin.id, admin.role);
+  const refreshToken = generateRefreshToken(admin.id, admin.role);
+
+  // Update or create tokens in database
+  const adminToken = await AdminToken.findOne({ where: { userId: admin.id } });
+  const userAgent = req.headers["user-agent"];
+
+  if (adminToken) {
+    await adminToken.update({
+      accessToken,
+      refreshToken,
+      userAgent,
+      accessTokenExpiration,
+      refreshTokenExpiration,
+    });
+  } else {
+    await AdminToken.create({
+      accessToken,
+      refreshToken,
+      userId: admin.id,
+      userAgent,
+      accessTokenExpiration,
+      refreshTokenExpiration,
+    });
+  }
+
+  // Subset of admin data for response
+  const adminData = {
+    adminId: admin.id,
+    fullName: admin.fullName,
+    email: admin.email,
+    role: admin.role,
+  };
+
+  return {
+    status: 200,
+    data: {
+      message: "Login successful",
+      accessToken,
+      refreshToken,
+      user: adminData,
+    },
+  };
+};
+
+exports.adminForgotPassword = async ({ email }) => {
+  // Validate email input
+  if (!email) {
+    return { status: 400, data: { message: "Email is required" } };
+  }
+
+  // Find the admin user by email
+  const admin = await AdminUser.findOne({ where: { email } });
+  if (!admin) {
+    return { status: 404, data: { message: "Admin user not found" } };
+  }
+
+  // Generate OTP and set expiration
+  const OTP = Math.floor(100000 + Math.random() * 900000); // Generate 6-digit OTP
+  const resetTokenExpirationTime = 5 * 60 * 1000; // Token valid for 5 minutes
+  const expirationDate = new Date(Date.now() + resetTokenExpirationTime);
+
+  // Update admin user with OTP and expiration date
+  await admin.update({
+    passwordToken: OTP,
+    passwordTokenExpirationDate: expirationDate,
+  });
+
+  // Send password reset email
+  await sendForgotPasswordOTP({
+    username: admin.fullName,
+    email: admin.email,
+    OTP,
+    origin: process.env.ORIGIN, // Frontend URL for reset
+  });
+
+  // Respond with success
+  return {
+    status: 200,
+    data: { message: "Password reset email sent successfully" },
+  };
+};
+
+exports.adminResetPassword = async ({ email, password }) => {
+  // Validate required fields
+  if (!email || !password) {
+    return {
+      status: 400,
+      data: { message: "Email and password are required" },
+    };
+  }
+
+  // Find the admin user by email
+  const admin = await AdminUser.findOne({ where: { email } });
+  if (!admin) {
+    return { status: 404, data: { message: "Admin user not found" } };
+  }
+
+  // Check if the reset token is still valid
+  if (
+    !admin.passwordTokenExpirationDate ||
+    admin.passwordTokenExpirationDate < Date.now()
+  ) {
+    return { status: 400, data: { message: "Reset token has expired" } };
+  }
+
+  // Hash the new password
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  // Update the admin's password and clear the reset token fields
+  await admin.update({
+    password: hashedPassword,
+    passwordToken: null,
+    passwordTokenExpirationDate: null,
+  });
+
+  // Send a notification alert about the password reset
+  await sendResetPasswordAlert({
+    username: admin.fullName,
+    email: admin.email,
+    origin: process.env.ORIGIN,
+  });
+
+  // Respond with success
+  return { status: 200, data: { message: "Password reset successfully" } };
+};
+
+exports.resendAdminPasswordResetOTP = async ({ email }) => {
+  // Validate the email field
+  if (!email) {
+    return { status: 400, data: { message: "Email is required" } };
+  }
+
+  // Find the admin user by email
+  const admin = await AdminUser.findOne({ where: { email } });
+  if (!admin) {
+    return { status: 404, data: { message: "Admin user not found" } };
+  }
+
+  // Generate a new OTP and set expiration time
+  const OTP = Math.floor(100000 + Math.random() * 900000); // Generate a 6-digit OTP
+  const resetTokenExpirationTime = 5 * 60 * 1000; // 5 minutes in milliseconds
+  const expirationDate = Date.now() + resetTokenExpirationTime;
+
+  // Update the admin's reset token and expiration date
+  await admin.update({
+    passwordToken: OTP,
+    passwordTokenExpirationDate: expirationDate,
+  });
+
+  // Send OTP via email
+  await sendForgotPasswordOTP({
+    username: admin.fullName || "Admin", // Fallback to a default name if fullName is not available
+    email: admin.email,
+    OTP,
+    origin: process.env.ORIGIN,
+  });
+
+  // Respond with success
+  return {
+    status: 200,
+    data: { message: "Password reset email resent successfully" },
+  };
+};
+
+exports.verifyAdminResetPasswordOtp = async ({ email, OTP }) => {
+  // Validate required fields
+  const requiredFields = { email, OTP };
+  for (const [key, value] of Object.entries(requiredFields)) {
+    if (!value) {
+      return { status: 400, data: { message: `${key} is required` } };
+    }
+  }
+
+  // Find the admin user by email
+  const admin = await AdminUser.findOne({ where: { email } });
+  if (!admin) {
+    return { status: 404, data: { message: "Admin user not found" } };
+  }
+
+  // Validate the OTP
+  if (admin.passwordToken !== OTP) {
+    return { status: 400, data: { message: "Invalid password token" } };
+  }
+
+  // Check if the OTP has expired
+  if (admin.passwordTokenExpirationDate < Date.now()) {
+    return { status: 400, data: { message: "Password token has expired" } };
+  }
+
+  // Clear the OTP and extend the expiration time
+  admin.passwordToken = ""; // Clear OTP for security
+  const resetTokenExpirationTime = 5 * 60 * 1000; // 5 minutes in milliseconds
+  admin.passwordTokenExpirationDate = Date.now() + resetTokenExpirationTime;
+
+  // Save changes
+  await admin.save();
+
+  // Return a success message
+  return { status: 200, data: { message: "OTP successfully verified" } };
+};
