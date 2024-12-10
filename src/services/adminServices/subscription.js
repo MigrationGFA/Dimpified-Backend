@@ -9,6 +9,7 @@ const {
 exports.allSubscription = async () => {
   const subscriptions = await Subscription.findAll({
     attributes: [
+      "id",
       "username",
       "planType",
       "ecosystemDomain",
@@ -16,12 +17,14 @@ exports.allSubscription = async () => {
       "createdAt",
       "status",
     ],
+    order: [["createdAt", "DESC"]],
   });
 
   // Format subscriptions with separate date and time
   const formattedSubscriptions = subscriptions.map((subscription) => {
     const createdAt = new Date(subscription.createdAt);
     return {
+      id: subscription.id,
       username: subscription.username,
       planType: subscription.planType,
       ecosystemDomain: subscription.ecosystemDomain,
