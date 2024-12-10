@@ -117,7 +117,7 @@ exports.dashboardUsersInformation = async () => {
   }, {});
 
   // Classify users into all, verified, and unverified
-  const allTheUsers = creators.map((creator) => {
+  const allUsers = creators.map((creator) => {
     return {
       id: creator.id,
       email: creator.email,
@@ -127,8 +127,8 @@ exports.dashboardUsersInformation = async () => {
     };
   });
 
-  const verifiedUsers = allTheUsers.filter((user) => user.isVerified);
-  const unVerifiedUsers = allTheUsers.filter((user) => !user.isVerified);
+  const verifiedUsers = allUsers.filter((user) => user.isVerified);
+  const unVerifiedUsers = allUsers.filter((user) => !user.isVerified);
 
   // Return structured response
   return {
