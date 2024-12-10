@@ -56,8 +56,8 @@ exports.adminRegister = async (body) => {
   };
 };
 
-exports.adminLogin = async (body) => {
-  const { email, password } = body;
+exports.adminLogin = async (req) => {
+  const { email, password } = req.body;
 
   // Validate required fields
   if (!email || !password) {
