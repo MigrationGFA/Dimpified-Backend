@@ -3,7 +3,7 @@ const router = express.Router();
 const adminController = require("../controllers/AdminController/dashboard");
 const adminSubscriptionController = require("../controllers/AdminController/subscription");
 const adminTransactionController = require("../controllers/AdminController/transaction");
-// const authenticatedUser = require("../middleware/authentication");
+const adminSupportController = require("../controllers/AdminController/supportTicket");
 const adminAuthController = require("../controllers/AdminController/authentication");
 const verifyAdmin = require("../middleware/adminAuth");
 const authenticatedAdmin = require("../middleware/adminAuthToken");
@@ -23,20 +23,31 @@ const {
 
 router.post("/admin/registration", adminAuthController.adminRegister);
 router.post("/admin/login", adminAuthController.adminLogin);
-router.post("/admin/forgot-password", adminAuthController.forgotPassword);
-router.post("/admin/reset-password", adminAuthController.resetPassword);
+router.post(
+  "/admin/forgot-password",
+
+  adminAuthController.forgotPassword
+);
+router.post(
+  "/admin/reset-password",
+
+  adminAuthController.resetPassword
+);
 router.post(
   "/admin/resend-password",
+
   adminAuthController.resendPasswordResetOTP
 );
 router.post(
   "/admin/verify-password",
+
   adminAuthController.verifyResetPasswordOtp
 );
 
 router.get(
   "/admin/all-users",
-
+  verifyAdmin,
+  authenticatedAdmin,
   adminController.getAdminDashboardUsers
 );
 router.get(
@@ -49,6 +60,8 @@ router.get(
 
   adminController.getAdminDashboardUsersInformations
 );
+
+router.get("/user-information/:creatorId", adminController.getAUserInformation);
 
 router.get(
   "/admin/all-subscription",
@@ -71,10 +84,14 @@ router.get(
 router.get(
   "/admin/all-creator-withdrawals",
 
-  adminTransactionController.getAllCreatorEarnings
+  adminTransactionController.getWithdrawalHistory
 );
 
-router.get("/ecosystem-transactions", ecosystemTransactions);
+router.get(
+  "/ecosystem-transactions",
+
+  ecosystemTransactions
+);
 
 router.get("/ecosystem-user-stats", userStats);
 
@@ -84,7 +101,21 @@ router.get(
   monthlyRegistration
 );
 
-router.get("/ecosystem-supports-tickets", supportTickets);
+router.get(
+  "/ecosystem-supports-tickets",
+
+  supportTickets
+);
+
+router.get(
+  "/admin/supports-information",
+  adminSupportController.getSupportsInformation
+);
+
+router.get(
+  "/admin/user-supports/:supportId",
+  adminSupportController.getASupportsInformation
+);
 
 router.get(
   "/ecosystem-subscription-plan-type-and-total-subscription",

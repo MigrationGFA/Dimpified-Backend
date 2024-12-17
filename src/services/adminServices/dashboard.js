@@ -67,6 +67,7 @@ exports.dashboardUsersInformation = async () => {
   // Fetch all creators with id, email, and isVerified status
   const creators = await Creator.findAll({
     attributes: ["id", "email", "isVerified"],
+    order: [["createdAt", "DESC"]],
   });
 
   if (!creators.length) {
@@ -84,12 +85,12 @@ exports.dashboardUsersInformation = async () => {
   // Extract creator IDs
   const creatorIds = creators.map((creator) => creator.id);
 
-  // Fetch profiles (fullName)
+  // Fetch profiles (fullName, phoneNumber)
   const creatorProfiles = await CreatorProfile.find({
     creatorId: { $in: creatorIds },
   }).select("creatorId fullName phoneNumber");
 
-  // Fetch ecosystems (ecosystemDomain)
+  // Fetch ecosystems (ecosystemDomain, createdAt)
   const ecosystems = await Ecosystem.find({
     creatorId: { $in: creatorIds },
   }).select("creatorId ecosystemDomain createdAt");
@@ -116,28 +117,101 @@ exports.dashboardUsersInformation = async () => {
     return map;
   }, {});
 
-  // Classify users into all, verified, and unverified
-  const allUsers = creators.map((creator) => {
+  // Prepare the user data
+  const users = creators.map((creator) => {
+    const profile = profileMap[creator.id] || {};
+    const ecosystems = ecosystemMap[creator.id] || [];
     return {
       id: creator.id,
       email: creator.email,
-      name: profileMap[creator.id] || null,
-      ecosystemDomains: ecosystemMap[creator.id] || [],
       isVerified: creator.isVerified,
+      fullName: profile.fullName || null,
+      phoneNumber: profile.phoneNumber || null,
+      ecosystems: ecosystems.map((eco) => ({
+        domain: eco.domain,
+        createdAt: eco.createdAt,
+      })),
     };
   });
 
-  const verifiedUsers = allUsers.filter((user) => user.isVerified);
-  const unVerifiedUsers = allUsers.filter((user) => !user.isVerified);
+  // Separate verified and unverified users
+  const verifiedUsers = users.filter((user) => user.isVerified);
+  const unVerifiedUsers = users.filter((user) => !user.isVerified);
 
-  // Return structured response
+  // Return the response
   return {
     status: 200,
     data: {
-      allUsers,
+      allUsers: users,
       verifiedUsers,
       unVerifiedUsers,
     },
+  };
+};
+exports.getAuserInformations = async (params) => {
+  const { creatorId } = params;
+
+  if (!creatorId) {
+    return {
+      status: 400,
+      data: {
+        message: "creatorId is required",
+      },
+    };
+  }
+
+  // Fetch the creator details
+  const creator = await Creator.findOne({
+    where: { id: creatorId },
+    attributes: ["id", "email", "isVerified"],
+  });
+
+  if (!creator) {
+    return {
+      status: 404,
+      data: {
+        message: "Creator not found",
+      },
+    };
+  }
+
+  // Fetch the creator profile
+  const creatorProfile = await CreatorProfile.findOne({
+    creatorId: creatorId,
+  }).select("creatorId fullName phoneNumber");
+
+  // If the profile is not found, still provide a partial response
+  const profileDetails = creatorProfile
+    ? {
+        fullName: creatorProfile.fullName,
+        phoneNumber: creatorProfile.phoneNumber,
+      }
+    : {
+        fullName: null,
+        phoneNumber: null,
+      };
+
+  // Fetch ecosystems associated with the creator
+  const ecosystems = await Ecosystem.find({
+    creatorId: creatorId,
+  }).select("ecosystemDomain createdAt");
+
+  // Prepare the structured response
+  const response = {
+    id: creator.id,
+    email: creator.email,
+    isVerified: creator.isVerified,
+    fullName: profileDetails.fullName,
+    phoneNumber: profileDetails.phoneNumber,
+    ecosystems: ecosystems.map((eco) => ({
+      domain: eco.ecosystemDomain,
+      createdAt: eco.createdAt,
+    })),
+  };
+
+  return {
+    status: 200,
+    data: response,
   };
 };
 

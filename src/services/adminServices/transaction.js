@@ -21,53 +21,20 @@ exports.ecosystemTransactions = async (req, res) => {
 };
 
 exports.getWithdrawalDetails = async () => {
-  const withdrawalRequests = await WithdrawalRequest.findAll({
-    attributes: ["id", "amount", "status", "requestedAt"],
+  const accountDetails = await Account.findAll({
     include: [
       {
-        model: Account,
-        attributes: ["accountName", "accountNumber", "bankName"],
+        model: WithdrawalRequest,
+        attributes: ["amount", "status"], // Include only necessary fields
+        required: false, // Ensures accounts are returned even if there are no associated withdrawals
       },
     ],
-    order: [["requestedAt", "DESC"]],
-  });
-  console.log("withdrawals", withdrawalRequests);
-  if (!withdrawalRequests.length) {
-    return {
-      status: 200,
-      data: {
-        message: " No withdrawal History found",
-      },
-    };
-  }
-
-  // Format the data
-  const formattedData = withdrawalRequests.map((request) => {
-    const { id, amount, status, requestedAt } = request;
-    const { accountName, accountNumber, bankName } = request.Account || {};
-    const date = new Date(requestedAt).toLocaleDateString();
-    const time = new Date(requestedAt).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-    return {
-      id: id.toString().padStart(4, "0"), // Format ID as 4 digits
-      accountName,
-      accountNumber,
-      bankName,
-      date,
-      time,
-      amount: `₦${parseFloat(amount).toLocaleString()}`, // Format amount
-      status,
-    };
   });
 
   return {
     status: 200,
     data: {
-      status: true,
-      data: formattedData,
+      message: accountDetails,
     },
   };
 };

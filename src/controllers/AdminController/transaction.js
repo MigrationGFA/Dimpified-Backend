@@ -1,6 +1,6 @@
 const adminUserTransactionService = require("../../services/adminServices/transaction");
 
-exports.getAllCreatorEarnings = async (req, res) => {
+exports.getWithdrawalHistory = async (req, res) => {
   try {
     const response = await adminUserTransactionService.getWithdrawalDetails(
       req.params
