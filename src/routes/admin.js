@@ -46,8 +46,7 @@ router.post(
 
 router.get(
   "/admin/all-users",
-  verifyAdmin,
-  authenticatedAdmin,
+
   adminController.getAdminDashboardUsers
 );
 router.get(
