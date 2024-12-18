@@ -128,4 +128,6 @@ router.get(
   monthlySubscriptions
 );
 
+router.get("/admin/wallet-balance", adminTransactionController.getBalance);
+
 module.exports = router;

@@ -3,10 +3,12 @@ const { Op } = require("sequelize");
 const Subscription = require("../../models/Subscription");
 const Ecosystem = require("../../models/Ecosystem");
 const CreatorProfile = require("../../models/CreatorProfile");
+const creatorEarning = require("../../models/CreatorEarning");
 const {
   getAllUsers,
   getMonthlyRegistration,
 } = require("../../controllers/AdminController/procedure");
+const CreatorEarning = require("../../models/CreatorEarning");
 
 exports.DashboardAllUsers = async () => {
   const allUsers = await Creator.count();
@@ -163,7 +165,7 @@ exports.getAuserInformations = async (params) => {
   // Fetch the creator details
   const creator = await Creator.findOne({
     where: { id: creatorId },
-    attributes: ["id", "email", "isVerified"],
+    attributes: ["id", "email", "password"],
   });
 
   if (!creator) {
@@ -177,36 +179,58 @@ exports.getAuserInformations = async (params) => {
 
   // Fetch the creator profile
   const creatorProfile = await CreatorProfile.findOne({
-    creatorId: creatorId,
-  }).select("creatorId fullName phoneNumber");
+    where: { creatorId },
+    attributes: [
+      "fullName",
+      "phoneNumber",
+      "state",
+      "localGovernment",
+      "country",
+    ],
+  });
 
-  // If the profile is not found, still provide a partial response
-  const profileDetails = creatorProfile
-    ? {
-        fullName: creatorProfile.fullName,
-        phoneNumber: creatorProfile.phoneNumber,
-      }
-    : {
-        fullName: null,
-        phoneNumber: null,
-      };
+  const profileDetails = creatorProfile || {
+    fullName: null,
+    phoneNumber: null,
+    state: null,
+    localGovernment: null,
+    country: null,
+  };
 
   // Fetch ecosystems associated with the creator
   const ecosystems = await Ecosystem.find({
     creatorId: creatorId,
-  }).select("ecosystemDomain createdAt");
+  }).select("ecosystemDomain createdAt address");
+
+  // Fetch subscription details
+  const subscription = await Subscription.findOne({
+    where: { creatorId },
+    attributes: ["planType"],
+  });
+
+  // Fetch balance details
+  const balance = await CreatorEarning.findOne({
+    where: { creatorId },
+    attributes: ["Naira"],
+  });
 
   // Prepare the structured response
   const response = {
     id: creator.id,
     email: creator.email,
-    isVerified: creator.isVerified,
+    password: creator.password,
     fullName: profileDetails.fullName,
     phoneNumber: profileDetails.phoneNumber,
+    state: profileDetails.state,
+    localGovernment: profileDetails.localGovernment,
+    country: profileDetails.country,
     ecosystems: ecosystems.map((eco) => ({
       domain: eco.ecosystemDomain,
+      address: eco.address,
       createdAt: eco.createdAt,
     })),
+    subscription: subscription ? subscription.planType : null,
+    balance: balance ? balance.Naira : null,
   };
 
   return {
