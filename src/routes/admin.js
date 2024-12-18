@@ -45,86 +45,112 @@ router.post(
 );
 
 router.get(
-  "/admin/all-users",
-
+  "/admin/all-users/:email",
+  verifyAdmin,
+  authenticatedAdmin,
   adminController.getAdminDashboardUsers
 );
 router.get(
-  "/admin/all-subscribers",
-
+  "/admin/all-subscribers/:email",
+  verifyAdmin,
+  authenticatedAdmin,
   adminController.getAdminDashboardSubscribers
 );
 router.get(
-  "/admin/all-users-informations",
-
+  "/admin/all-users-informations/:email",
+  verifyAdmin,
+  authenticatedAdmin,
   adminController.getAdminDashboardUsersInformations
 );
 
-router.get("/user-information/:creatorId", adminController.getAUserInformation);
+router.get(
+  "/user-information/:creatorId/:email",
+  verifyAdmin,
+  authenticatedAdmin,
+  adminController.getAUserInformation
+);
 
 router.get(
-  "/admin/all-subscription",
-
+  "/admin/all-subscription/:email",
+  verifyAdmin,
+  authenticatedAdmin,
   adminSubscriptionController.getAllSubscriptions
 );
 
 router.get(
-  "/admin/total-subscriptions",
-
+  "/admin/total-subscriptions/:email",
+  verifyAdmin,
+  authenticatedAdmin,
   adminSubscriptionController.getTotalSubscriptions
 );
 
 router.get(
-  "/admin/subscriptions",
-
+  "/admin/subscriptions/:email",
+  verifyAdmin,
+  authenticatedAdmin,
   adminSubscriptionController.getCalculatedTotalSubscriptions
 );
 
 router.get(
-  "/admin/all-creator-withdrawals",
-
+  "/admin/all-creator-withdrawals/:email",
+  verifyAdmin,
+  authenticatedAdmin,
   adminTransactionController.getWithdrawalHistory
 );
 
 router.get(
-  "/ecosystem-transactions",
-
+  "/ecosystem-transactions/:email",
+  verifyAdmin,
+  authenticatedAdmin,
   ecosystemTransactions
 );
 
-router.get("/ecosystem-user-stats", userStats);
+router.get(
+  "/ecosystem-user-stats/:email",
+  verifyAdmin,
+  authenticatedAdmin,
+  userStats
+);
 
 router.get(
-  "/ecosystem-monthly-registration",
-
+  "/ecosystem-monthly-registration/:email",
+  verifyAdmin,
+  authenticatedAdmin,
   monthlyRegistration
 );
 
 router.get(
-  "/ecosystem-supports-tickets",
-
+  "/ecosystem-supports-tickets/:email",
+  verifyAdmin,
+  authenticatedAdmin,
   supportTickets
 );
 
 router.get(
-  "/admin/supports-information",
+  "/admin/supports-information/:email",
+  verifyAdmin,
+  authenticatedAdmin,
   adminSupportController.getSupportsInformation
 );
 
 router.get(
-  "/admin/user-supports/:supportId",
+  "/admin/user-supports/:supportId/:email",
+  verifyAdmin,
+  authenticatedAdmin,
   adminSupportController.getASupportsInformation
 );
 
 router.get(
-  "/ecosystem-subscription-plan-type-and-total-subscription",
-
+  "/ecosystem-subscription-plan-type-and-total-subscription/:email",
+  verifyAdmin,
+  authenticatedAdmin,
   planTypeTotalSubscription
 );
 
 router.get(
-  "/ecosystem-monthly-subscription",
-
+  "/ecosystem-monthly-subscription/:email",
+  verifyAdmin,
+  authenticatedAdmin,
   monthlySubscriptions
 );
 
