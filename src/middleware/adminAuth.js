@@ -4,7 +4,7 @@ const verifyAdmin = async (req, res, next) => {
   try {
     const userEmail = req.params.email;
     if (!userEmail) {
-      return res.status(400).json({ msg: "User ID is required" });
+      return res.status(400).json({ msg: "User email is required" });
     }
     const user = await Users.findOne({ where: { email: userEmail } });
     if (!user) {
