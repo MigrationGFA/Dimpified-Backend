@@ -1,8 +1,12 @@
+const { Op } = require("sequelize");
+const Creator = require("../../models/Creator");
+const ecosystemTransaction = require("../../models/ecosystemTransaction");
 const {
   getAllEcosystemTransactions,
 } = require("../../controllers/AdminController/procedure");
 const WithdrawalRequest = require("../../models/withdrawalRequest");
 const Account = require("../../models/Account");
+const { createTransport } = require("nodemailer");
 
 exports.ecosystemTransactions = async (req, res) => {
   try {
@@ -21,53 +25,159 @@ exports.ecosystemTransactions = async (req, res) => {
 };
 
 exports.getWithdrawalDetails = async () => {
-  const withdrawalRequests = await WithdrawalRequest.findAll({
-    attributes: ["id", "amount", "status", "requestedAt"],
-    include: [
-      {
-        model: Account,
-        attributes: ["accountName", "accountNumber", "bankName"],
-      },
-    ],
-    order: [["requestedAt", "DESC"]],
+  // // Fetch all creators with id, email, and isVerified status
+  // const creators = await Creator.findAll({
+  //   attributes: ["id"],
+  //   order: [["createdAt", "DESC"]],
+  // });
+
+  // if (!creators.length) {
+  //   return {
+  //     status: 200,
+  //     data: [],
+  //     message: "No creators found.",
+  //   };
+  // }
+
+  // // Extract creator IDs
+  // const creatorIds = creators.map((creator) => creator.id);
+
+  // // Fetch Accounts (even if there are no withdrawals)
+  // const accounts = await Account.findAll({
+  //   where: { creatorId: creatorIds },
+  //   attributes: ["creatorId", "accountName", "accountNumber", "bankName"],
+  // });
+
+  // const withdrawals = await WithdrawalRequest.findAll({
+  //   where: { creatorId: creatorIds },
+  //   attributes: ["creatorId", "requestedAt", "amount", "status"],
+  // });
+
+  // // Map accounts to creatorId
+  // const accountMap = accounts.reduce((map, account) => {
+  //   map[account.creatorId] = {
+  //     accountName: account.accountName,
+  //     accountNumber: account.accountNumber,
+  //     bankName: account.bankName,
+  //   };
+  //   return map;
+  // }, {});
+
+  // const withdrawalMap = withdrawals.reduce((map, withdrawal) => {
+  //   map[withdrawal.creatorId].push({
+  //     amount: withdrawal.amount,
+  //     requestedAt: withdrawal.requestedAt,
+  //     status: withdrawal.status,
+  //   });
+  //   return map;
+  // }, {});
+
+  // // Prepare user data
+  // const users = creators.map((creator) => {
+  //   const account = accountMap[creator.id] || {};
+  //   const withdrawal = withdrawalMap[creator.id] || {};
+  //   return {
+  //     id: creator.id,
+  //     accountName: account.accountName || null,
+  //     accountNumber: account.accountNumber || null,
+  //     bankName: account.bankName || null,
+  //     amount: withdrawal.amount || null,
+  //     requestedAt: withdrawal.requestedAt || null,
+  //     status: withdrawal.status || null,
+  //   };
+  // });
+
+  // // Return the response
+  // return {
+  //   status: 200,
+  //   data: users,
+  // };
+
+  const creators = await Creator.findAll({
+    attributes: ["id"],
+    order: [["createdAt", "DESC"]],
   });
-  console.log("withdrawals", withdrawalRequests);
-  if (!withdrawalRequests.length) {
+
+  if (!creators.length) {
     return {
       status: 200,
-      data: {
-        message: " No withdrawal History found",
-      },
+      data: [],
+      message: "No creators found.",
     };
   }
 
-  // Format the data
-  const formattedData = withdrawalRequests.map((request) => {
-    const { id, amount, status, requestedAt } = request;
-    const { accountName, accountNumber, bankName } = request.Account || {};
-    const date = new Date(requestedAt).toLocaleDateString();
-    const time = new Date(requestedAt).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  // Extract creator IDs
+  const creatorIds = creators.map((creator) => creator.id);
+
+  // Fetch accounts for the specified creatorIds
+  const accounts = await Account.findAll({
+    where: { creatorId: creatorIds },
+    attributes: [
+      "id",
+      "creatorId",
+      "accountName",
+      "accountNumber",
+      "bankName",
+      "currency",
+    ],
+    include: [
+      {
+        model: WithdrawalRequest,
+        attributes: ["amount", "status", "requestedAt", "processedAt"],
+      },
+    ],
+  });
+
+  if (!accounts.length) {
+    return {
+      status: 404,
+      data: [],
+      message: "No accounts or withdrawals found for the specified criteria.",
+    };
+  }
+
+  // Prepare response
+  const response = accounts.map((account) => {
+    // Map withdrawals or set a default entry if none exist
+    const withdrawals =
+      account.WithdrawalRequests.length > 0
+        ? account.WithdrawalRequests.map((withdrawal) => ({
+            amount: withdrawal.amount !== null ? withdrawal.amount : "N/A",
+            status: withdrawal.status,
+            requestedAt: withdrawal.requestedAt,
+            processedAt: withdrawal.processedAt,
+          }))
+        : [
+            {
+              amount: "N/A",
+              status: "N/A",
+              requestedAt: "N/A",
+              processedAt: "N/A",
+            },
+          ];
 
     return {
-      id: id.toString().padStart(4, "0"), // Format ID as 4 digits
-      accountName,
-      accountNumber,
-      bankName,
-      date,
-      time,
-      amount: `₦${parseFloat(amount).toLocaleString()}`, // Format amount
-      status,
+      creatorId: account.creatorId,
+      accountName: account.accountName,
+      accountNumber: account.accountNumber,
+      bankName: account.bankName,
+      currency: account.currency,
+      withdrawals,
     };
   });
 
   return {
     status: 200,
+    data: response,
+  };
+};
+
+exports.walletBalance = async () => {
+  const balance = await ecosystemTransaction.findAll();
+  return {
+    status: 200,
     data: {
-      status: true,
-      data: formattedData,
+      message: balance,
     },
   };
 };
