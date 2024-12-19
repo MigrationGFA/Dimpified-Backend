@@ -138,23 +138,26 @@ exports.getWithdrawalDetails = async () => {
 
   // Prepare response
   const response = accounts.map((account) => {
-    // Map withdrawals or set a default entry if none exist
-    const withdrawals =
-      account.WithdrawalRequests.length > 0
-        ? account.WithdrawalRequests.map((withdrawal) => ({
-            amount: withdrawal.amount !== null ? withdrawal.amount : "N/A",
-            status: withdrawal.status,
-            requestedAt: withdrawal.requestedAt,
-            processedAt: withdrawal.processedAt,
-          }))
-        : [
-            {
-              amount: "N/A",
-              status: "N/A",
-              requestedAt: "N/A",
-              processedAt: "N/A",
-            },
-          ];
+    // Use reduce to process withdrawals
+    const withdrawals = account.WithdrawalRequests.reduce((acc, withdrawal) => {
+      acc.push({
+        amount: withdrawal.amount !== null ? withdrawal.amount : 0,
+        status: withdrawal.status,
+        requestedAt: withdrawal.requestedAt,
+        processedAt: withdrawal.processedAt,
+      });
+      return acc;
+    }, []);
+
+    // Default withdrawal if no withdrawals exist
+    if (withdrawals.length === 0) {
+      withdrawals.push({
+        amount: 0,
+        status: "N/A",
+        requestedAt: "N/A",
+        processedAt: "N/A",
+      });
+    }
 
     return {
       creatorId: account.creatorId,
@@ -171,7 +174,6 @@ exports.getWithdrawalDetails = async () => {
     data: response,
   };
 };
-
 exports.walletBalance = async () => {
   const balance = await ecosystemTransaction.findAll();
   return {

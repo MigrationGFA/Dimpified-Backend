@@ -7,6 +7,7 @@ const adminSupportController = require("../controllers/AdminController/supportTi
 const adminAuthController = require("../controllers/AdminController/authentication");
 const verifyAdmin = require("../middleware/adminAuth");
 const authenticatedAdmin = require("../middleware/adminAuthToken");
+const adminNotificationController = require("../controllers/AdminController/notification");
 
 const {
   monthlySubscriptions,
@@ -92,7 +93,7 @@ router.get(
 );
 
 router.get(
-  "/admin/all-creator-withdrawals/:email",
+  "/admin/all-creator-withdrawals/",
   verifyAdmin,
   authenticatedAdmin,
   adminTransactionController.getWithdrawalHistory
@@ -152,6 +153,11 @@ router.get(
   verifyAdmin,
   authenticatedAdmin,
   monthlySubscriptions
+);
+
+router.get(
+  "/admin-notification",
+  adminNotificationController.getAdminNotifications
 );
 
 router.get("/admin/wallet-balance", adminTransactionController.getBalance);
