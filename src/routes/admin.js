@@ -93,7 +93,7 @@ router.get(
 );
 
 router.get(
-  "/admin/all-creator-withdrawals/",
+  "/admin/all-creator-withdrawals/:email",
   verifyAdmin,
   authenticatedAdmin,
   adminTransactionController.getWithdrawalHistory
@@ -156,10 +156,17 @@ router.get(
 );
 
 router.get(
-  "/admin-notification",
+  "/admin-notification/:email",
   adminNotificationController.getAdminNotifications
 );
 
-router.get("/admin/wallet-balance", adminTransactionController.getBalance);
+router.get(
+  "/admin/withdrawal-details/:email",
+  adminTransactionController.getTransactionDetails
+);
 
+router.get(
+  "/admin/transaction-history/:email",
+  adminTransactionController.getendUserTransactionDetails
+);
 module.exports = router;

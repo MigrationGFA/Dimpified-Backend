@@ -3,6 +3,7 @@ const AdminNotification = require("../../models/AdminNotification");
 
 exports.getAdminNotification = async (query) => {
   const { email } = query;
+
   if (!email) {
     return {
       status: 400,
@@ -11,19 +12,19 @@ exports.getAdminNotification = async (query) => {
       },
     };
   }
-  const user = await AdminUser.findOne({
-    where: { email }, // Add the where condition
-  }); // Adjust model if necessary
+
+  // Find the user by email
+  const user = await AdminUser.findOne({ where: { email } }); // Sequelize query
   if (!user) {
     return { status: 404, data: { message: "User not found" } };
   }
 
   const { role } = user;
 
-  // Define roles based on user role
+  // Determine roles to query based on user role
   let rolesToQuery;
   if (role === "admin" || role === "product") {
-    rolesToQuery = {}; // Return all notifications
+    rolesToQuery = null; //
   } else if (role === "finance") {
     rolesToQuery = ["general", "finance"];
   } else if (role === "support") {
@@ -34,7 +35,6 @@ exports.getAdminNotification = async (query) => {
     return { status: 400, data: { message: "Invalid role" } };
   }
 
-  // Query notifications
   const notificationQuery = rolesToQuery ? { role: { $in: rolesToQuery } } : {};
   const notifications = await AdminNotification.find(notificationQuery).sort({
     date: -1,
