@@ -9,10 +9,22 @@ const getAllUsers = async () => {
   }
 };
 
+// const getMonthlyRegistration = async () => {
+//   try {
+//     const [results] = await sequelize.query("CALL GetRegistrationsByMonth()");
+//     console.log("Procedure Results:", results);
+//     return results; // Return the result of the procedure
+//   } catch (error) {
+//     console.error("Error fetching users:", error.message);
+//     throw error;
+//   }
+// };
+
 const getMonthlyRegistration = async () => {
   try {
-    const [results] = await sequelize.query("CALL GetMonthlyRegistration()");
-    return results; // Return the result of the procedure
+    const [results] = await sequelize.query("CALL GetRegistrationsByMonth()");
+    console.log("Procedure Results:", results); // Should now be an array
+    return results;
   } catch (error) {
     console.error("Error fetching users:", error.message);
     throw error;
@@ -33,7 +45,7 @@ const GetPlanTypeAndTotalSubscription = async () => {
 
 const GetMonthlySubscriptions = async () => {
   try {
-    const [results] = await sequelize.query("CALL GetMonthlySubscriptions()");
+    const [results] = await sequelize.query("CALL GetSubscriptionsByMonths()");
     return results; // Return the result of the procedure
   } catch (error) {
     console.error("Error fetching supports:", error.message);

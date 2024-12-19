@@ -270,3 +270,21 @@ exports.monthlyRegistration = async (req, res) => {
     });
   }
 };
+
+// exports.monthlyRegistration = async (req, res) => {
+//   try {
+//     // Fetch monthly registrations from the procedure
+//     const monthlyRegistration = await getMonthlyRegistration();
+
+//     res.status(200).json({
+//       success: true,
+//       data: Array.isArray(monthlyRegistration) ? monthlyRegistration : [],
+//     });
+//   } catch (error) {
+//     console.error("Error in /api/monthly-registration:", error.message);
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to fetch monthly registrations.",
+//     });
+//   }
+// };
