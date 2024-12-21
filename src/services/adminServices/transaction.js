@@ -10,6 +10,7 @@ const {
 const WithdrawalRequest = require("../../models/withdrawalRequest");
 const Account = require("../../models/Account");
 const CreatorEarning = require("../../models/CreatorEarning");
+const Booking = require("../../models/DimpBooking");
 const { createTransport } = require("nodemailer");
 
 exports.ecosystemTransactions = async (req, res) => {
@@ -29,74 +30,6 @@ exports.ecosystemTransactions = async (req, res) => {
 };
 
 exports.getWithdrawalDetails = async () => {
-  // // Fetch all creators with id, email, and isVerified status
-  // const creators = await Creator.findAll({
-  //   attributes: ["id"],
-  //   order: [["createdAt", "DESC"]],
-  // });
-
-  // if (!creators.length) {
-  //   return {
-  //     status: 200,
-  //     data: [],
-  //     message: "No creators found.",
-  //   };
-  // }
-
-  // // Extract creator IDs
-  // const creatorIds = creators.map((creator) => creator.id);
-
-  // // Fetch Accounts (even if there are no withdrawals)
-  // const accounts = await Account.findAll({
-  //   where: { creatorId: creatorIds },
-  //   attributes: ["creatorId", "accountName", "accountNumber", "bankName"],
-  // });
-
-  // const withdrawals = await WithdrawalRequest.findAll({
-  //   where: { creatorId: creatorIds },
-  //   attributes: ["creatorId", "requestedAt", "amount", "status"],
-  // });
-
-  // // Map accounts to creatorId
-  // const accountMap = accounts.reduce((map, account) => {
-  //   map[account.creatorId] = {
-  //     accountName: account.accountName,
-  //     accountNumber: account.accountNumber,
-  //     bankName: account.bankName,
-  //   };
-  //   return map;
-  // }, {});
-
-  // const withdrawalMap = withdrawals.reduce((map, withdrawal) => {
-  //   map[withdrawal.creatorId].push({
-  //     amount: withdrawal.amount,
-  //     requestedAt: withdrawal.requestedAt,
-  //     status: withdrawal.status,
-  //   });
-  //   return map;
-  // }, {});
-
-  // // Prepare user data
-  // const users = creators.map((creator) => {
-  //   const account = accountMap[creator.id] || {};
-  //   const withdrawal = withdrawalMap[creator.id] || {};
-  //   return {
-  //     id: creator.id,
-  //     accountName: account.accountName || null,
-  //     accountNumber: account.accountNumber || null,
-  //     bankName: account.bankName || null,
-  //     amount: withdrawal.amount || null,
-  //     requestedAt: withdrawal.requestedAt || null,
-  //     status: withdrawal.status || null,
-  //   };
-  // });
-
-  // // Return the response
-  // return {
-  //   status: 200,
-  //   data: users,
-  // };
-
   const creators = await Creator.findAll({
     attributes: ["id"],
     order: [["createdAt", "DESC"]],
@@ -309,89 +242,70 @@ exports.transactionDetails = async () => {
 };
 
 exports.endUserTransaction = async () => {
-  // Fetch all users
-  const users = await EcosystemUser.findAll();
-
-  // Fetch all transactions
-  const transactions = await EcosystemTransaction.findAll();
+  // Fetch all bookings
+  const bookings = await Booking.find({});
 
   // Fetch all creators
   const creators = await Creator.findAll();
 
-  // Fetch all withdrawal requests, sorted by ID in ascending order
-  const withdrawals = await WithdrawalRequest.findAll({});
+  // Fetch all creator profiles
+  const creatorProfiles = await CreatorProfile.find({});
 
-  // Map user details with their transactions
-  const endUserDetails = users
-    .map((user) => {
-      const userTransactions = transactions.filter(
-        (transaction) => transaction.userId === user.id
-      );
+  // Fetch all ecosystems
+  const ecosystems = await Ecosystem.find({});
 
-      // If no transactions, return default data
-      if (userTransactions.length === 0) {
-        return {
-          userName: user.username,
-          ecosystemDomain: user.ecosystemDomain,
-          service: null,
-          amountPaid: 0,
-          date: null,
-          time: null,
-          status: "No transactions",
-        };
-      }
+  // Fetch all withdrawal requests
+  const withdrawals = await WithdrawalRequest.findAll();
 
-      // Otherwise, map the transactions for the user
-      return userTransactions.map((transaction) => ({
-        userName: user.username,
-        ecosystemDomain: transaction.ecosystemDomain,
-        service: transaction.itemTitle,
-        amountPaid: parseFloat(transaction.amount),
-        date: transaction.transactionDate.toISOString().split("T")[0],
-        time: transaction.transactionDate
-          .toISOString()
-          .split("T")[1]
-          .split(".")[0],
-        status: transaction.status,
-      }));
-    })
-    .flat();
+  // Map end user details directly from bookings and assign sequential IDs
+  const endUserDetails = bookings
+    .map((booking, index) => ({
+      id: bookings.length - index, // Assign sequential ID in descending order
+      userName: booking.name,
+      ecosystemDomain: booking.ecosystemDomain,
+      service: booking.service,
+      amountPaid: parseFloat(booking.price || 0).toFixed(2),
+      date: booking.date.toISOString().split("T")[0],
+      time: booking.time,
+      status: booking.status,
+    }))
+    .sort((a, b) => b.id - a.id); // Sort in descending order by ID
 
   // Map creator details along with their withdrawals and ecosystem domain
   const creatorDetails = await Promise.all(
     creators.map(async (creator) => {
-      // Fetch the associated Ecosystem for the creator to get ecosystemDomain
-      const ecosystem = await Ecosystem.findOne({
-        creatorId: creator.id, // Matching the creatorId
-      });
+      const creatorProfile = creatorProfiles.find(
+        (profile) => profile.creatorId === creator.id.toString()
+      );
 
-      // Filter withdrawals for this creator
+      const ecosystem = ecosystems.find((eco) => eco.creatorId === creator.id);
+
       const creatorWithdrawals = withdrawals.filter(
         (withdrawal) => withdrawal.creatorId === creator.id
       );
 
       return {
-        id: creator.id,
-        creatorName: creator.organizationName,
-        ecosystemDomain: ecosystem ? ecosystem.ecosystemDomain : "N/A", // Handle missing ecosystem domain
+        id: creator.id, // Include creator ID
+        creatorName: creatorProfile?.fullName || creator.organizationName,
+        ecosystemDomain: ecosystem ? ecosystem.ecosystemDomain : "N/A",
         balance: parseFloat(creator.balance || 0).toFixed(2),
+        date: creator.createdAt.toISOString().split("T")[0],
+        time: creator.createdAt.toISOString().split("T")[1].split(".")[0],
+        status: creator.step === 5 ? "Completed" : "In progress",
         withdrawals: creatorWithdrawals.map((withdrawal) => ({
           amountWithdrawn: parseFloat(withdrawal.amount),
-          date: withdrawal.requestedAt.toISOString().split("T")[0],
-          time: withdrawal.requestedAt
-            .toISOString()
-            .split("T")[1]
-            .split(".")[0],
-          status: withdrawal.status,
         })),
       };
     })
   );
 
+  // Sort creator details in descending order
+  const sortedCreatorDetails = creatorDetails.sort((a, b) => b.id - a.id);
+
   return {
     status: 200,
     data: {
-      creatorAccount: creatorDetails,
+      creatorAccount: sortedCreatorDetails,
       endUser: endUserDetails,
     },
   };

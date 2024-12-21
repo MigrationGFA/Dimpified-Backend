@@ -157,6 +157,8 @@ router.get(
 
 router.get(
   "/admin-notification/:email",
+  verifyAdmin,
+  authenticatedAdmin,
   adminNotificationController.getAdminNotifications
 );
 
