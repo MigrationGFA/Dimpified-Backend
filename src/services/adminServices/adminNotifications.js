@@ -1,8 +1,8 @@
 const AdminUser = require("../../models/AdminUser");
 const AdminNotification = require("../../models/AdminNotification");
 
-exports.getAdminNotification = async (query) => {
-  const { email } = query;
+exports.getAdminNotification = async (params) => {
+  const { email } = params;
 
   if (!email) {
     return {
@@ -14,7 +14,7 @@ exports.getAdminNotification = async (query) => {
   }
 
   // Find the user by email
-  const user = await AdminUser.findOne({ where: { email } }); // Sequelize query
+  const user = await AdminUser.findOne({ where: { email: email } }); // Sequelize query
   if (!user) {
     return { status: 404, data: { message: "User not found" } };
   }
