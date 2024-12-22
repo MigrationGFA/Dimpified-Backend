@@ -3,7 +3,7 @@ const adminNotificationService = require("../../services/adminServices/adminNoti
 exports.getAdminNotifications = async (req, res) => {
   try {
     const response = await adminNotificationService.getAdminNotification(
-      req.query
+      req.params
     );
     return res.status(response.status).json(response.data);
   } catch (error) {
