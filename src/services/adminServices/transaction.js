@@ -1,9 +1,10 @@
 const { Op } = require("sequelize");
 const Creator = require("../../models/Creator");
-const EcosystemTransaction = require("../../models/ecosystemTransaction");
+const ecosystemTransaction = require("../../models/ecosystemTransaction");
 const EcosystemUser = require("../../models/EcosystemUser");
 const Ecosystem = require("../../models/Ecosystem");
 const CreatorProfile = require("../../models/CreatorProfile");
+const Subscription = require("../../models/Subscription");
 const {
   getAllEcosystemTransactions,
 } = require("../../controllers/AdminController/procedure");
@@ -30,79 +31,46 @@ exports.ecosystemTransactions = async (req, res) => {
 };
 
 exports.getWithdrawalDetails = async () => {
-  const creators = await Creator.findAll({
-    attributes: ["id"],
-    order: [["createdAt", "DESC"]],
-  });
-
-  if (!creators.length) {
-    return {
-      status: 200,
-      data: [],
-      message: "No creators found.",
-    };
-  }
-
-  // Extract creator IDs
-  const creatorIds = creators.map((creator) => creator.id);
-
-  // Fetch accounts for the specified creatorIds
-  const accounts = await Account.findAll({
-    where: { creatorId: creatorIds },
-    attributes: [
-      "id",
-      "creatorId",
-      "accountName",
-      "accountNumber",
-      "bankName",
-      "currency",
-    ],
+  // Fetch withdrawal requests along with related account and creator information
+  const withdrawalHistory = await WithdrawalRequest.findAll({
     include: [
       {
-        model: WithdrawalRequest,
-        attributes: ["amount", "status", "requestedAt", "processedAt"],
+        model: Account,
+        attributes: ["accountName", "accountNumber", "bankName"],
+      },
+      {
+        model: Creator,
+        attributes: ["id", "organizationName", "step"],
       },
     ],
+    order: [["requestedAt", "DESC"]],
   });
 
-  if (!accounts.length) {
+  // Fetch all ecosystem data to map `ecosystemDomain` by `creatorId`
+  const ecosystemData = await Ecosystem.find({}).select(
+    "creatorId ecosystemDomain"
+  );
+
+  // Create a map for fast access to ecosystemDomain by creatorId
+  const ecosystemMap = ecosystemData.reduce((map, eco) => {
+    map[eco.creatorId] = eco.ecosystemDomain;
+    return map;
+  }, {});
+
+  // Map the data to the required format
+  const response = withdrawalHistory.map((withdrawal) => {
+    const { accountName, accountNumber, bankName } = withdrawal.Account || {};
+    const { id: creatorId, step } = withdrawal.Creator || {};
     return {
-      status: 404,
-      data: [],
-      message: "No accounts or withdrawals found for the specified criteria.",
-    };
-  }
-
-  // Prepare response
-  const response = accounts.map((account) => {
-    // Use reduce to process withdrawals
-    const withdrawals = account.WithdrawalRequests.reduce((acc, withdrawal) => {
-      acc.push({
-        amount: withdrawal.amount !== null ? withdrawal.amount : 0,
-        status: withdrawal.status,
-        requestedAt: withdrawal.requestedAt,
-        processedAt: withdrawal.processedAt,
-      });
-      return acc;
-    }, []);
-
-    // Default withdrawal if no withdrawals exist
-    if (withdrawals.length === 0) {
-      withdrawals.push({
-        amount: 0,
-        status: "N/A",
-        requestedAt: "N/A",
-        processedAt: "N/A",
-      });
-    }
-
-    return {
-      creatorId: account.creatorId,
-      accountName: account.accountName,
-      accountNumber: account.accountNumber,
-      bankName: account.bankName,
-      currency: account.currency,
-      withdrawals,
+      creatorId: creatorId,
+      accountName: accountName || "N/A",
+      accountNumber: accountNumber || "N/A",
+      bankName: bankName || "N/A",
+      amount: withdrawal.amount,
+      requestedAt: withdrawal.requestedAt,
+      // processedAt: withdrawal.processedAt || "Pending",
+      status: step === 0 ? "Completed" : "In-progress", // Updated status
+      ecosystemDomain: ecosystemMap[creatorId] || "N/A", // Include the ecosystemDomain
     };
   });
 
@@ -112,76 +80,107 @@ exports.getWithdrawalDetails = async () => {
   };
 };
 
+exports.getWithdrawalDetailsForProfile = async (params) => {
+  const { creatorId } = params;
+
+  if (!creatorId) {
+    return {
+      status: 400,
+      message: "Creator ID is required.",
+    };
+  }
+
+  // Fetch withdrawal requests for the specific creator
+  const withdrawalHistory = await WithdrawalRequest.findAll({
+    where: { creatorId },
+    include: [
+      {
+        model: Account,
+        attributes: ["accountName", "accountNumber", "bankName"],
+      },
+      {
+        model: Creator,
+        attributes: ["id", "organizationName", "step"],
+      },
+    ],
+    order: [["requestedAt", "DESC"]],
+  });
+
+  if (withdrawalHistory.length === 0) {
+    return {
+      status: 404,
+      message: "No withdrawal details found for the specified creator.",
+    };
+  }
+
+  // Fetch ecosystem data for the specific creator
+  const ecosystem = await Ecosystem.findOne({ creatorId }).select(
+    "ecosystemDomain"
+  );
+
+  // Fetch transactions to calculate the incoming amount and wallet balance
+  const transactions = await ecosystemTransaction.findAll({
+    where: { creatorId },
+  });
+
+  const incomingAmount = transactions.reduce(
+    (total, transaction) => total + parseFloat(transaction.amount || 0),
+    0
+  );
+
+  // Wallet balance (total amount from ecosystemTransaction)
+  const walletBalance = incomingAmount;
+
+  // Calculate the outgoing amount
+  const outgoingAmount = withdrawalHistory.reduce(
+    (total, withdrawal) => total + parseFloat(withdrawal.amount || 0),
+    0
+  );
+
+  // Fetch subscriptions for the creator
+  const subscriptions = await Subscription.findAll({
+    where: { creatorId },
+    attributes: ["planType"],
+  });
+
+  // Get the first subscription plan type, or "N/A" if none exist
+  const subscriptionPlanType =
+    subscriptions.length > 0 ? subscriptions[0].planType : "N/A";
+
+  // Fetch the creator profile for the given creatorId
+  const creatorProfile = await CreatorProfile.findOne({ creatorId }).select(
+    "fullName"
+  );
+
+  const fullName = creatorProfile?.fullName || "N/A";
+
+  // Map withdrawal history to the required format
+  const response = withdrawalHistory.map((withdrawal) => {
+    const { accountName, accountNumber, bankName } = withdrawal.Account || {};
+    const { step } = withdrawal.Creator || {};
+    return {
+      creatorId,
+      fullName, // Include the fullName from the profile
+      accountName: accountName || "N/A",
+      accountNumber: accountNumber || "N/A",
+      bankName: bankName || "N/A",
+      ecosystemDomain: ecosystem?.ecosystemDomain, // Include the ecosystemDomain
+      subscriptionPlanType, // Include the subscription plan type
+    };
+  });
+
+  return {
+    status: 200,
+    data: {
+      withdrawalDetails: response, // Withdrawal details
+      incomingAmount: parseFloat(incomingAmount).toFixed(2), // Total incoming amount
+      outgoingAmount: parseFloat(outgoingAmount).toFixed(2), // Total outgoing amount
+      walletBalance: parseFloat(walletBalance).toFixed(2), // Total wallet balance
+    },
+  };
+};
+
 exports.transactionDetails = async () => {
-  // Fetch all creators
-  // const creators = await Creator.findAll({
-  //   attributes: ["id", "organizationName"],
-  // });
-
-  // console.log("Fetched Creators:", JSON.stringify(creators, null, 2)); // Log creators
-
-  // // Fetch all earnings
-  // const earnings = await CreatorEarning.findAll({
-  //   attributes: ["creatorId", "Naira", "Dollar"],
-  // });
-
-  // console.log("Fetched Earnings:", JSON.stringify(earnings, null, 2)); // Log earnings
-
-  // // Fetch all approved withdrawal requests
-  // const withdrawals = await WithdrawalRequest.findAll({
-  //   where: { status: "approved" },
-  //   attributes: ["creatorId", "amount", "currency"],
-  // });
-
-  // console.log("Fetched Withdrawals:", JSON.stringify(withdrawals, null, 2)); // Log withdrawals
-
-  // // Merge data
-  // const financialDetails = creators.map((creator) => {
-  //   const { id, organizationName } = creator;
-
-  //   const earning = earnings.find((e) => e.creatorId === id) || {
-  //     Naira: 0,
-  //     Dollar: 0,
-  //   };
-
-  //   const totalWithdrawn = withdrawals
-  //     .filter((w) => w.creatorId === id)
-  //     .reduce(
-  //       (totals, withdrawal) => {
-  //         if (withdrawal.currency === "Naira") {
-  //           totals.Naira += parseFloat(withdrawal.amount);
-  //         } else if (withdrawal.currency === "Dollar") {
-  //           totals.Dollar += parseFloat(withdrawal.amount);
-  //         }
-  //         return totals;
-  //       },
-  //       { Naira: 0, Dollar: 0 }
-  //     );
-
-  //   return {
-  //     creatorId: id,
-  //     creatorName: organizationName,
-  //     balance: {
-  //       Naira: parseFloat(earning.Naira),
-  //       Dollar: parseFloat(earning.Dollar),
-  //     },
-  //     totalWithdrawn,
-  //   };
-  // });
-
-  // console.log(
-  //   "Final Financial Details:",
-  //   JSON.stringify(financialDetails, null, 2)
-  // ); // Log final results
-
-  // return {
-  //   status: 200,
-  //   data: {
-  //     message: "Financial details retrieved successfully",
-  //     financialDetails,
-  //   },
-  // };
-
   // Fetch all withdrawal requests
   const withdrawals = await WithdrawalRequest.findAll({
     attributes: [

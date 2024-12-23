@@ -86,6 +86,13 @@ router.get(
 );
 
 router.get(
+  "/admin/creator-withdrawal/:email",
+  verifyAdmin,
+  authenticatedAdmin,
+  adminTransactionController.getTransactionDetails
+);
+
+router.get(
   "/admin/subscriptions/:email",
   verifyAdmin,
   authenticatedAdmin,
@@ -97,6 +104,13 @@ router.get(
   verifyAdmin,
   authenticatedAdmin,
   adminTransactionController.getWithdrawalHistory
+);
+
+router.get(
+  "/admin/withdrawal-details/:creatorId/:email",
+  verifyAdmin,
+  authenticatedAdmin,
+  adminTransactionController.getWithdrawalHistoryForProfile
 );
 
 router.get(
@@ -171,4 +185,15 @@ router.get(
   "/admin/transaction-history/:email",
   adminTransactionController.getendUserTransactionDetails
 );
+
+router.get(
+  "/admin/subcategory-overview",
+  adminController.getAdminDashboardSubcategory
+);
+
+router.get(
+  "/admin/subcategory-information",
+  adminController.getAdminDashboardSubcategoryInformation
+);
+
 module.exports = router;
