@@ -4,6 +4,7 @@ const adminController = require("../controllers/AdminController/dashboard");
 const adminSubscriptionController = require("../controllers/AdminController/subscription");
 const adminTransactionController = require("../controllers/AdminController/transaction");
 // const authenticatedUser = require("../middleware/authentication");
+const {getEcosystemData} = require("../controllers/AdminController/access")
 
 const {
   monthlySubscriptions,
@@ -82,4 +83,10 @@ router.get(
   monthlySubscriptions
 );
 
+// short access
+router.get(
+  "/ecosystem-monthly-data",
+
+  getEcosystemData
+);
 module.exports = router;
