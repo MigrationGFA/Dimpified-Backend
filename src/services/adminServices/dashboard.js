@@ -3,12 +3,13 @@ const { Op } = require("sequelize");
 const Subscription = require("../../models/Subscription");
 const Ecosystem = require("../../models/Ecosystem");
 const CreatorProfile = require("../../models/CreatorProfile");
-const creatorEarning = require("../../models/CreatorEarning");
+const ecosystemTransaction = require("../../models/ecosystemTransaction");
 const {
   getAllUsers,
   getMonthlyRegistration,
 } = require("../../controllers/AdminController/procedure");
 const CreatorEarning = require("../../models/CreatorEarning");
+const Service = require("../../models/Service");
 
 exports.DashboardAllUsers = async () => {
   const allUsers = await Creator.count();
@@ -91,6 +92,8 @@ exports.dashboardUsersInformation = async () => {
   const creatorProfiles = await CreatorProfile.find({
     creatorId: { $in: creatorIds },
   }).select("creatorId fullName phoneNumber");
+
+  console.log(creatorProfiles);
 
   // Fetch ecosystems (ecosystemDomain, createdAt)
   const ecosystems = await Ecosystem.find({
@@ -271,20 +274,120 @@ exports.monthlyRegistration = async (req, res) => {
   }
 };
 
-// exports.monthlyRegistration = async (req, res) => {
-//   try {
-//     // Fetch monthly registrations from the procedure
-//     const monthlyRegistration = await getMonthlyRegistration();
+exports.getSubCategory = async (query) => {
+  const { subCategory, interval } = query;
+  if (!subCategory || !interval) {
+    return {
+      status: 400,
+      data: {
+        message: "subCategory and interval are required.",
+      },
+    };
+  }
 
-//     res.status(200).json({
-//       success: true,
-//       data: Array.isArray(monthlyRegistration) ? monthlyRegistration : [],
-//     });
-//   } catch (error) {
-//     console.error("Error in /api/monthly-registration:", error.message);
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to fetch monthly registrations.",
-//     });
-//   }
-// };
+  const now = new Date();
+  let startDate;
+
+  switch (interval) {
+    case "weekly":
+      startDate = new Date(now.setDate(now.getDate() - 7));
+      break;
+    case "monthly":
+      startDate = new Date(now.setMonth(now.getMonth() - 1));
+      break;
+    case "yearly":
+      startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+      break;
+    default:
+      return {
+        status: 400,
+        data: {
+          message: "Invalid interval. Use 'weekly', 'monthly', or 'yearly'.",
+        },
+      };
+  }
+
+  // Query the database with filters and count
+  const serviceCount = await Service.countDocuments({
+    subCategory,
+    createdAt: { $gte: startDate },
+  });
+
+  return {
+    status: 200,
+    data: {
+      subCategory,
+      interval,
+      count: serviceCount,
+    },
+  };
+};
+
+exports.subCategoryInformation = async () => {
+  // Fetch all creators
+  const creators = await Creator.findAll();
+
+  // Fetch all creator profiles
+  const creatorProfiles = await CreatorProfile.find({});
+
+  // Fetch all ecosystems
+  const ecosystems = await Ecosystem.find({});
+
+  // Fetch all subscriptions
+  const subscriptions = await Subscription.findAll();
+
+  // Fetch all transactions
+  const transactions = await ecosystemTransaction.findAll();
+
+  // Map creator details along with their subscriptions, ecosystem domain, and balance
+  const creatorDetails = await Promise.all(
+    creators.map(async (creator) => {
+      const creatorProfile = creatorProfiles.find(
+        (profile) => profile.creatorId === creator.id.toString()
+      );
+
+      const ecosystem = ecosystems.find((eco) => eco.creatorId === creator.id);
+
+      const creatorSubscriptions = subscriptions.filter(
+        (subscription) => subscription.creatorId === creator.id
+      );
+
+      // Get unique subscription plan types
+      const uniquePlanTypes = [
+        ...new Set(
+          creatorSubscriptions.map((subscription) => subscription.planType)
+        ),
+      ].join(", "); // Combine as a comma-separated string
+
+      // Calculate the balance from transactions
+      const creatorTransactions = transactions.filter(
+        (transaction) => transaction.creatorId === creator.id
+      );
+      const balance = creatorTransactions.reduce(
+        (total, transaction) => total + parseFloat(transaction.amount || 0),
+        0
+      );
+
+      return {
+        id: creator.id, // Include creator ID
+        creatorName: creatorProfile?.fullName || creator.organizationName,
+        ecosystemDomain: ecosystem ? ecosystem.ecosystemDomain : "N/A",
+        subscriptionPlan: uniquePlanTypes, // Comma-separated string of plan types
+        balance: parseFloat(balance).toFixed(2), // Balance calculated from transactions
+        date: creator.createdAt.toISOString().split("T")[0],
+        time: creator.createdAt.toISOString().split("T")[1].split(".")[0],
+        status: creator.step === 5 ? "Completed" : "In progress",
+      };
+    })
+  );
+
+  // Sort creator details in descending order
+  const sortedCreatorDetails = creatorDetails.sort((a, b) => b.id - a.id);
+
+  return {
+    status: 200,
+    data: {
+      creatorAccount: sortedCreatorDetails,
+    },
+  };
+};
