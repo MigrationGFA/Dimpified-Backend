@@ -3,11 +3,16 @@ const router = express.Router();
 const adminController = require("../controllers/AdminController/dashboard");
 const adminSubscriptionController = require("../controllers/AdminController/subscription");
 const adminTransactionController = require("../controllers/AdminController/transaction");
+
+// const authenticatedUser = require("../middleware/authentication");
+const {getEcosystemData} = require("../controllers/AdminController/access")
+
 const adminSupportController = require("../controllers/AdminController/supportTicket");
 const adminAuthController = require("../controllers/AdminController/authentication");
 const verifyAdmin = require("../middleware/adminAuth");
 const authenticatedAdmin = require("../middleware/adminAuthToken");
 const adminNotificationController = require("../controllers/AdminController/notification");
+
 
 const {
   monthlySubscriptions,
@@ -169,6 +174,13 @@ router.get(
   monthlySubscriptions
 );
 
+
+// short access
+router.get(
+  "/ecosystem-monthly-data",
+
+  getEcosystemData
+);
 router.get(
   "/admin-notification/:email",
   verifyAdmin,
@@ -195,5 +207,6 @@ router.get(
   "/admin/subcategory-information",
   adminController.getAdminDashboardSubcategoryInformation
 );
+
 
 module.exports = router;
