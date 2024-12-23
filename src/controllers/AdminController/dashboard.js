@@ -33,3 +33,37 @@ exports.getAdminDashboardUsersInformations = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+exports.getAUserInformation = async (req, res) => {
+  try {
+    const response = await adminDashboardServices.getAuserInformations(
+      req.params
+    );
+    return res.status(response.status).json(response.data);
+  } catch (error) {
+    console.error("error getting all users", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+exports.getAdminDashboardSubcategory = async (req, res) => {
+  try {
+    const response = await adminDashboardServices.getSubCategory(req.query);
+    return res.status(response.status).json(response.data);
+  } catch (error) {
+    console.error("error getting all users", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+exports.getAdminDashboardSubcategoryInformation = async (req, res) => {
+  try {
+    const response = await adminDashboardServices.subCategoryInformation(
+      req.params
+    );
+    return res.status(response.status).json(response.data);
+  } catch (error) {
+    console.error("error getting all users", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};

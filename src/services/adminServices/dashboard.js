@@ -3,10 +3,13 @@ const { Op } = require("sequelize");
 const Subscription = require("../../models/Subscription");
 const Ecosystem = require("../../models/Ecosystem");
 const CreatorProfile = require("../../models/CreatorProfile");
+const ecosystemTransaction = require("../../models/ecosystemTransaction");
 const {
   getAllUsers,
   getMonthlyRegistration,
 } = require("../../controllers/AdminController/procedure");
+const CreatorEarning = require("../../models/CreatorEarning");
+const Service = require("../../models/Service");
 
 exports.DashboardAllUsers = async () => {
   const allUsers = await Creator.count();
@@ -64,33 +67,40 @@ exports.AdminSubscriptionCounts = async () => {
 };
 
 exports.dashboardUsersInformation = async () => {
-  // Step 1: Fetch creators (id, email)
+  // Fetch all creators with id, email, and isVerified status
   const creators = await Creator.findAll({
-    attributes: ["id", "email"],
+    attributes: ["id", "email", "isVerified"],
+    order: [["createdAt", "DESC"]],
   });
 
   if (!creators.length) {
-    return { status: 200, data: [], message: "No creators found." };
+    return {
+      status: 200,
+      data: {
+        allTheUsers: [],
+        verifiedUsers: [],
+        unVerifiedUsers: [],
+      },
+      message: "No creators found.",
+    };
   }
 
   // Extract creator IDs
   const creatorIds = creators.map((creator) => creator.id);
 
-  // Step 2: Fetch profiles (phone number, full name)
+  // Fetch profiles (fullName, phoneNumber)
   const creatorProfiles = await CreatorProfile.find({
     creatorId: { $in: creatorIds },
   }).select("creatorId fullName phoneNumber");
 
-  if (!creatorProfiles.length) {
-    return { status: 200, data: [], message: "No creator profiles found." };
-  }
+  console.log(creatorProfiles);
 
-  // Step 3: Fetch ecosystems (ecosystemDomain and createdAt)
+  // Fetch ecosystems (ecosystemDomain, createdAt)
   const ecosystems = await Ecosystem.find({
     creatorId: { $in: creatorIds },
   }).select("creatorId ecosystemDomain createdAt");
 
-  // Step 4: Map Ecosystem domains with createdAt to creatorId
+  // Map ecosystem domains to creatorId
   const ecosystemMap = ecosystems.reduce((map, ecosystem) => {
     if (!map[ecosystem.creatorId]) {
       map[ecosystem.creatorId] = [];
@@ -99,10 +109,11 @@ exports.dashboardUsersInformation = async () => {
       domain: ecosystem.ecosystemDomain,
       createdAt: ecosystem.createdAt,
     });
+
     return map;
   }, {});
 
-  // Step 5: Map profiles to creators
+  // Map profiles to creators
   const profileMap = creatorProfiles.reduce((map, profile) => {
     map[profile.creatorId] = {
       fullName: profile.fullName,
@@ -111,22 +122,123 @@ exports.dashboardUsersInformation = async () => {
     return map;
   }, {});
 
-  // Step 6: Build final response
-  const formattedUsers = creators
-    .filter((creator) => profileMap[creator.id]) // Only include creators with profiles
-    .map((creator) => {
-      const profile = profileMap[creator.id];
-      return {
-        email: creator.email,
-        fullName: profile.fullName,
-        phoneNumber: profile.phoneNumber,
-        ecosystems: ecosystemMap[creator.id] || [], // Include domain and createdAt
-      };
-    });
+  // Prepare the user data
+  const users = creators.map((creator) => {
+    const profile = profileMap[creator.id] || {};
+    const ecosystems = ecosystemMap[creator.id] || [];
+    return {
+      id: creator.id,
+      email: creator.email,
+      isVerified: creator.isVerified,
+      fullName: profile.fullName || null,
+      phoneNumber: profile.phoneNumber || null,
+      ecosystems: ecosystems.map((eco) => ({
+        domain: eco.domain,
+        createdAt: eco.createdAt,
+      })),
+    };
+  });
+
+  // Separate verified and unverified users
+  const verifiedUsers = users.filter((user) => user.isVerified);
+  const unVerifiedUsers = users.filter((user) => !user.isVerified);
+
+  // Return the response
+  return {
+    status: 200,
+    data: {
+      allUsers: users,
+      verifiedUsers,
+      unVerifiedUsers,
+    },
+  };
+};
+exports.getAuserInformations = async (params) => {
+  const { creatorId } = params;
+
+  if (!creatorId) {
+    return {
+      status: 400,
+      data: {
+        message: "creatorId is required",
+      },
+    };
+  }
+
+  // Fetch the creator details
+  const creator = await Creator.findOne({
+    where: { id: creatorId },
+    attributes: ["id", "email", "password"],
+  });
+
+  if (!creator) {
+    return {
+      status: 404,
+      data: {
+        message: "Creator not found",
+      },
+    };
+  }
+
+  // Fetch the creator profile
+  const creatorProfile = await CreatorProfile.findOne({
+    where: { creatorId },
+    attributes: [
+      "fullName",
+      "phoneNumber",
+      "state",
+      "localGovernment",
+      "country",
+    ],
+  });
+
+  const profileDetails = creatorProfile || {
+    fullName: null,
+    phoneNumber: null,
+    state: null,
+    localGovernment: null,
+    country: null,
+  };
+
+  // Fetch ecosystems associated with the creator
+  const ecosystems = await Ecosystem.find({
+    creatorId: creatorId,
+  }).select("ecosystemDomain createdAt address");
+
+  // Fetch subscription details
+  const subscription = await Subscription.findOne({
+    where: { creatorId },
+    attributes: ["planType"],
+  });
+
+  // Fetch balance details
+  const balance = await CreatorEarning.findOne({
+    where: { creatorId },
+    attributes: ["Naira"],
+  });
+
+  // Prepare the structured response
+  const response = {
+    id: creator.id,
+    email: creator.email,
+    password: creator.password,
+    fullName: profileDetails.fullName,
+    phoneNumber: profileDetails.phoneNumber,
+    state: profileDetails.state,
+    localGovernment: profileDetails.localGovernment,
+    country: profileDetails.country,
+    ecosystems: ecosystems.map((eco) => ({
+      domain: eco.ecosystemDomain,
+      address: eco.address,
+      createdAt: eco.createdAt,
+    })),
+    subscription: subscription ? subscription.planType : null,
+    balance: balance ? balance.Naira : null,
+  };
 
   return {
     status: 200,
-    data: formattedUsers,
+    data: response,
   };
 };
 
@@ -160,4 +272,122 @@ exports.monthlyRegistration = async (req, res) => {
       message: "Failed to fetch monthly registrations.",
     });
   }
+};
+
+exports.getSubCategory = async (query) => {
+  const { subCategory, interval } = query;
+  if (!subCategory || !interval) {
+    return {
+      status: 400,
+      data: {
+        message: "subCategory and interval are required.",
+      },
+    };
+  }
+
+  const now = new Date();
+  let startDate;
+
+  switch (interval) {
+    case "weekly":
+      startDate = new Date(now.setDate(now.getDate() - 7));
+      break;
+    case "monthly":
+      startDate = new Date(now.setMonth(now.getMonth() - 1));
+      break;
+    case "yearly":
+      startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+      break;
+    default:
+      return {
+        status: 400,
+        data: {
+          message: "Invalid interval. Use 'weekly', 'monthly', or 'yearly'.",
+        },
+      };
+  }
+
+  // Query the database with filters and count
+  const serviceCount = await Service.countDocuments({
+    subCategory,
+    createdAt: { $gte: startDate },
+  });
+
+  return {
+    status: 200,
+    data: {
+      subCategory,
+      interval,
+      count: serviceCount,
+    },
+  };
+};
+
+exports.subCategoryInformation = async () => {
+  // Fetch all creators
+  const creators = await Creator.findAll();
+
+  // Fetch all creator profiles
+  const creatorProfiles = await CreatorProfile.find({});
+
+  // Fetch all ecosystems
+  const ecosystems = await Ecosystem.find({});
+
+  // Fetch all subscriptions
+  const subscriptions = await Subscription.findAll();
+
+  // Fetch all transactions
+  const transactions = await ecosystemTransaction.findAll();
+
+  // Map creator details along with their subscriptions, ecosystem domain, and balance
+  const creatorDetails = await Promise.all(
+    creators.map(async (creator) => {
+      const creatorProfile = creatorProfiles.find(
+        (profile) => profile.creatorId === creator.id.toString()
+      );
+
+      const ecosystem = ecosystems.find((eco) => eco.creatorId === creator.id);
+
+      const creatorSubscriptions = subscriptions.filter(
+        (subscription) => subscription.creatorId === creator.id
+      );
+
+      // Get unique subscription plan types
+      const uniquePlanTypes = [
+        ...new Set(
+          creatorSubscriptions.map((subscription) => subscription.planType)
+        ),
+      ].join(", "); // Combine as a comma-separated string
+
+      // Calculate the balance from transactions
+      const creatorTransactions = transactions.filter(
+        (transaction) => transaction.creatorId === creator.id
+      );
+      const balance = creatorTransactions.reduce(
+        (total, transaction) => total + parseFloat(transaction.amount || 0),
+        0
+      );
+
+      return {
+        id: creator.id, // Include creator ID
+        creatorName: creatorProfile?.fullName || creator.organizationName,
+        ecosystemDomain: ecosystem ? ecosystem.ecosystemDomain : "N/A",
+        subscriptionPlan: uniquePlanTypes, // Comma-separated string of plan types
+        balance: parseFloat(balance).toFixed(2), // Balance calculated from transactions
+        date: creator.createdAt.toISOString().split("T")[0],
+        time: creator.createdAt.toISOString().split("T")[1].split(".")[0],
+        status: creator.step === 5 ? "Completed" : "In progress",
+      };
+    })
+  );
+
+  // Sort creator details in descending order
+  const sortedCreatorDetails = creatorDetails.sort((a, b) => b.id - a.id);
+
+  return {
+    status: 200,
+    data: {
+      creatorAccount: sortedCreatorDetails,
+    },
+  };
 };

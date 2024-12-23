@@ -5,7 +5,9 @@ const whiteList = [
   "https://www.dimpified.com",
   "https://dimpified.com",
   "https://dimpified-frontend-testing.azurewebsites.net",
-  "https://dimp-test.azurewebsites.net"
+  "https://dimp-test.azurewebsites.net",
+  "https://admin.dimpified.com",
+  "https://www.admin.dimpified.com/"
 ];
 const allowedDomainsRegex = /^https?:\/\/([a-zA-Z0-9-]+\.)?(localhost|dimpified\.com)(:\d{1,5})?$/;
 
