@@ -31,46 +31,76 @@ exports.ecosystemTransactions = async (req, res) => {
 };
 
 exports.getWithdrawalDetails = async () => {
-  // Fetch withdrawal requests along with related account and creator information
+  // Fetch all withdrawal requests
   const withdrawalHistory = await WithdrawalRequest.findAll({
-    include: [
-      {
-        model: Account,
-        attributes: ["accountName", "accountNumber", "bankName"],
-      },
-      {
-        model: Creator,
-        attributes: ["id", "organizationName", "step"],
-      },
-    ],
-    order: [["requestedAt", "DESC"]],
+    order: [["createdAt", "DESC"]], // Order by latest request first
   });
 
-  // Fetch all ecosystem data to map `ecosystemDomain` by `creatorId`
-  const ecosystemData = await Ecosystem.find({}).select(
-    "creatorId ecosystemDomain"
-  );
+  if (!withdrawalHistory.length) {
+    return {
+      status: 404,
+      message: "No withdrawal history found.",
+    };
+  }
 
-  // Create a map for fast access to ecosystemDomain by creatorId
-  const ecosystemMap = ecosystemData.reduce((map, eco) => {
-    map[eco.creatorId] = eco.ecosystemDomain;
+  // Group by creatorId and keep only the first (most recent) withdrawal for each creator
+  const groupedWithdrawals = withdrawalHistory.reduce((map, withdrawal) => {
+    if (!map[withdrawal.creatorId]) {
+      map[withdrawal.creatorId] = withdrawal;
+    }
     return map;
   }, {});
 
-  // Map the data to the required format
-  const response = withdrawalHistory.map((withdrawal) => {
-    const { accountName, accountNumber, bankName } = withdrawal.Account || {};
-    const { id: creatorId, step } = withdrawal.Creator || {};
+  // Fetch unique creator IDs
+  const creatorIds = Object.keys(groupedWithdrawals);
+
+  // Fetch creator profiles for the creator IDs
+  const creatorProfiles = await CreatorProfile.find({
+    creatorId: { $in: creatorIds },
+  }).select("creatorId fullName");
+
+  // Map creator profiles by creatorId for quick access
+  const creatorMap = creatorProfiles.reduce((map, profile) => {
+    map[profile.creatorId] = profile.fullName;
+    return map;
+  }, {});
+
+  // Fetch balances for each creator from ecosystemTransaction
+  const balances = await Promise.all(
+    creatorIds.map(async (creatorId) => {
+      const transactions = await ecosystemTransaction.findAll({
+        where: { creatorId },
+      });
+      const balance = transactions.reduce(
+        (total, transaction) => total + parseFloat(transaction.amount || 0),
+        0
+      );
+      return { creatorId, balance };
+    })
+  );
+
+  // Map balances by creatorId for quick access
+  const balanceMap = balances.reduce((map, { creatorId, balance }) => {
+    map[creatorId] = parseFloat(balance).toFixed(2);
+    return map;
+  }, {});
+
+  // Map the most recent withdrawal history to the desired format
+  const response = Object.values(groupedWithdrawals).map((withdrawal) => {
+    const fullName = creatorMap[withdrawal.creatorId] || "N/A";
+    const balance = balanceMap[withdrawal.creatorId] || "0.00";
+
     return {
-      creatorId: creatorId,
-      accountName: accountName || "N/A",
-      accountNumber: accountNumber || "N/A",
-      bankName: bankName || "N/A",
+      withdrawalId: withdrawal.id, // Correct ID from the database
+      // creatorId: withdrawal.creatorId,
+      fullName,
+      ecosystemDomain: withdrawal.ecosystemDomain,
+      balance,
       amount: withdrawal.amount,
+      status: withdrawal.status,
       requestedAt: withdrawal.requestedAt,
-      // processedAt: withdrawal.processedAt || "Pending",
-      status: step === 0 ? "Completed" : "In-progress", // Updated status
-      ecosystemDomain: ecosystemMap[creatorId] || "N/A", // Include the ecosystemDomain
+      processedAt: withdrawal.processedAt || "Pending",
+      balance,
     };
   });
 
@@ -100,7 +130,7 @@ exports.getWithdrawalDetailsForProfile = async (params) => {
       },
       {
         model: Creator,
-        attributes: ["id", "organizationName", "step"],
+        attributes: ["id", "organizationName", "email"],
       },
     ],
     order: [["requestedAt", "DESC"]],
@@ -137,15 +167,15 @@ exports.getWithdrawalDetailsForProfile = async (params) => {
     0
   );
 
-  // Fetch subscriptions for the creator
-  const subscriptions = await Subscription.findAll({
-    where: { creatorId },
-    attributes: ["planType"],
-  });
+  // // Fetch subscriptions for the creator
+  // const subscriptions = await Subscription.findAll({
+  //   where: { creatorId },
+  //   attributes: ["planType"],
+  // });
 
-  // Get the first subscription plan type, or "N/A" if none exist
-  const subscriptionPlanType =
-    subscriptions.length > 0 ? subscriptions[0].planType : "N/A";
+  // // Get the first subscription plan type, or "N/A" if none exist
+  // const subscriptionPlanType =
+  //   subscriptions.length > 0 ? subscriptions[0].planType : "N/A";
 
   // Fetch the creator profile for the given creatorId
   const creatorProfile = await CreatorProfile.findOne({ creatorId }).select(
@@ -157,15 +187,20 @@ exports.getWithdrawalDetailsForProfile = async (params) => {
   // Map withdrawal history to the required format
   const response = withdrawalHistory.map((withdrawal) => {
     const { accountName, accountNumber, bankName } = withdrawal.Account || {};
-    const { step } = withdrawal.Creator || {};
+    const { email } = withdrawal.Creator || {};
     return {
+      withdrawalId: withdrawal.id,
       creatorId,
+      email: email,
       fullName, // Include the fullName from the profile
       accountName: accountName || "N/A",
       accountNumber: accountNumber || "N/A",
       bankName: bankName || "N/A",
-      ecosystemDomain: ecosystem?.ecosystemDomain, // Include the ecosystemDomain
-      subscriptionPlanType, // Include the subscription plan type
+      ecosystemDomain: ecosystem?.ecosystemDomain,
+      amount: parseFloat(withdrawal.amount || 0).toFixed(2), // Include amount
+      status: withdrawal.status || "N/A", // Include status
+      date: withdrawal.requestedAt.toISOString().split("T")[0], // Format date
+      time: withdrawal.requestedAt.toISOString().split("T")[1].split(".")[0], // Format time
     };
   });
 
