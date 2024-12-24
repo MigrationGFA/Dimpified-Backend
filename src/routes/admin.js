@@ -188,10 +188,10 @@ router.get(
   adminNotificationController.getAdminNotifications
 );
 
-router.get(
-  "/admin/withdrawal-details/:email",
-  adminTransactionController.getTransactionDetails
-);
+// router.get(
+//   "/admin/withdrawal-details/:email",
+//   adminTransactionController.getTransactionDetails
+// );
 
 router.get(
   "/admin/transaction-history/:email",
