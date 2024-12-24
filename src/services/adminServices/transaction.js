@@ -111,18 +111,18 @@ exports.getWithdrawalDetails = async () => {
 };
 
 exports.getWithdrawalDetailsForProfile = async (params) => {
-  const { creatorId } = params;
+  const { withdrawalId } = params;
 
-  if (!creatorId) {
+  if (!withdrawalId) {
     return {
       status: 400,
-      message: "Creator ID is required.",
+      message: "Withdrawal ID is required.",
     };
   }
 
-  // Fetch withdrawal requests for the specific creator
-  const withdrawalHistory = await WithdrawalRequest.findAll({
-    where: { creatorId },
+  // Fetch the specific withdrawal request by withdrawalId
+  const specificWithdrawal = await WithdrawalRequest.findOne({
+    where: { id: withdrawalId },
     include: [
       {
         model: Account,
@@ -130,25 +130,45 @@ exports.getWithdrawalDetailsForProfile = async (params) => {
       },
       {
         model: Creator,
-        attributes: ["id", "organizationName", "email"],
+        attributes: ["id", "email"],
+      },
+    ],
+  });
+
+  if (!specificWithdrawal) {
+    return {
+      status: 404,
+      message: "No withdrawal details found for the specified withdrawal ID.",
+    };
+  }
+
+  const { creatorId, amount, status, requestedAt } = specificWithdrawal;
+  const { accountName, accountNumber, bankName } =
+    specificWithdrawal.Account || {};
+  const { email } = specificWithdrawal.Creator || {};
+
+  // Fetch fullName from CreatorProfile using creatorId
+  const creatorProfile = await CreatorProfile.findOne({ creatorId }).exec();
+  const fullName = creatorProfile?.fullName || "N/A";
+
+  // Fetch all withdrawal requests for the creator
+  const withdrawalHistory = await WithdrawalRequest.findAll({
+    where: { creatorId },
+    include: [
+      {
+        model: Account,
+        attributes: ["accountName", "accountNumber", "bankName"],
       },
     ],
     order: [["requestedAt", "DESC"]],
   });
-
-  if (withdrawalHistory.length === 0) {
-    return {
-      status: 404,
-      message: "No withdrawal details found for the specified creator.",
-    };
-  }
 
   // Fetch ecosystem data for the specific creator
   const ecosystem = await Ecosystem.findOne({ creatorId }).select(
     "ecosystemDomain"
   );
 
-  // Fetch transactions to calculate the incoming amount and wallet balance
+  // Fetch transactions to calculate incoming amount and wallet balance
   const transactions = await ecosystemTransaction.findAll({
     where: { creatorId },
   });
@@ -161,56 +181,66 @@ exports.getWithdrawalDetailsForProfile = async (params) => {
   // Wallet balance (total amount from ecosystemTransaction)
   const walletBalance = incomingAmount;
 
-  // Calculate the outgoing amount
+  // Calculate the outgoing amount (sum of withdrawal amounts for the creator)
   const outgoingAmount = withdrawalHistory.reduce(
     (total, withdrawal) => total + parseFloat(withdrawal.amount || 0),
     0
   );
 
-  // // Fetch subscriptions for the creator
-  // const subscriptions = await Subscription.findAll({
-  //   where: { creatorId },
-  //   attributes: ["planType"],
-  // });
-
-  // // Get the first subscription plan type, or "N/A" if none exist
-  // const subscriptionPlanType =
-  //   subscriptions.length > 0 ? subscriptions[0].planType : "N/A";
-
-  // Fetch the creator profile for the given creatorId
-  const creatorProfile = await CreatorProfile.findOne({ creatorId }).select(
-    "fullName"
-  );
-
-  const fullName = creatorProfile?.fullName || "N/A";
-
   // Map withdrawal history to the required format
-  const response = withdrawalHistory.map((withdrawal) => {
+  const historyResponse = withdrawalHistory.map((withdrawal) => {
     const { accountName, accountNumber, bankName } = withdrawal.Account || {};
-    const { email } = withdrawal.Creator || {};
+    const withdrawalDate = withdrawal.requestedAt.toISOString().split("T")[0];
+    const withdrawalTime = withdrawal.requestedAt
+      .toISOString()
+      .split("T")[1]
+      .split(".")[0];
+
     return {
       withdrawalId: withdrawal.id,
-      creatorId,
-      email: email,
-      fullName, // Include the fullName from the profile
-      accountName: accountName || "N/A",
-      accountNumber: accountNumber || "N/A",
-      bankName: bankName || "N/A",
-      ecosystemDomain: ecosystem?.ecosystemDomain,
-      amount: parseFloat(withdrawal.amount || 0).toFixed(2), // Include amount
-      status: withdrawal.status || "N/A", // Include status
-      date: withdrawal.requestedAt.toISOString().split("T")[0], // Format date
-      time: withdrawal.requestedAt.toISOString().split("T")[1].split(".")[0], // Format time
+      accountDetails: {
+        accountName: accountName || "N/A",
+        accountNumber: accountNumber || "N/A",
+        bankName: bankName || "N/A",
+      },
+      ecosystemDomain: ecosystem?.ecosystemDomain || "N/A",
+      amount: parseFloat(withdrawal.amount || 0).toFixed(2), // Requested amount
+      status: withdrawal.status || "N/A",
+      date: withdrawalDate,
+      time: withdrawalTime,
     };
   });
+
+  // Format the specific withdrawal response
+  const specificWithdrawalDate = requestedAt.toISOString().split("T")[0];
+  const specificWithdrawalTime = requestedAt
+    .toISOString()
+    .split("T")[1]
+    .split(".")[0];
 
   return {
     status: 200,
     data: {
-      withdrawalDetails: response, // Withdrawal details
-      incomingAmount: parseFloat(incomingAmount).toFixed(2), // Total incoming amount
-      outgoingAmount: parseFloat(outgoingAmount).toFixed(2), // Total outgoing amount
-      walletBalance: parseFloat(walletBalance).toFixed(2), // Total wallet balance
+      specificWithdrawal: {
+        withdrawalId: specificWithdrawal.id,
+        creatorId,
+        email: email || "N/A",
+        fullName: fullName,
+        accountDetails: {
+          accountName: accountName || "N/A",
+          accountNumber: accountNumber || "N/A",
+          bankName: bankName || "N/A",
+        },
+        ecosystemDomain: ecosystem?.ecosystemDomain || "N/A",
+        amount: parseFloat(amount || 0).toFixed(2),
+        // status: status || "N/A",
+        // date: specificWithdrawalDate,
+        // time: specificWithdrawalTime,
+      },
+      withdrawalHistory: historyResponse,
+      incomingAmount: parseFloat(incomingAmount).toFixed(2),
+      outgoingAmount: parseFloat(outgoingAmount).toFixed(2),
+      walletBalance: parseFloat(walletBalance).toFixed(2),
     },
   };
 };

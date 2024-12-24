@@ -153,6 +153,72 @@ exports.dashboardUsersInformation = async () => {
     },
   };
 };
+// exports.getAuserInformations = async (params) => {
+//   const { creatorId } = params;
+
+//   if (!creatorId) {
+//     return {
+//       status: 400,
+//       data: {
+//         message: "creatorId is required",
+//       },
+//     };
+//   }
+
+//   const [creator, creatorProfile, ecosystems, subscription, balance] =
+//     await Promise.all([
+//       Creator.findOne({
+//         where: { id: creatorId },
+//         attributes: ["id", "email", "password"],
+//       }),
+//       CreatorProfile.findOne({
+//         where: { creatorId },
+//         attributes: [
+//           "fullName",
+//           "phoneNumber",
+//           "state",
+//           "localGovernment",
+//           "country",
+//         ],
+//       }),
+//       Ecosystem.find({ creatorId }).select("ecosystemDomain createdAt address"),
+//       Subscription.findOne({ where: { creatorId }, attributes: ["planType"] }),
+//       CreatorEarning.findOne({ where: { creatorId }, attributes: ["Naira"] }),
+//     ]);
+
+//   if (!creator) {
+//     return {
+//       status: 404,
+//       data: {
+//         message: "Creator not found",
+//       },
+//     };
+//   }
+
+//   const response = {
+//     id: creator.id,
+//     email: creator.email,
+//     password: creator.password, // Exclude this if not needed
+//     fullName: creatorProfile.fullName,
+//     phoneNumber: creatorProfile.phoneNumber,
+//     state: creatorProfile.state,
+//     localGovernment: creatorProfile.localGovernment,
+//     country: creatorProfile.country,
+//     ecosystems: (ecosystems || []).map((eco) => ({
+//       domain: eco.ecosystemDomain,
+//       address: eco.address,
+//       createdAt: eco.createdAt,
+//     })),
+//     subscription: subscription ? subscription.planType : null,
+//     balance: balance ? balance.Naira : null,
+//   };
+
+//   return {
+//     status: 200,
+//     data: response,
+//   };
+// };
+
 exports.getAuserInformations = async (params) => {
   const { creatorId } = params;
 
@@ -165,11 +231,22 @@ exports.getAuserInformations = async (params) => {
     };
   }
 
-  // Fetch the creator details
-  const creator = await Creator.findOne({
-    where: { id: creatorId },
-    attributes: ["id", "email", "password"],
-  });
+  const [creator, creatorProfile, ecosystems, subscription, totalBalance] =
+    await Promise.all([
+      Creator.findOne({
+        where: { id: creatorId },
+        attributes: ["id", "email"],
+      }),
+      CreatorProfile.findOne(
+        { creatorId }, // Query by creatorId
+        "fullName state localGovernment country phoneNumber image" // Select specific fields
+      ),
+      Ecosystem.find({ creatorId }).select("ecosystemDomain createdAt address"),
+      Subscription.findOne({ where: { creatorId }, attributes: ["planType"] }),
+      ecosystemTransaction.sum("amount", {
+        where: { creatorId, status: "completed" }, // Only completed transactions
+      }),
+    ]);
 
   if (!creator) {
     return {
@@ -180,60 +257,21 @@ exports.getAuserInformations = async (params) => {
     };
   }
 
-  // Fetch the creator profile
-  const creatorProfile = await CreatorProfile.findOne({
-    where: { creatorId },
-    attributes: [
-      "fullName",
-      "phoneNumber",
-      "state",
-      "localGovernment",
-      "country",
-    ],
-  });
-
-  const profileDetails = creatorProfile || {
-    fullName: null,
-    phoneNumber: null,
-    state: null,
-    localGovernment: null,
-    country: null,
-  };
-
-  // Fetch ecosystems associated with the creator
-  const ecosystems = await Ecosystem.find({
-    creatorId: creatorId,
-  }).select("ecosystemDomain createdAt address");
-
-  // Fetch subscription details
-  const subscription = await Subscription.findOne({
-    where: { creatorId },
-    attributes: ["planType"],
-  });
-
-  // Fetch balance details
-  const balance = await CreatorEarning.findOne({
-    where: { creatorId },
-    attributes: ["Naira"],
-  });
-
-  // Prepare the structured response
   const response = {
     id: creator.id,
     email: creator.email,
-    password: creator.password,
-    fullName: profileDetails.fullName,
-    phoneNumber: profileDetails.phoneNumber,
-    state: profileDetails.state,
-    localGovernment: profileDetails.localGovernment,
-    country: profileDetails.country,
-    ecosystems: ecosystems.map((eco) => ({
+    fullName: creatorProfile?.fullName || "N/A",
+    phoneNumber: creatorProfile?.phoneNumber || "N/A",
+    state: creatorProfile?.state || "N/A",
+    localGovernment: creatorProfile?.localGovernment || "N/A",
+    country: creatorProfile?.country || "N/A",
+    ecosystems: (ecosystems || []).map((eco) => ({
       domain: eco.ecosystemDomain,
       address: eco.address,
       createdAt: eco.createdAt,
     })),
     subscription: subscription ? subscription.planType : null,
-    balance: balance ? balance.Naira : null,
+    balance: totalBalance ? parseFloat(totalBalance).toFixed(2) : "0.00", // Default to "0.00"
   };
 
   return {
