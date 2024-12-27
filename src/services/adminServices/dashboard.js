@@ -238,10 +238,12 @@ exports.getAuserInformations = async (params) => {
         attributes: ["id", "email"],
       }),
       CreatorProfile.findOne(
-        { creatorId }, // Query by creatorId
-        "fullName state localGovernment country phoneNumber image" // Select specific fields
+        { creatorId }, // Query by creatorId in MongoDB
+        "fullName phoneNumber" // Select specific fields
       ),
-      Ecosystem.find({ creatorId }).select("ecosystemDomain createdAt address"),
+      Ecosystem.find({ creatorId }).select(
+        "ecosystemDomain createdAt address state country"
+      ), // Query by creatorId in MongoDB and select fields
       Subscription.findOne({ where: { creatorId }, attributes: ["planType"] }),
       ecosystemTransaction.sum("amount", {
         where: { creatorId, status: "completed" }, // Only completed transactions
@@ -262,12 +264,15 @@ exports.getAuserInformations = async (params) => {
     email: creator.email,
     fullName: creatorProfile?.fullName || "N/A",
     phoneNumber: creatorProfile?.phoneNumber || "N/A",
-    state: creatorProfile?.state || "N/A",
-    localGovernment: creatorProfile?.localGovernment || "N/A",
-    country: creatorProfile?.country || "N/A",
+    // state: creatorProfile?.state || "N/A",
+    // localGovernment: creatorProfile?.localGovernment || "N/A",
+    // country: creatorProfile?.country || "N/A",
     ecosystems: (ecosystems || []).map((eco) => ({
       domain: eco.ecosystemDomain,
       address: eco.address,
+      state: eco.state || "N/A",
+      // localGovernment: eco.localGovernment || "N/A",
+      country: eco.country || "N/A",
       createdAt: eco.createdAt,
     })),
     subscription: subscription ? subscription.planType : null,
