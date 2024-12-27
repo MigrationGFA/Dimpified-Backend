@@ -69,9 +69,9 @@ router.get(
 );
 
 router.get(
-  "/user-information/:creatorId/:email",
-  verifyAdmin,
-  authenticatedAdmin,
+  "/user-information/:creatorId",
+  // verifyAdmin,
+  // authenticatedAdmin,
   adminController.getAUserInformation
 );
 
