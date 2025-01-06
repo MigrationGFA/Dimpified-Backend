@@ -78,7 +78,7 @@ router.get(
 router.get(
   "/admin/all-subscription/:email",
   verifyAdmin,
-  authenticatedAdmin,
+  // authenticatedAdmin,
   adminSubscriptionController.getAllSubscriptions
 );
 

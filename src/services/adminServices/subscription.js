@@ -9,7 +9,7 @@ const {
 exports.allSubscription = async () => {
   const subscriptions = await Subscription.findAll({
     attributes: [
-      "id",
+      "creatorId",
       "username",
       "planType",
       "ecosystemDomain",
@@ -24,7 +24,7 @@ exports.allSubscription = async () => {
   const formattedSubscriptions = subscriptions.map((subscription) => {
     const createdAt = new Date(subscription.createdAt);
     return {
-      id: subscription.id,
+      id: subscription.creatorId,
       username: subscription.username,
       planType: subscription.planType,
       ecosystemDomain: subscription.ecosystemDomain,
