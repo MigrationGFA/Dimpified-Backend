@@ -244,6 +244,11 @@ exports.verifySubscription = async (body) => {
   const result = await createSubdomain(ecosystemDomain);
   creator.step = 5;
   await creator.save();
+  
+  if(ecosystem){
+    ecosystem.completed = "true"
+    await ecosystem.save()
+  }
 
   return {
     status: 201,
@@ -522,7 +527,11 @@ exports.createLiteSubscribtion = async (body) => {
   });
 
   const result = await createSubdomain(ecosystemDomain);
-
+  const ecosystem = await Ecosystem.findOne({ecosystemDomain})
+  if(ecosystem){
+    ecosystem.completed = "true"
+    await ecosystem.save()
+  }
   creator.step = 5;
   await creator.save();
 

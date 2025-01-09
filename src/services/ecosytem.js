@@ -67,7 +67,7 @@ exports.createBusinessDetails = async (body) => {
     ecosystemDescription,
     country,
     state,
-    localGovernment,
+    localgovernment: localGovernment,
     status: "draft",
   });
   await creator.save();
@@ -569,6 +569,7 @@ exports.makeWithdrawalRequest = async (body) => {
     },
   };
 };
+
 exports.totalWithdrawalStats = async (params) => {
   const { ecosystemDomain } = params;
   const startOfMonth = new Date(
@@ -777,4 +778,61 @@ exports.markNotificationAsViewed = async (params) => {
     status: 200,
     data: { message: "Notification marked as viewed" },
   };
+};
+
+exports.getEcosystemNearMe = async (body) => {
+  try {
+    const { 
+      country, 
+      state, 
+      localGovernment,
+      Category,
+      SubCategory,
+      format
+    } = body;
+
+    // Validate required fields
+    const details = ["country", "state", "localGovernment", "Category",
+      "SubCategory", "format"];
+
+    for (const detail of details) {
+      if (!body[detail]) {
+        return { status: 400, data: { message: `${detail} is required` } };
+      }
+    }
+
+    // Query ecosystems
+    const exactMatch = await Ecosystem.find({ country, state, localgovernment: localGovernment, targetAudienceSector: Category, mainObjective: SubCategory, completed: "true"  });
+    const stateMatch = await Ecosystem.find({ country, state, targetAudienceSector: Category, mainObjective: SubCategory, completed: "true"  }).lean();
+    const countryMatch = stateMatch.length === 0 
+      ? await Ecosystem.find({ country, targetAudienceSector: Category, mainObjective: SubCategory, completed: "true" }).lean() 
+      : [];
+
+    // Combine results with priority
+    let ecosystems = [];
+    ecosystems = ecosystems.concat(exactMatch, stateMatch);
+    if (exactMatch.length === 0 && stateMatch.length === 0) {
+      ecosystems = ecosystems.concat(countryMatch);
+    }
+
+    // Include services with ecosystemDomain that match the format
+    for (let ecosystem of ecosystems) {
+      const services = await Service.find({
+        ecosystemDomain: ecosystem.ecosystemDomain,
+        format,
+      }).lean();
+
+      if (services.length > 0) {
+        ecosystem.services = services; // Only add services if they match the format
+      } else {
+        ecosystem.services = []; // Set to empty if no matching services found
+      }
+    }
+
+    return { status: 200, data: { ecosystems } };
+
+  } catch (error) {
+    console.error("Error fetching ecosystems:", error);
+    return { status: 500, data: { message: "Internal server error" } };
+  }
 };

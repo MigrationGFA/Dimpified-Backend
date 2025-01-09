@@ -51,7 +51,7 @@ router.get(
 );
 
 router.post("/check-domain", ecosystemController.checkDomainAvailability);
-
+router.post("/ecosysystem-near-me", ecosystemController.getEcosystemNearMe);
 // Support Request
 router.post(
   "/creator-support",

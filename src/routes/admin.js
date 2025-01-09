@@ -5,7 +5,7 @@ const adminSubscriptionController = require("../controllers/AdminController/subs
 const adminTransactionController = require("../controllers/AdminController/transaction");
 
 // const authenticatedUser = require("../middleware/authentication");
-const { getEcosystemData } = require("../controllers/AdminController/access");
+const { getEcosystemData, upGradeUser } = require("../controllers/AdminController/access");
 
 const adminSupportController = require("../controllers/AdminController/supportTicket");
 const adminAuthController = require("../controllers/AdminController/authentication");
@@ -43,6 +43,12 @@ router.post(
 
   adminAuthController.resendPasswordResetOTP
 );
+router.post(
+  "/admin/upgrade-user",
+
+  upGradeUser
+);
+
 router.post(
   "/admin/verify-password",
 

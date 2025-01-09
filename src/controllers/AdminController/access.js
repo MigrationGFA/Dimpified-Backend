@@ -1,4 +1,5 @@
 const Ecosystem = require("../../models/Ecosystem");
+const Creator = require("../../models/Creator")
 
 const getEcosystemData = async (req, res) => {
   try {
@@ -48,13 +49,45 @@ const getEcosystemData = async (req, res) => {
       },
     ]);
 
-    res.status(200).json(result);
+    return res.status(200).json(result);
   } catch (error) {
     console.error("Error fetching registrations by objective:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 }
 
+
+const upGradeUser = async (req, res) => {
+  try {
+    // Step 1: Find all creators with step = 5
+    const creators = await Creator.findAll({ where: { step: 5 } });
+
+    // If no creators found, return early
+    if (!creators || creators.length === 0) {
+      return res.status(404).json({ message: "No creators found with step 5" });
+    }
+
+    // Step 2: Extract creator IDs
+    const creatorIds = creators.map((creator) => creator.id);
+
+    // Step 3: Update all ecosystems where creatorId matches
+    const result = await Ecosystem.updateMany(
+      { creatorId: { $in: creatorIds }, completed: "false" }, // Query
+      { $set: { completed: "true" } } // Update
+    );
+
+    // Step 4: Return success response
+    return res.status(200).json({
+      message: "Ecosystems updated successfully",
+      modifiedCount: result.modifiedCount,
+    });
+  } catch (error) {
+    console.error("Error updating ecosystems:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 module.exports = {
-    getEcosystemData
+  getEcosystemData,
+  upGradeUser
 }
