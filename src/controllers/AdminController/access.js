@@ -72,8 +72,8 @@ const upGradeUser = async (req, res) => {
 
     // Step 3: Update all ecosystems where creatorId matches
     const result = await Ecosystem.updateMany(
-      { creatorId: { $in: creatorIds }, completed: "false" }, // Query
-      { $set: { completed: "true" } } // Update
+      { creatorId: { $in: creatorIds }, completed: "false" }, 
+      { $set: { completed: "true" } } 
     );
 
     // Step 4: Return success response

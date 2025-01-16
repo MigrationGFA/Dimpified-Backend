@@ -1079,14 +1079,14 @@ exports.createBookingRecord = async (body) => {
       parseFloat(creatorEarningRecord.Naira) + verifiedAmount
     ).toFixed(2);
     gfaCommission.Naira = (
-      parseFloat(gfaCommission.Naira) + companyCharge
+      parseFloat(gfaCommission.Naira) + companyCharge + providerCharge
     ).toFixed(2);
   } else if (currency === "USD") {
     creatorEarningRecord.Dollar = (
       parseFloat(creatorEarningRecord.Dollar) + verifiedAmount
     ).toFixed(2);
     gfaCommission.Dollar = (
-      parseFloat(gfaCommission.Dollar) + companyCharge
+      parseFloat(gfaCommission.Dollar) + companyCharge + providerCharge
     ).toFixed(2);
   } else {
     return { status: 400, data: { message: "Unsupported currency" } };
@@ -1099,8 +1099,16 @@ exports.createBookingRecord = async (body) => {
     type: "Booking",
   });
 
+    const commissionHistory2 = await CommissionHistory.create({
+    amount: providerCharge,
+    currency: currency,
+    ecosystemDomain,
+    type: "PaymentGateway",
+  });
+
   await gfaCommission.save();
   await creatorEarningRecord.save();
+  await creatorEarningRecord2.save();
 
   // Get creator's business logo and address from the template
   const creatorTemplate = await CreatorTemplate.findOne({ ecosystemDomain });

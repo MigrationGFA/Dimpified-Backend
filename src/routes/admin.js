@@ -3,6 +3,8 @@ const router = express.Router();
 const adminController = require("../controllers/AdminController/dashboard");
 const adminSubscriptionController = require("../controllers/AdminController/subscription");
 const adminTransactionController = require("../controllers/AdminController/transaction");
+const adminUserBase = require("../controllers/AdminController/userBase")
+const adminSubCategory = require("../controllers/AdminController/subCategory")
 
 // const authenticatedUser = require("../middleware/authentication");
 const { getEcosystemData, upGradeUser } = require("../controllers/AdminController/access");
@@ -26,6 +28,8 @@ const {
   ecosystemTransactions,
 } = require("../services/adminServices/transaction");
 
+
+// registration
 router.post("/admin/registration", adminAuthController.adminRegister);
 router.post("/admin/login", adminAuthController.adminLogin);
 router.post(
@@ -55,6 +59,7 @@ router.post(
   adminAuthController.verifyResetPasswordOtp
 );
 
+// admin dashboard
 router.get(
   "/admin/all-users/:email",
   verifyAdmin,
@@ -82,9 +87,54 @@ router.get(
 );
 
 router.get(
-  "/admin/all-subscription/:email",
+  "/categories-count/:email",
+  verifyAdmin,
+  authenticatedAdmin,
+  adminController.getAllCategory
+);
+
+router.get(
+  "/stores-count/:email",
+  verifyAdmin,
+  authenticatedAdmin,
+  adminController.getAllStores
+);
+
+router.get(
+  "/ecosystem-subcategories/:email",
+  verifyAdmin,
+  authenticatedAdmin,
+  adminController.getTopStores
+);
+
+// user base
+router.get(
+  "/store-by-country/:email",
+  verifyAdmin,
+  authenticatedAdmin,
+  adminUserBase.getStoreByCountry
+);
+
+router.get(
+  "/store-by-date/:email/:date",
+  verifyAdmin,
+  authenticatedAdmin,
+  adminUserBase.getStoreByDate
+);
+
+// subCategory
+router.get(
+  "/get-a-subcategory/:email/:subcategory",
   verifyAdmin,
   // authenticatedAdmin,
+  adminSubCategory.getASubcategory
+);
+
+// subscribtion
+router.get(
+  "/admin/all-subscription/:email",
+  verifyAdmin,
+  authenticatedAdmin,
   adminSubscriptionController.getAllSubscriptions
 );
 

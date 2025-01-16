@@ -5,6 +5,7 @@ const {
   GetMonthlySubscriptions,
   GetPlanTypeAndTotalSubscription,
 } = require("../../controllers/AdminController/procedure");
+const Ecosystem = require("../../models/Ecosystem")
 
 exports.allSubscription = async () => {
   const subscriptions = await Subscription.findAll({
@@ -20,6 +21,12 @@ exports.allSubscription = async () => {
     order: [["createdAt", "DESC"]],
   });
 
+  const ecosystems = await Ecosystem.find({}, { ecosystemDomain: 1, mainObjective: 1, _id: 0 }).lean();
+    const ecosystemMap = ecosystems.reduce((map, ecosystem) => {
+      map[ecosystem.ecosystemDomain] = ecosystem.mainObjective; // Map ecosystemDomain to mainObjective
+      return map;
+    }, {});
+
   // Format subscriptions with separate date and time
   const formattedSubscriptions = subscriptions.map((subscription) => {
     const createdAt = new Date(subscription.createdAt);
@@ -30,6 +37,7 @@ exports.allSubscription = async () => {
       ecosystemDomain: subscription.ecosystemDomain,
       amount: subscription.amount,
       status: subscription.status,
+      category: ecosystemMap[subscription.ecosystemDomain] || "Unknown",
       date: createdAt.toISOString().split("T")[0], // Extract date (YYYY-MM-DD)
       time: createdAt.toISOString().split("T")[1].split(".")[0], // Extract time (HH:MM:SS)
     };

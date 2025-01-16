@@ -7,7 +7,7 @@ const sendWelcomeEmailCreator = async ({ organizationName, email }) => {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Welcome to Dimpified</title>
+    <title>We're thrilled to have you join our community</title>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Outfit&display=swap");
 
@@ -125,25 +125,28 @@ const sendWelcomeEmailCreator = async ({ organizationName, email }) => {
             style="height: 60px"
           />
         </div>
-        <p>Dear ${organizationName},</p>
+        <p>Hello ${organizationName},</p>
         <p>
-          Welcome to DIMP – your all-in-one platform to move your business
-          online, attract more clients, and boost more sales!
+         We're so excited to welcome you to the DIMP! 
+        </p>
+
+         <p>
+        DIMP is the platform providing the right tools to scale your business online and acquire more customers.  
+        </p>
+
+         <p>
+        Be like Austin and set up your profile and start sharing your website with your customers today!  
         </p>
 
         <div class="gettingStarted">
-          <h3>Why Choose DIMP?</h3>
-          <p>
-            In today’s fast-paced world, your business should not be limited to
-            a physical shop. With DIMP, you can easily set up an online presence
-            and start earning from anywhere. Here’s how we empower you:
-          </p>
+          <h3>You can now set up your Business online presence by doing the following steps; </h3>
+          
           <ul>
-            <li>Easy Website Setup In 3Mins – 100+ customizable templates.</li>
-            <li>Service Management – List services & set prices.</li>
-            <li>Booking & Invoicing – Automated, real-time solutions.</li>
-            <li>Secure Payments – Seamless upfront payments.</li>
-            <li>User Dashboard – Manage everything from one place.</li>
+          <li>Secure Payments – Seamless upfront payments.</li>
+          <li>User Dashboard – Manage everything from one place.</li>
+            <li>Add the services you offer.</li>
+            <li>Add prices for your service</li>
+            <li>Add reviews for your business </li>
           </ul>
         </div>
         <div class="click">
@@ -172,7 +175,7 @@ const sendWelcomeEmailCreator = async ({ organizationName, email }) => {
 
   return sendEmail({
     to: email,
-    subject: "Welcome to DIMP – Transform Your Business!",
+    subject: "Welcome to DIMP!",
     html: message,
   });
 };

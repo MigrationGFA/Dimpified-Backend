@@ -10,6 +10,7 @@ const {
 } = require("../../controllers/AdminController/procedure");
 const CreatorEarning = require("../../models/CreatorEarning");
 const Service = require("../../models/Service");
+const { sequelize } = require("../../config/dbConnect");
 
 exports.DashboardAllUsers = async () => {
   const allUsers = await Creator.count();
@@ -433,4 +434,154 @@ exports.subCategoryInformation = async () => {
       creatorAccount: sortedCreatorDetails,
     },
   };
+};
+
+exports.getAllCategory = async () => {
+  try {
+    // Calculate unique sectors
+    const uniqueSectors = await Ecosystem.aggregate([
+      {
+        $group: {
+          _id: "$targetAudienceSector", 
+        },
+      },
+      {
+        $count: "uniqueSectors", 
+      },
+    ]);
+
+    const uniqueSectorCount = uniqueSectors[0]?.uniqueSectors || 0;
+
+    // Calculate percentage change between months
+    const currentMonthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const lastMonthStart = new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1);
+    const lastMonthEnd = new Date(new Date().getFullYear(), new Date().getMonth(), 0);
+
+    const [currentMonthData, lastMonthData] = await Promise.all([
+      Ecosystem.aggregate([
+        { $match: { createdAt: { $gte: currentMonthStart } } }, 
+        { $group: { _id: "$targetAudienceSector" } }, 
+        { $count: "uniqueSectors" }, 
+      ]),
+      Ecosystem.aggregate([
+        { $match: { createdAt: { $gte: lastMonthStart, $lte: lastMonthEnd } } }, 
+        { $group: { _id: "$targetAudienceSector" } }, 
+        { $count: "uniqueSectors" }, 
+      ]),
+    ]);
+
+    const currentMonthCount = currentMonthData[0]?.uniqueSectors || 0;
+    const lastMonthCount = lastMonthData[0]?.uniqueSectors || 0;
+
+    // Calculate percentage difference
+    let percentageChange = 0;
+    if (lastMonthCount > 0) {
+      percentageChange = ((currentMonthCount - lastMonthCount) / lastMonthCount) * 100;
+    }
+
+    // Determine trend
+    const trend = percentageChange > 0 ? "up" : percentageChange < 0 ? "down" : "no change";
+
+    // Combine results
+    return {
+      status: 200,
+      data: {
+        uniqueSectorCount,
+        percentageChange: percentageChange.toFixed(2),
+        trend,
+      },
+    };
+  } catch (error) {
+    console.error("Error processing category data:", error);
+    return { status: 500, data: { error: "Internal Server Error" } };
+  }
+};
+
+exports.getAllStores = async () => {
+  try {
+    // Total number of stores
+    const totalNumber = await Ecosystem.countDocuments();
+
+    // Calculate percentage change between months
+    const currentMonthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const lastMonthStart = new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1);
+    const lastMonthEnd = new Date(new Date().getFullYear(), new Date().getMonth(), 0);
+
+    // Count stores created in the current month and last month
+    const [currentMonthCount, lastMonthCount] = await Promise.all([
+      Ecosystem.countDocuments({ createdAt: { $gte: currentMonthStart } }),
+      Ecosystem.countDocuments({ createdAt: { $gte: lastMonthStart, $lte: lastMonthEnd } }),
+    ]);
+
+    // Calculate percentage difference
+    let percentageChange = 0;
+    if (lastMonthCount > 0) {
+      percentageChange = ((currentMonthCount - lastMonthCount) / lastMonthCount) * 100;
+    }
+
+    const trend = percentageChange > 0 ? "up" : percentageChange < 0 ? "down" : "no change";
+
+    // Combine results
+    return {
+      status: 200,
+      data: {
+        totalNumber,
+        percentageChange: percentageChange.toFixed(2),
+        trend,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching store data:", error);
+    return { status: 500, data: { error: "Internal Server Error" } };
+  }
+};
+
+exports.getTopStores = async () => {
+  try {
+    // Step 1: Fetch unique stores (categories) from MongoDB
+    const categories = await Ecosystem.aggregate([
+      { $group: { _id: "$mainObjective", storeCount: { $sum: 1 }, targetAudienceSector: { $first: "$targetAudienceSector" } } },
+      { $project: { category: "$_id", storeCount: 1, _id: 0, targetAudienceSector: 1, _id: 0 } }
+    ]);
+
+    // Step 2: Fetch sales data from MySQL for each category
+    const salesData = await Promise.all(
+      categories.map(async (category) => {
+        // Fetch all ecosystemDomains for the current category
+        const ecosystemDomains = await Ecosystem.find(
+          { mainObjective: category.category },
+          { ecosystemDomain: 1, _id: 0 }
+        ).lean();
+
+        const ecosystemDomainList = ecosystemDomains.map((e) => e.ecosystemDomain);
+
+        // Fetch total sales from MySQL for all related ecosystemDomains
+        const [salesResult] = await sequelize.query(
+          `SELECT SUM(amount) as totalSales 
+           FROM ecoosystemtransactions 
+           WHERE ecosystemDomain IN (:ecosystemDomainList)`,
+          {
+            replacements: { ecosystemDomainList },
+            type: sequelize.QueryTypes.SELECT 
+          }
+        );
+
+        return {
+          category: category.category,
+          targetAudienceSector: category.targetAudienceSector, 
+          storeCount: category.storeCount,
+          totalSales: salesResult.totalSales || 0,
+        };
+      })
+    );
+
+    // Step 3: Sort and return combined results
+    return {
+      status: 200,
+      data: salesData.sort((a, b) => b.totalSales - a.totalSales),
+    };
+  } catch (error) {
+    console.error("Error fetching top-selling categories:", error);
+    return { status: 500, data: { error: "Internal Server Error" } };
+  }
 };

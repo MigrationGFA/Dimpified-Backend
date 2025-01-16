@@ -51,6 +51,7 @@ exports.createBusinessDetails = async (body) => {
   if (!creator) {
     return { status: 404, data: { message: "Creator not found" } };
   }
+  
   creator.step = 3;
   creator.organizationName = ecosystemName;
 
