@@ -131,24 +131,14 @@ const sendWelcomeEmailCreator = async ({ organizationName, email }) => {
         </p>
 
          <p>
-        DIMP is the platform providing the right tools to scale your business online and acquire more customers.  
+        You are one step closer to having your own free business website.   
         </p>
 
          <p>
-        Be like Austin and set up your profile and start sharing your website with your customers today!  
+        Complete your profile registration and access your business website with the button below. 
         </p>
 
-        <div class="gettingStarted">
-          <h3>You can now set up your Business online presence by doing the following steps; </h3>
-          
-          <ul>
-          <li>Secure Payments – Seamless upfront payments.</li>
-          <li>User Dashboard – Manage everything from one place.</li>
-            <li>Add the services you offer.</li>
-            <li>Add prices for your service</li>
-            <li>Add reviews for your business </li>
-          </ul>
-        </div>
+      
         <div class="click">
           <a
             href="https://dimpified.com/creator/signin"
