@@ -1108,7 +1108,7 @@ exports.createBookingRecord = async (body) => {
 
   await gfaCommission.save();
   await creatorEarningRecord.save();
-  await commissionHistory2.save();
+  
 
   // Get creator's business logo and address from the template
   const creatorTemplate = await CreatorTemplate.findOne({ ecosystemDomain });
