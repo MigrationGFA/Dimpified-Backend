@@ -1,7 +1,9 @@
 const { DATEONLY } = require("sequelize");
 const Ecosystem = require("../../models/Ecosystem");
 
-
+const {
+getUsersByPlan
+} = require("../../controllers/AdminController/procedure");
 exports.getStoreByCountry = async () => {
   try {
     const storeByCountry = await Ecosystem.aggregate([
@@ -90,3 +92,30 @@ exports.getStoreByDate = async (params) => {
     return { status: 500, data: { error: "Internal Server Error" } };
   }
 };
+
+exports.getUsersByPlan = async (req, res) => {
+  const {plan} = req.params
+  if (!plan) {
+    return {
+      status: 400,
+      data: {
+        message: "plan is required",
+      },
+    };
+  }
+  try {
+    console.log("this is plan", `'${plan}'`)
+    const users = await getUsersByPlan(`'${plan}'`);
+    res.status(200).json({
+      success: true,
+      data: users,
+    });
+  } catch (error) {
+    console.log("this is plan error", error)
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch plan.",
+    });
+  }
+};
+

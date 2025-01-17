@@ -7,6 +7,7 @@ const ecosystemTransaction = require("../../models/ecosystemTransaction");
 const {
   getAllUsers,
   getMonthlyRegistration,
+  getTotalSubscription
 } = require("../../controllers/AdminController/procedure");
 const CreatorEarning = require("../../models/CreatorEarning");
 const Service = require("../../models/Service");
@@ -583,5 +584,21 @@ exports.getTopStores = async () => {
   } catch (error) {
     console.error("Error fetching top-selling categories:", error);
     return { status: 500, data: { error: "Internal Server Error" } };
+  }
+};
+
+exports.getTotalSubscription = async (req, res) => {
+  try {
+    const users = await getTotalSubscription();
+    res.status(200).json({
+      success: true,
+      data: users,
+    });
+  } catch (error) {
+    console.log("this is total sub state error", error)
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch total sub stat.",
+    });
   }
 };

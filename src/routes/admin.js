@@ -18,16 +18,20 @@ const adminNotificationController = require("../controllers/AdminController/noti
 const {
   monthlySubscriptions,
   planTypeTotalSubscription,
+  getRevAndSubStat
 } = require("../services/adminServices/subscription");
 const {
   monthlyRegistration,
   userStats,
+  getTotalSubscription
 } = require("../services/adminServices/dashboard");
 const { supportTickets } = require("../services/adminServices/supportTicket");
 const {
   ecosystemTransactions,
 } = require("../services/adminServices/transaction");
-
+const {
+  getUsersByPlan,
+} = require("../services/adminServices/userBase");
 
 // registration
 router.post("/admin/registration", adminAuthController.adminRegister);
@@ -107,6 +111,13 @@ router.get(
   adminController.getTopStores
 );
 
+router.get(
+  "/total-subscription/:email",
+  verifyAdmin,
+  authenticatedAdmin,
+  getTotalSubscription
+);
+
 // user base
 router.get(
   "/store-by-country/:email",
@@ -120,6 +131,13 @@ router.get(
   verifyAdmin,
   authenticatedAdmin,
   adminUserBase.getStoreByDate
+);
+
+router.get(
+  "/get-plan/:email/:plan",
+  verifyAdmin,
+  // authenticatedAdmin,
+  getUsersByPlan
 );
 
 // subCategory
@@ -227,6 +245,13 @@ router.get(
   verifyAdmin,
   authenticatedAdmin,
   monthlySubscriptions
+);
+
+router.get(
+  "/total-revenue-sub/:email/:date",
+  verifyAdmin,
+  // authenticatedAdmin,
+ getRevAndSubStat
 );
 
 // short access

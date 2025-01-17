@@ -66,6 +66,40 @@ const getAllEcosystemTransactions = async () => {
   }
 };
 
+const getTotalSubscription = async () => {
+  try {
+    const results = await sequelize.query("CALL GetTotalSubscription()");
+    return results; // Return the result of the procedure
+  } catch (error) {
+    console.error("Error fetching transactions:", error.message);
+    throw error;
+  }
+};
+
+const getRevAndSubStat = async (date) => {
+  try {
+    console.log("this is date", date)
+    const results = await sequelize.query(`CALL GetRevAndSubStat(${date})`);
+    return results; // Return the result of the procedure
+  } catch (error) {
+    console.error("Error fetching transactions:", error.message);
+    throw error;
+  }
+};
+
+
+const getUsersByPlan = async (plan) => {
+  try {
+    console.log("this is date", plan)
+    const results = await sequelize.query(`CALL GetUsersByPlan(${plan})`);
+    return results; // Return the result of the procedure
+  } catch (error) {
+    console.error("Error fetching user plan:", error.message);
+    throw error;
+  }
+};
+
+
 module.exports = {
   getAllUsers,
   getMonthlyRegistration,
@@ -73,4 +107,7 @@ module.exports = {
   GetMonthlySubscriptions,
   GetSupportTicketStatusCount,
   getAllEcosystemTransactions,
+  getTotalSubscription,
+  getRevAndSubStat,
+  getUsersByPlan
 };
