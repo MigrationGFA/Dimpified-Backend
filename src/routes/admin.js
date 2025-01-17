@@ -18,7 +18,9 @@ const adminNotificationController = require("../controllers/AdminController/noti
 const {
   monthlySubscriptions,
   planTypeTotalSubscription,
-  getRevAndSubStat
+  getRevAndSubStat,
+  getPlanTypeCount,
+  getTotalSales
 } = require("../services/adminServices/subscription");
 const {
   monthlyRegistration,
@@ -250,10 +252,22 @@ router.get(
 router.get(
   "/total-revenue-sub/:email/:date",
   verifyAdmin,
-  // authenticatedAdmin,
+  authenticatedAdmin,
  getRevAndSubStat
 );
+router.get(
+  "/total-sales-record/:email/:date",
+  verifyAdmin,
+  // authenticatedAdmin,
+ getTotalSales
+);
 
+router.get(
+  "/get-plan-stats/:email",
+  verifyAdmin,
+  authenticatedAdmin,
+ getPlanTypeCount
+);
 // short access
 router.get(
   "/ecosystem-monthly-data",

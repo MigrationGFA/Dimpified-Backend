@@ -4,7 +4,9 @@ const { Op } = require("sequelize");
 const {
   GetMonthlySubscriptions,
   GetPlanTypeAndTotalSubscription,
-  getRevAndSubStat
+  getRevAndSubStat,
+  getPlanTypeCount,
+  getTotalSales
 } = require("../../controllers/AdminController/procedure");
 const Ecosystem = require("../../models/Ecosystem")
 
@@ -172,6 +174,48 @@ exports.getRevAndSubStat = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch total sub and revenue stat.",
+    });
+  }
+};
+
+exports.getPlanTypeCount = async (req, res) => {
+  try {
+    const plan = await getPlanTypeCount();
+    res.status(200).json({
+      success: true,
+      data: plan,
+    });
+  } catch (error) {
+    console.log("this is plan type error", error)
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch plan type stat.",
+    });
+  }
+};
+
+exports.getTotalSales = async (req, res) => {
+  const {date} = req.params
+  if (!date) {
+    return {
+      status: 400,
+      data: {
+        message: "date is required",
+      },
+    };
+  }
+  try {
+    console.log("this is date", `'${date}'`)
+    const users = await getTotalSales(`'${date}'`);
+    res.status(200).json({
+      success: true,
+      data: users,
+    });
+  } catch (error) {
+    console.log("this is total sales error", error)
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch total sales stat.",
     });
   }
 };

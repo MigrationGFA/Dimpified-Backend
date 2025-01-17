@@ -100,6 +100,26 @@ const getUsersByPlan = async (plan) => {
 };
 
 
+const getPlanTypeCount = async () => {
+  try {
+    const results = await sequelize.query("CALL GetPlanTypeCount()");
+    return results; // Return the result of the procedure
+  } catch (error) {
+    console.error("Error fetching plan type:", error.message);
+    throw error;
+  }
+};
+
+const getTotalSales = async (date) => {
+  try {
+    console.log("this is date", date)
+    const results = await sequelize.query(`CALL GetTotalSales(${date})`);
+    return results; 
+  } catch (error) {
+    console.error("Error fetching total sales:", error.message);
+    throw error;
+  }
+};
 module.exports = {
   getAllUsers,
   getMonthlyRegistration,
@@ -109,5 +129,7 @@ module.exports = {
   getAllEcosystemTransactions,
   getTotalSubscription,
   getRevAndSubStat,
-  getUsersByPlan
+  getUsersByPlan,
+  getPlanTypeCount,
+  getTotalSales
 };
