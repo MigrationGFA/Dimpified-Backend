@@ -117,7 +117,6 @@ exports.createBooking = async (body) => {
   await newBooking.save();
   console.log("ecosystem:", ecosystem);
   const creator = await Creator.findByPk(ecosystem.creatorId);
-  console.log("creator:", creator);
 
   if (!creator) {
     return { status: 404, data: { message: "Creator not found" } };
@@ -180,7 +179,7 @@ exports.createBooking = async (body) => {
 
   await newNotification.save();
 
-   const creatorProfile = await CreatorProfile.findOne({
+  const creatorProfile = await CreatorProfile.findOne({
     creatorId: creator.id,
   });
   console.log("this is creatorProfile", creatorProfile)
