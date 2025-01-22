@@ -237,20 +237,21 @@ exports.getAuserInformations = async (params) => {
     await Promise.all([
       Creator.findOne({
         where: { id: creatorId },
-        attributes: ["id", "email"],
+        attributes: ["id", "email", "step"],
       }),
       CreatorProfile.findOne(
         { creatorId }, // Query by creatorId in MongoDB
         "fullName phoneNumber" // Select specific fields
       ),
       Ecosystem.find({ creatorId }).select(
-        "ecosystemDomain createdAt address state country"
+        "ecosystemDomain localgovernment createdAt address state country"
       ), // Query by creatorId in MongoDB and select fields
       Subscription.findOne({ where: { creatorId }, attributes: ["planType"] }),
       ecosystemTransaction.sum("amount", {
         where: { creatorId, status: "completed" }, // Only completed transactions
       }),
     ]);
+
 
   if (!creator) {
     return {
@@ -260,20 +261,18 @@ exports.getAuserInformations = async (params) => {
       },
     };
   }
-
+  console.log("this is subscription", subscription)
   const response = {
     id: creator.id,
     email: creator.email,
+    step: creator.step,
     fullName: creatorProfile?.fullName || "N/A",
     phoneNumber: creatorProfile?.phoneNumber || "N/A",
-    // state: creatorProfile?.state || "N/A",
-    // localGovernment: creatorProfile?.localGovernment || "N/A",
-    // country: creatorProfile?.country || "N/A",
     ecosystems: (ecosystems || []).map((eco) => ({
       domain: eco.ecosystemDomain,
       address: eco.address,
       state: eco.state || "N/A",
-      // localGovernment: eco.localGovernment || "N/A",
+      localGovernment: eco.localgovernment || "N/A",
       country: eco.country || "N/A",
       createdAt: eco.createdAt,
     })),

@@ -36,10 +36,17 @@ exports.getASubcategory = async (params) => {
       order: [["createdAt", "DESC"]],
     });
 
+    // Step 3: Identify incomplete domains
+const subscribedDomains = subscriptions.map((sub) => sub.ecosystemDomain);
+const incompleteDomains = domainNames.filter(
+  (domain) => !subscribedDomains.includes(domain)
+);
+
     // Step 4: Return the results
     return {
       status: 200,
       data: subscriptions,
+      incomplete: incompleteDomains,
     };
   } catch (error) {
     console.error("Error in getASubcategory:", error);
