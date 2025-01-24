@@ -33,6 +33,7 @@ const {
 } = require("../services/adminServices/transaction");
 const {
   getUsersByPlan,
+  
 } = require("../services/adminServices/userBase");
 
 // registration
@@ -127,6 +128,20 @@ router.get(
   authenticatedAdmin,
   adminUserBase.getStoreByCountry
 );
+router.get(
+  "/store-by-state/:email",
+  verifyAdmin,
+  // authenticatedAdmin,
+  adminUserBase.getStoreByCountryState
+);
+router.get(
+  "/store-by-localGovernment/:email",
+  verifyAdmin,
+  // authenticatedAdmin,
+  adminUserBase.getStoreByLocalGovernment
+);
+
+  
 
 router.get(
   "/store-by-date/:email/:date",

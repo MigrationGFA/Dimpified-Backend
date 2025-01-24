@@ -42,11 +42,14 @@ const incompleteDomains = domainNames.filter(
   (domain) => !subscribedDomains.includes(domain)
 );
 
+const response = {
+  subscriptions,
+  incompleteDomains
+}
     // Step 4: Return the results
     return {
       status: 200,
-      data: subscriptions,
-      incomplete: incompleteDomains,
+      data: response,
     };
   } catch (error) {
     console.error("Error in getASubcategory:", error);

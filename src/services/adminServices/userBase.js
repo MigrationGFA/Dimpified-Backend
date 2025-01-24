@@ -1,9 +1,14 @@
 const { DATEONLY } = require("sequelize");
 const Ecosystem = require("../../models/Ecosystem");
 
+
 const {
 getUsersByPlan
 } = require("../../controllers/AdminController/procedure");
+
+// this contain controller for user bae and store
+
+
 exports.getStoreByCountry = async () => {
   try {
     const storeByCountry = await Ecosystem.aggregate([
@@ -118,4 +123,94 @@ exports.getUsersByPlan = async (req, res) => {
     });
   }
 };
+
+exports.getStoreByCountryState = async (body) => {
+  const { country } = body;
+
+  if (!country) {
+    return {
+      status: 400,
+      data: {
+        message: "Country is required.",
+      },
+    };
+  }
+
+  try {
+    // Aggregate stores grouped by country and state
+    const storeByState = await Ecosystem.aggregate([
+      { 
+        $match: { country } 
+      },
+      { 
+        $group: {
+          _id: "$state", 
+          storeCount: { $sum: 1 }, 
+        },
+      },
+      { 
+        $project: {
+          state: "$_id", 
+          storeCount: 1,
+          _id: 0, 
+        },
+      },
+    ]);
+
+    return {
+      status: 200,
+      data: storeByState, 
+    };
+  } catch (error) {
+    console.error("Error fetching stores by country and state:", error);
+    return { status: 500, data: { error: "Internal Server Error" } };
+  }
+};
+
+exports.getStoreByLocalGovernment = async (body) => {
+  const { country, state } = body;
+
+  if (!country || !state) {
+    return {
+      status: 400,
+      data: {
+        message: "Both country and state are required.",
+      },
+    };
+  }
+
+  try {
+    const storeByLocalGovernment = await Ecosystem.aggregate([
+      { 
+        $match: { 
+          country, 
+          state 
+        } 
+      },
+      { 
+        $group: {
+          _id: "$localgovernment", 
+          storeCount: { $sum: 1 }, 
+        },
+      },
+      { 
+        $project: {
+          localgovernment: "$_id", 
+          storeCount: 1,
+          _id: 0, 
+        },
+      },
+    ]);
+
+    return {
+      status: 200,
+      data: storeByLocalGovernment, 
+    };
+  } catch (error) {
+    console.error("Error fetching stores by local government:", error);
+    return { status: 500, data: { error: "Internal Server Error" } };
+  }
+};
+
+
 

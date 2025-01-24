@@ -19,3 +19,24 @@ exports.getStoreByDate = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+
+exports.getStoreByCountryState = async (req, res) => {
+  try {
+    const response = await adminUserBase.getStoreByCountryState(req.body);
+    return res.status(response.status).json(response.data);
+  } catch (error) {
+    console.error("error getting all store by country for state", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+exports.getStoreByLocalGovernment = async (req, res) => {
+  try {
+    const response = await adminUserBase.getStoreByLocalGovernment(req.body);
+    return res.status(response.status).json(response.data);
+  } catch (error) {
+    console.error("error getting all store by country for state and local government", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
