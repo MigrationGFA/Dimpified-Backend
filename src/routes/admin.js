@@ -128,20 +128,20 @@ router.get(
   authenticatedAdmin,
   adminUserBase.getStoreByCountry
 );
-router.get(
+router.post(
   "/store-by-state/:email",
   verifyAdmin,
   authenticatedAdmin,
   adminUserBase.getStoreByCountryState
 );
-router.get(
+router.post(
   "/store-by-localGovernment/:email",
   verifyAdmin,
   authenticatedAdmin,
   adminUserBase.getStoreByLocalGovernment
 );
 
-router.get(
+router.post(
   "/store-by-location/:email",
   verifyAdmin,
   authenticatedAdmin,
