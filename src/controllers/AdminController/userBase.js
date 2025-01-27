@@ -31,6 +31,16 @@ exports.getStoreByCountryState = async (req, res) => {
   }
 };
 
+exports.getStoreByLocation = async (req, res) => {
+  try {
+    const response = await adminUserBase.getStoreByLocation(req.body);
+    return res.status(response.status).json(response.data);
+  } catch (error) {
+    console.error("error getting all store by location", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 exports.getStoreByLocalGovernment = async (req, res) => {
   try {
     const response = await adminUserBase.getStoreByLocalGovernment(req.body);

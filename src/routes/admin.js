@@ -131,17 +131,22 @@ router.get(
 router.get(
   "/store-by-state/:email",
   verifyAdmin,
-  // authenticatedAdmin,
+  authenticatedAdmin,
   adminUserBase.getStoreByCountryState
 );
 router.get(
   "/store-by-localGovernment/:email",
   verifyAdmin,
-  // authenticatedAdmin,
+  authenticatedAdmin,
   adminUserBase.getStoreByLocalGovernment
 );
 
-  
+router.get(
+  "/store-by-location/:email",
+  verifyAdmin,
+  authenticatedAdmin,
+  adminUserBase.getStoreByLocation
+);
 
 router.get(
   "/store-by-date/:email/:date",

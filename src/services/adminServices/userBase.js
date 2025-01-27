@@ -1,5 +1,6 @@
 const { DATEONLY } = require("sequelize");
 const Ecosystem = require("../../models/Ecosystem");
+const Subscription = require("../../models/Subscription")
 
 
 const {
@@ -213,4 +214,62 @@ exports.getStoreByLocalGovernment = async (body) => {
 };
 
 
+exports.getStoreByLocation = async (body) => {
+  const { country, state, lga } = body;
 
+  if (!country || !state || !lga) {
+    return {
+      status: 400,
+      data: {
+        message: "Country, state, and LGA are required.",
+      },
+    };
+  }
+
+  try {
+    // Step 1: Query MongoDB for ecosystems
+    const ecosystems = await Ecosystem.find({ country, state, localgovernment:lga });
+
+    if (!ecosystems.length) {
+      return {
+        status: 404,
+        data: {
+          message: "No ecosystems found for the specified location.",
+        },
+      };
+    }
+
+    // Extract ecosystemDomain values from MongoDB results
+    const ecosystemDomains = ecosystems.map((eco) => eco.ecosystemDomain);
+
+    // Step 2: Query the subscription table directly
+    const subscriptions = await Subscription.findAll({
+      where: { ecosystemDomain: ecosystemDomains },
+    });
+
+    // Convert subscriptions to a map for faster lookup
+    const subscriptionMap = subscriptions.reduce((map, sub) => {
+      map[sub.ecosystemDomain] = sub.planType;
+      return map;
+    }, {});
+
+    // Step 3: Combine results from MongoDB and Subscriptions
+    const result = ecosystems.map((eco) => ({
+      ...eco.toObject(), // Convert MongoDB document to plain object
+      planType: subscriptionMap[eco.ecosystemDomain] || "N/A",
+    }));
+
+    return {
+      status: 200,
+      data: result,
+    };
+  } catch (error) {
+    console.error("Error fetching ecosystems and subscriptions:", error);
+    return {
+      status: 500,
+      data: {
+        error: "Internal Server Error",
+      },
+    };
+  }
+};
