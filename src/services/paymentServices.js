@@ -31,6 +31,16 @@ const CreatorTemplate = require("../models/creatorTemplate");
 const Notification = require("../models/ecosystemNotification");
 const sendBookingConfirmationUnpaidEmail = require("../utils/sendBookingConfirmationUnpaid");
 const sendBookingConfirmationPaidEmail = require("../utils/sendBoookingConfirmationEmailPaid");
+const newsSendSMS = require("../helper/newSms")
+const CreatorProfile = require("../models/CreatorProfile")
+
+const formatPhoneNumber = (phoneNumber) => {
+  if (phoneNumber.startsWith("0")) {
+    return `234${phoneNumber.slice(1)}`;
+  }
+  
+  return phoneNumber; 
+};
 
 exports.verifySubscription = async (body) => {
   const {
@@ -893,7 +903,6 @@ const thirdPartyVerification = async (reference, provider) => {
 };
 
 exports.createBookingRecord = async (body) => {
-  console.log("createBookingRecord function called");
 
   // Destructure request body
   const {
@@ -901,8 +910,6 @@ exports.createBookingRecord = async (body) => {
     reference,
     ecosystemDomain,
     email,
-    providerCharge,
-    companyCharge,
     name,
     phone,
     address,
@@ -1008,18 +1015,19 @@ exports.createBookingRecord = async (body) => {
     };
   }
 
+  console.log("this is payment", responseData)
+
   // Check payment status and amounts
   const paymentAmount = responseData.data.amount;
   const currency = responseData.data.currency;
-  let verifiedAmount = paymentAmount - companyCharge - providerCharge;
 
-  if (responseData.data.status !== "successful" || verifiedAmount !== price) {
+  if (responseData.data.status !== "successful" || paymentAmount !== price) {
     await ecosystemTransaction.create({
       email,
       ecosystemDomain,
       itemId: newBooking.id,
       itemType: "Service",
-      amount: verifiedAmount,
+      amount: paymentAmount,
       paymentMethod: provider,
       transactionDate: new Date(),
       itemTitle: "Booking",
@@ -1034,7 +1042,7 @@ exports.createBookingRecord = async (body) => {
       ecosystemDomain,
       itemId: newBooking.id,
       itemType: "Service",
-      amount: verifiedAmount,
+      amount: paymentAmount,
       paymentMethod: provider,
       transactionDate: new Date(),
       itemTitle: "Booking",
@@ -1063,7 +1071,9 @@ exports.createBookingRecord = async (body) => {
     creatorEarningRecord = await CreatorEarning.create({
       creatorId: ecosystem.creatorId,
       Naira: 0,
+      LedgerNaira: 0,
       Dollar: 0,
+      LedgerDollar: 0,
       ecosystemDomain,
     });
   }
@@ -1073,38 +1083,77 @@ exports.createBookingRecord = async (body) => {
     gfaCommission = await GFACommision.create({ Naira: 0, Dollar: 0 });
   }
 
+  // to get company percentage and calculate user balance after deduction
+  // let percentage;
+  // let userBalance;
+  // let subscription = await Subscription.findOne({ where: { creatorId: creator.id } });
+  // if (subscription.planType === 'Lite') {
+  //   userBalance = paymentAmount - (paymentAmount * 0.15); 
+  //   percentage = paymentAmount - (paymentAmount * 0.85); 
+  // } else if (subscription.planType === 'Plus') {
+  //   userBalance = paymentAmount - (paymentAmount * 0.10); 
+  //   percentage = paymentAmount - (paymentAmount * 0.90); 
+  // } else if (subscription.planType === 'Pro') {
+  //   userBalance = paymentAmount - (paymentAmount * 0.07); 
+  //   percentage = paymentAmount - (paymentAmount * 0.93); 
+  // } else {
+  //   userBalance = paymentAmount - (paymentAmount * 0.05); 
+  //   percentage = paymentAmount - (paymentAmount * 0.95);
+  // }
+  let percentage;
+let userBalance;
+let subscription = await Subscription.findOne({ where: { creatorId: creator.id } });
+
+let deductionRates = {
+  Lite: 0.15,   // 15%
+  Plus: 0.10,   // 10%
+  Pro: 0.07,    // 7%
+  Default: 0.05 // 5% for others
+};
+
+let deductionRate = deductionRates[subscription.planType] || deductionRates.Default;
+
+// Deduct the percentage from the payment amount
+userBalance = paymentAmount - (paymentAmount * deductionRate);
+
+// Calculate the actual deducted amount
+percentage = paymentAmount * deductionRate;
+
+  console.log("this is userBalance", userBalance)
+  console.log("this is percentage", percentage)
   // Update earnings based on the currency
   if (currency === "NGN") {
     creatorEarningRecord.Naira = (
-      parseFloat(creatorEarningRecord.Naira) + verifiedAmount
+      parseFloat(creatorEarningRecord.Naira) + userBalance
+    ).toFixed(2);
+    creatorEarningRecord.LedgerNaira = (
+      parseFloat(creatorEarningRecord.LedgerNaira) + paymentAmount
     ).toFixed(2);
     gfaCommission.Naira = (
-      parseFloat(gfaCommission.Naira) + companyCharge + providerCharge
+      parseFloat(gfaCommission.Naira) + percentage
     ).toFixed(2);
   } else if (currency === "USD") {
     creatorEarningRecord.Dollar = (
-      parseFloat(creatorEarningRecord.Dollar) + verifiedAmount
+      parseFloat(creatorEarningRecord.Dollar) + userBalance
+    ).toFixed(2);
+    creatorEarningRecord.LedgerDollar = (
+      parseFloat(creatorEarningRecord.LedgerDollar) + paymentAmount
     ).toFixed(2);
     gfaCommission.Dollar = (
-      parseFloat(gfaCommission.Dollar) + companyCharge + providerCharge
+      parseFloat(gfaCommission.Dollar) + percentage
     ).toFixed(2);
   } else {
     return { status: 400, data: { message: "Unsupported currency" } };
   }
 
   const commissionHistory = await CommissionHistory.create({
-    amount: companyCharge,
+    amount: percentage,
     currency: currency,
     ecosystemDomain,
-    type: "Booking",
+    type: "Subscription Plan Charge",
   });
 
-    const commissionHistory2 = await CommissionHistory.create({
-    amount: providerCharge,
-    currency: currency,
-    ecosystemDomain,
-    type: "PaymentGateway",
-  });
+    
 
   await gfaCommission.save();
   await creatorEarningRecord.save();
@@ -1127,6 +1176,17 @@ exports.createBookingRecord = async (body) => {
   });
 
   await newNotification.save();
+
+  const creatorProfile = await CreatorProfile.findOne({ creatorId: creator.id })
+  if (creatorProfile) {
+    
+    const newPhoneNumber = formatPhoneNumber(creatorProfile.phoneNumber)
+    const response = await newsSendSMS(newPhoneNumber, `DIMP, New booking order created by ${name} for  ${service} service on ${date} at ${time}. Booking ID: ${bookingId}`, "plain");
+    const customerPhoneNumber = formatPhoneNumber(phone)
+    const customer = await newsSendSMS(customerPhoneNumber, `Payment received! Hi ${name}, you've successfully booked the ${service} service from ${ecosystem.ecosystemName}. Your appointment is confirmed for ${date} with Booking ID: ${bookingId}. We look forward to serving you!`, "plain");
+  }
+
+  
 
   // Send email notifications
   await sendBookingConfirmationPaidEmail({

@@ -5,7 +5,7 @@ exports.createBooking = async (req, res) => {
     const response = await booking.createBooking(req.body);
     return res.status(response.status).json(response.data);
   } catch (error) {
-    console.error("Error creating business details:", error);
+    console.error("Error creating booking:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
