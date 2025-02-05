@@ -7,7 +7,18 @@ const sendBookingConfirmationPaidEmail = require("../utils/sendBoookingConfirmat
 const moment = require("moment");
 const EcosystemUser = require("../models/EcosystemUser");
 const Notification = require("../models/ecosystemNotification");
-const bcrypt= require("bcryptjs")
+const bcrypt = require("bcryptjs");
+const newsSendSMS = require("../helper/newSms")
+const CreatorProfile = require("../models/CreatorProfile");
+
+
+const formatPhoneNumber = (phoneNumber) => {
+  if (phoneNumber.startsWith("0")) {
+    return `234${phoneNumber.slice(1)}`;
+  }
+  
+  return phoneNumber; 
+};
 
 exports.createBooking = async (body) => {
   const {
@@ -121,6 +132,8 @@ exports.createBooking = async (body) => {
   creator.transactionNumber += 1;
   await creator.save();
 
+  
+
   await sendBookingConfirmationPaidEmail({
     email: creator.email,
     name: creator.organizationName,
@@ -149,9 +162,9 @@ exports.createBooking = async (body) => {
     date,
     time,
     paymentStatus: newBooking.paymentStatus,
-    businessName, // Passing the business name
-    businessAddress, // Passing the business address
-    logo, // Passing the logo
+    businessName, 
+    businessAddress, 
+    logo, 
   });
 
   console.log(creator);
@@ -166,6 +179,16 @@ exports.createBooking = async (body) => {
   });
 
   await newNotification.save();
+
+   const creatorProfile = await CreatorProfile.findOne({
+    creatorId: creator.id,
+  });
+  console.log("this is creatorProfile", creatorProfile)
+
+  if(creatorProfile){
+    const newPhoneNumber = formatPhoneNumber(creatorProfile.phoneNumber)
+  const response = await  newsSendSMS(newPhoneNumber , `DIMP, New booking order created by ${name} for  ${service} service on ${date} at ${time}. Booking ID: ${bookingId}`, "plain");
+  }
 
   return {
     status: 200,

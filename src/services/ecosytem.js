@@ -9,6 +9,7 @@ const sendWithdrawalRequestEmail = require("../utils/creatorWithdrawalEmail");
 const CreatorEarning = require("../models/CreatorEarning");
 const { Op } = require("sequelize");
 const Notification = require("../models/ecosystemNotification");
+const AdminNotification = require("../models/AdminNotification");
 
 // creating ecosystem business details
 exports.createBusinessDetails = async (body) => {
@@ -408,6 +409,32 @@ exports.withdrawalRequest = async (body) => {
     amount: convertedAmount.toString(),
     currency,
   });
+  // Create a notification for the creator
+  const notificationMessage = `Your withdrawal request of ${currency} ${convertedAmount.toFixed(
+    2
+  )} has been submitted and is pending approval.`;
+  const newNotification = new Notification({
+    type: "Withdrawal Request",
+    message: notificationMessage,
+    ecosystemDomain,
+    creatorId,
+  });
+
+  await newNotification.save();
+
+  // Create an admin notification
+  const adminNotificationMessage = `A withdrawal request of ${currency} ${convertedAmount.toFixed(
+    2
+  )} has been submitted by ${creator.organizationName}.`;
+  const adminNotification = new AdminNotification({
+    type: "Withdrawal Request",
+    message: adminNotificationMessage,
+    ecosystemDomain,
+    creatorId,
+    role: "finance", // Notify the finance team
+  });
+
+  await adminNotification.save();
 
   return {
     status: 201,
@@ -527,12 +554,26 @@ exports.makeWithdrawalRequest = async (body) => {
   });
 
   await newNotification.save();
+
+  const adminNotificationMessage = `A withdrawal request of ${currency} ${convertedAmount.toFixed(
+    2
+  )} has been submitted by ${creator.organizationName}.`;
+  const adminNotification = new AdminNotification({
+    type: "Withdrawal Request",
+    message: adminNotificationMessage,
+    ecosystemDomain,
+    creatorId,
+    role: "finance", // Notify the finance team
+  });
+
+  await adminNotification.save();
   return {
     status: 201,
     data: {
       message: "Withdrawal request created successfully",
       withdrawalRequest: newWithdrawalRequest,
       notification: newNotification,
+      adminNotification: adminNotification,
     },
   };
 };
@@ -618,7 +659,7 @@ exports.createService = async (body, file) => {
     pricingFormat,
     deliveryTime,
     currency,
-    image
+    image,
   } = body;
 
   const details = [
@@ -631,17 +672,13 @@ exports.createService = async (body, file) => {
     "pricingFormat",
     "deliveryTime",
     "currency",
-    "image"
+    "image",
   ];
   for (const detail of details) {
     if (!body[detail]) {
       return { status: 400, data: { message: `${detail} is required` } };
     }
   }
-
-  
-
-  
 
   const ecosystemData = await Ecosystem.findOne(
     { ecosystemDomain },
@@ -689,7 +726,6 @@ exports.createService = async (body, file) => {
     },
   };
 };
-
 
 exports.getService = async (params) => {
   const { ecosystemDomain } = params;

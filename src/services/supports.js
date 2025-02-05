@@ -3,6 +3,7 @@ const CreatorSupport = require("../models/Support");
 const sendCreatorSupportRequestFeedback = require("../utils/sendCreatorSupportFeedbackEmail");
 //const sendHelpRequestFeedback = require("../../utils/sendHelpRequestFeedback");
 const sendSupportRequestCompletedEmail = require("../utils/supportRequestCompleted");
+const dimpContactUs = require("../models/DimpContactUs");
 
 exports.creatorSupportRequest = async (body) => {
   await CreatorSupport.sync();
@@ -108,6 +109,46 @@ exports.getSupportSummaryByDomain = async (params) => {
       pendingSupport,
       completedSupport,
       supportRequests,
+    },
+  };
+};
+
+exports.dimpContactUs = async (body) => {
+  await dimpContactUs.sync();
+  const { firstName, lastName, phoneNumber, email, enquire, message } = body;
+
+  const details = [
+    "firstName",
+    "lastName",
+    "phoneNumber",
+    "email",
+    "enquire",
+    "message",
+  ];
+
+  for (const detail of details) {
+    if (!body[detail]) {
+      return {
+        status: 400,
+        data: { message: `${detail} is required` },
+      };
+    }
+  }
+
+  const newInquiry = await dimpContactUs.create({
+    firstName,
+    lastName,
+    phoneNumber,
+    email,
+    enquire,
+    message,
+  });
+
+  return {
+    status: 201,
+    data: {
+      message: "Inquiry submitted successfully",
+      inquiry: newInquiry,
     },
   };
 };

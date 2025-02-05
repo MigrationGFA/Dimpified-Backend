@@ -15,8 +15,18 @@ const sendResetPasswordAlert = require("../utils/sendPasswordAlert");
 const CreatorToken = require("../models/CreatorToken");
 const Subscription = require("../models/Subscription");
 const Ecosystem = require("../models/Ecosystem");
+const newsSendSMS = require("../helper/newSms")
 
 const cloudinary = require("cloudinary").v2;
+
+        
+const formatPhoneNumber = (phoneNumber) => {
+  if (phoneNumber.startsWith("0")) {
+    return `234${phoneNumber.slice(1)}`;
+  }
+  
+  return phoneNumber; 
+};
 
 // Configure Cloudinary
 cloudinary.config({
@@ -60,6 +70,10 @@ exports.creatorSignup = async (body) => {
         role,
       });
 
+    const newPhoneNumber = formatPhoneNumber(phoneNumber)
+     const response = await  newsSendSMS(newPhoneNumber, `Use OTP ${OTP} to Verify your registration process on DIMP`, "plain");
+    console.log("SMS sent successfully:", response);
+
       await sendVerificationOTPCreator({
         organizationName: fullName,
         email,
@@ -78,11 +92,12 @@ exports.creatorSignup = async (body) => {
 
       const user = {
         creatorId: duplicateCreator.id,
-        fullName: duplicateCreator.fullName,
+        fullName: fullName,
         email: duplicateCreator.email,
         role: duplicateCreator.role,
         profile: true,
         step: duplicateCreator.step,
+        phoneNumber: phoneNumber
       };
 
       return {
@@ -104,13 +119,30 @@ exports.creatorSignup = async (body) => {
         duplicateCreator.role
       );
 
+      const creatorProfile = await CreatorProfile.findOne({
+    creatorId: duplicateCreator.id,
+  });
+
+  if(!creatorProfile){
+    const newCreatorProfile = await CreatorProfile.create({
+    fullName,
+    email,
+    organizationName,
+    phoneNumber,
+    gender,
+    dateOfBirth: new Date(dateOfBirth),
+    creatorId: duplicateCreator.id,
+  });
+  }
+
       const user = {
         creatorId: duplicateCreator.id,
-        fullName: duplicateCreator.fullName,
+        fullName: fullName,
         email: duplicateCreator.email,
         role: duplicateCreator.role,
         profile: true,
         step: duplicateCreator.step,
+        phoneNumber: phoneNumber
       };
 
       return {
@@ -149,6 +181,10 @@ exports.creatorSignup = async (body) => {
     creatorId: newCreator.id,
   });
 
+  const newPhoneNumber = formatPhoneNumber(phoneNumber)
+   const response = await  newsSendSMS(newPhoneNumber , `Use OTP ${OTP} to Verify your registration process on DIMP`, "plain");
+    console.log("SMS sent successfully:", response);
+
   await sendVerificationOTPCreator({
     organizationName: fullName,
     email,
@@ -166,6 +202,7 @@ exports.creatorSignup = async (body) => {
     role: newCreator.role,
     profile: true,
     step: newCreator.step,
+    phoneNumber: phoneNumber
   };
 
   return {
@@ -215,7 +252,7 @@ exports.forgotPassword = async ({ email }) => {
   if (!email) {
     return { status: 400, data: { message: "Email is required" } };
   }
-
+  console.log("this is email", email)
   const creator = await Creator.findOne({ where: { email } });
   if (!creator) {
     return { status: 404, data: { message: "Creator not found" } };
@@ -237,6 +274,10 @@ exports.forgotPassword = async ({ email }) => {
   if (!creatorProfile) {
     return { status: 404, data: { message: "CreatorProfile not found" } };
   }
+
+  const newPhoneNumber = formatPhoneNumber(creatorProfile.phoneNumber)
+   const response = await  newsSendSMS(newPhoneNumber , `Use OTP ${OTP} to reset your password on DIMP`, "plain");
+    console.log("SMS sent successfully:", response);
 
   sendForgotPasswordOTP({
     username: creatorProfile.fullName,
@@ -323,8 +364,10 @@ exports.creatorLogin = async (req) => {
   }
 
   // Assuming setProfile is determined by certain fields being non-null
-  let setProfile =
-    creator.organizationName && creator.categoryInterest ? true : false;
+   const creatorProfile = await CreatorProfile.findOne({
+    creatorId: creator.id,
+  });
+  let setProfile = creatorProfile ? true : false;
 
   // Get Subscription Plan
   const getSubscription = await Subscription.findOne({
@@ -386,9 +429,9 @@ exports.creatorLogin = async (req) => {
 };
 
 // resend sign up otp
-exports.resendOTPCreator = async ({ email }) => {
-  if (!email) {
-    return { status: 400, data: { message: "Email is required" } };
+exports.resendOTPCreator = async ({ email, phoneNumber }) => {
+  if (!email || !phoneNumber) {
+    return { status: 400, data: { message: "Email and phoneNumber is required" } };
   }
   const creator = await Creator.findOne({ where: { email: email } });
 
@@ -403,7 +446,7 @@ exports.resendOTPCreator = async ({ email }) => {
     return { status: 400, data: { msg: "Email address has been verified" } };
   }
 
-  const newVerificationToken = crypto.randomBytes(40).toString("hex");
+  const newVerificationToken = Math.floor(100000 + Math.random() * 900000);
   creator.verificationToken = newVerificationToken;
 
   await creator.save();
@@ -414,11 +457,14 @@ exports.resendOTPCreator = async ({ email }) => {
   await sendVerificationOTPCreator({
     organizationName: creatorProfile.fullName,
     email: email,
-    verificationToken: OTP,
+    verificationToken: newVerificationToken,
     origin: process.env.ORIGIN,
   });
 
-  return { status: 200, data: { message: "New verification email sent" } };
+   const newPhoneNumber = formatPhoneNumber(phoneNumber)
+  const response = await  newsSendSMS(newPhoneNumber , `Use OTP ${newVerificationToken} to Verify your registration process on DIMP`, "plain");
+
+  return { status: 200, data: { message: "New verification code sent" } };
 };
 
 // creator reset password
@@ -452,7 +498,7 @@ exports.resetPassword = async ({ email, password }) => {
     origin: process.env.ORIGIN,
   });
 
-  return { status: 400, data: { message: "Password reset succesfully" } };
+  return { status: 200, data: { message: "Password reset succesfully" } };
 };
 
 // resent reset password otp
@@ -482,6 +528,10 @@ exports.resendPasswordResetOTP = async ({ email }) => {
     return { status: 404, data: { message: "CreatorProfile not found" } };
   }
 
+    const newPhoneNumber = formatPhoneNumber(creatorProfile.phoneNumber)
+   const response = await  newsSendSMS(newPhoneNumber , `Use OTP ${OTP} to reset your password on DIMP`, "plain");
+    console.log("SMS sent successfully:", response);
+
   sendForgotPasswordOTP({
     username: creatorProfile.fullName,
     email,
@@ -497,7 +547,7 @@ exports.resendPasswordResetOTP = async ({ email }) => {
 
 // verify reset password token
 exports.verifyResetPasswordOtp = async ({ email, OTP }) => {
-  const requiredFields = ["email", "OTP"];
+  const details = ["email", "OTP"];
 
   for (const [key, value] of Object.entries(details)) {
     if (!value) {
@@ -541,7 +591,7 @@ exports.updateCreatorImage = async ({ creatorId, image }) => {
     return { status: 404, data: { message: "Creator profile not found" } };
   }
 
-  const creator = await Creator.findByPk(creatorId);
+  const creator = await Creator.findByPk(creatorId)
   if (!creator) {
     return { status: 404, data: { message: "Creator not found" } };
   }
@@ -559,7 +609,7 @@ exports.updateCreatorImage = async ({ creatorId, image }) => {
     data: {
       message: "Profile image updated successfully",
       Profile: creatorProfile,
-      creator,
+      creator
     },
   };
 };

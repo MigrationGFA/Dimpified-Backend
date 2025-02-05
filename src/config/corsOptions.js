@@ -6,17 +6,14 @@ const whiteList = [
   "https://dimpified.com",
   "https://dimpified-frontend-testing.azurewebsites.net",
   "https://dimp-test.azurewebsites.net",
+  "https://admin.dimpified.com",
+  "https://www.admin.dimpified.com/"
 ];
-const allowedDomainsRegex =
-  /^https?:\/\/([a-zA-Z0-9-]+\.)?(localhost|dimpified\.com)(:\d{1,5})?$/;
+const allowedDomainsRegex = /^https?:\/\/([a-zA-Z0-9-]+\.)?(localhost|dimpified\.com)(:\d{1,5})?$/;
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (
-      whiteList.includes(origin) ||
-      allowedDomainsRegex.test(origin) ||
-      !origin
-    ) {
+    if (whiteList.includes(origin) || allowedDomainsRegex.test(origin) || !origin) {
       callback(null, true);
     } else {
       callback(new Error("Access denied by CORS"));
@@ -27,4 +24,6 @@ const corsOptions = {
   credentials: true,
 };
 
+
 module.exports = corsOptions;
+

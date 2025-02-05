@@ -14,6 +14,7 @@ const EcosystemUser = require("../models/EcosystemUser");
 const GFACommision = require("../models/GFACommision");
 const ecosystemTransaction = require("../models/ecosystemTransaction");
 const creatorEarning = require("../models/CreatorEarning");
+const CommissionHistory = require("../models/CommisinHistory");
 const {
   verifyPayment,
   calculatePercentageDifference,
@@ -249,7 +250,7 @@ exports.verifySubscription = async (body) => {
     data: {
       message: "Subscription verified successfully",
       ecosystemDomain,
-      planType
+      planType,
     },
   };
 };
@@ -1082,6 +1083,13 @@ exports.createBookingRecord = async (body) => {
     return { status: 400, data: { message: "Unsupported currency" } };
   }
 
+  const commissionHistory = await CommissionHistory.create({
+    amount: companyCharge,
+    currency: currency,
+    ecosystemDomain,
+    type: "Booking",
+  });
+
   await gfaCommission.save();
   await creatorEarningRecord.save();
 
@@ -1138,6 +1146,7 @@ exports.createBookingRecord = async (body) => {
       message: "Booking created and payment verified successfully",
       booking: newBooking,
       notification: newNotification,
+      commissionHistory,
     },
   };
 };

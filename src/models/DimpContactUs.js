@@ -1,48 +1,62 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/dbConnect");
 
-const EcosystemUser = sequelize.define(
-  "EcosystemUser",
+const dimpContactUs = sequelize.define(
+  "dimpContactUs",
   {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    ecosystemDomain: {
+    firstName: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
     },
-    username: {
+    lastName: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    phoneNumber: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
     },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
+        isEmail: true,
         notEmpty: true,
       },
     },
-    password: {
+    enquire: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
-    isVerified: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
+    message: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
     },
-    imageUrl: DataTypes.STRING,
-    passwordToken: DataTypes.STRING,
-    passwordTokenExpirationDate: DataTypes.STRING,
-    verificationToken: DataTypes.STRING,
   },
   {
-    tableName: "EcosystemUser",
+    tableName: "dimpContactUs",
+    timestamps: true,
   }
 );
 
-module.exports = EcosystemUser;
+module.exports = dimpContactUs;
