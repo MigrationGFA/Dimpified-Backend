@@ -187,13 +187,21 @@ exports.getAnEcosystemTemplate = async (params) => {
     return { status: 404, data: { message: "Template not found" } };
   }
 
-  return {
-    status: 200,
-    data: {
-      templateDetails: template,
-      aboutUsDetails: ecosystem,
-    },
-  };
+  const creator = await Creator.findByPk(ecosystem.creatorId)
+
+  const aboutUsDetails = {
+    ecosystem,
+    email:creator.email,
+    phoneNumber : ecosystem.contact
+  }
+    return {
+      status: 200,
+      data: {
+        templateDetails: template,
+        aboutUsDetails: aboutUsDetails,
+      },
+    };
+  
 };
 
 exports.getReservedTemplate = async (params) => {
@@ -696,7 +704,7 @@ exports.createService = async (body, file) => {
   const service = new serviceCategory({
     creatorId,
     serviceName,
-    ecosystemDomain,
+    ecosystemDomain,  
     description,
     homePrice,
     shopPrice,
