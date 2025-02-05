@@ -1084,40 +1084,24 @@ exports.createBookingRecord = async (body) => {
   }
 
   // to get company percentage and calculate user balance after deduction
-  // let percentage;
-  // let userBalance;
-  // let subscription = await Subscription.findOne({ where: { creatorId: creator.id } });
-  // if (subscription.planType === 'Lite') {
-  //   userBalance = paymentAmount - (paymentAmount * 0.15); 
-  //   percentage = paymentAmount - (paymentAmount * 0.85); 
-  // } else if (subscription.planType === 'Plus') {
-  //   userBalance = paymentAmount - (paymentAmount * 0.10); 
-  //   percentage = paymentAmount - (paymentAmount * 0.90); 
-  // } else if (subscription.planType === 'Pro') {
-  //   userBalance = paymentAmount - (paymentAmount * 0.07); 
-  //   percentage = paymentAmount - (paymentAmount * 0.93); 
-  // } else {
-  //   userBalance = paymentAmount - (paymentAmount * 0.05); 
-  //   percentage = paymentAmount - (paymentAmount * 0.95);
-  // }
   let percentage;
-let userBalance;
-let subscription = await Subscription.findOne({ where: { creatorId: creator.id } });
+  let userBalance;
+  let subscription = await Subscription.findOne({ where: { creatorId: creator.id } });
 
-let deductionRates = {
-  Lite: 0.15,   // 15%
-  Plus: 0.10,   // 10%
-  Pro: 0.07,    // 7%
-  Default: 0.05 // 5% for others
+  let deductionRates = {
+    Lite: 0.15,   // 15%
+    Plus: 0.10,   // 10%
+    Pro: 0.07,    // 7%
+    Default: 0.05 // 5% for others
 };
 
-let deductionRate = deductionRates[subscription.planType] || deductionRates.Default;
+  let deductionRate = deductionRates[subscription.planType] || deductionRates.Default;
 
 // Deduct the percentage from the payment amount
-userBalance = paymentAmount - (paymentAmount * deductionRate);
+  userBalance = paymentAmount - (paymentAmount * deductionRate);
 
 // Calculate the actual deducted amount
-percentage = paymentAmount * deductionRate;
+  percentage = paymentAmount * deductionRate;
 
   console.log("this is userBalance", userBalance)
   console.log("this is percentage", percentage)
