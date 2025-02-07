@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const ecosystemTemplate = require("../controllers/creatorController/Template/createTemplate");
+const ecosystemTemplate = require("../controllers/CreatorController/Template/createTemplate");
 const authenticatedUser  = require("../middleware/authentication")
 
 router.get(
@@ -11,6 +11,11 @@ router.get(
 router.post("/create-template", 
   authenticatedUser,
   ecosystemTemplate.createNewTemplate);
+
+router.post("/create/reserved-template", 
+
+  ecosystemTemplate.createReservedTemplate);
+
 router.get(
   "/reserved-template/:templateId",
   ecosystemTemplate.getReservedTemplate

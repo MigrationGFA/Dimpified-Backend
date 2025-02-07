@@ -162,6 +162,25 @@ exports.createNewTemplate = async (body) => {
   };
 };
 
+exports.createReservedTemplate = async (body) => {
+  const { templateId } = body;
+
+  if (!templateId || templateId == "not available") {
+    return { status: 400, data: { message: "Template id is required" } };
+  }
+  // Check if the creator exists
+  const templateExists = await ReservedTemplate.findOne({ templateId });
+  if (templateExists) {
+    return { status: 400, data: { message: "templateId already in use" } };
+  }
+
+  const template = await ReservedTemplate.create(body);
+  return {
+    status: 201,
+    data: { message: "Template created successfully", template },
+  };
+};
+
 // get template
 exports.getAnEcosystemTemplate = async (params) => {
   const { ecosystemDomain } = params;
@@ -188,21 +207,23 @@ exports.getAnEcosystemTemplate = async (params) => {
     return { status: 404, data: { message: "Template not found" } };
   }
 
-  const creator = await Creator.findByPk(ecosystem.creatorId)
+  const creator = await Creator.findByPk(ecosystem.creatorId);
 
-  const aboutUsDetails = {
-    ecosystem,
-    email:creator.email,
-    phoneNumber : ecosystem.contact
-  }
-    return {
-      status: 200,
-      data: {
-        templateDetails: template,
-        aboutUsDetails: aboutUsDetails,
-      },
-    };
+  ecosystem.email = creator.email;
+  ecosystem.phoneNumber = ecosystem.contact;
   
+
+  return {
+    status: 200,
+    data: {
+      templateDetails: template,
+      aboutUsDetails: {
+        ...ecosystem.toObject(), // Ensure ecosystem is a plain object
+        email: creator.email,
+        phoneNumber: ecosystem.contact || "Not available", // Ensure fallback if no contact is available
+      }
+    },
+  };
 };
 
 exports.getReservedTemplate = async (params) => {
@@ -706,7 +727,7 @@ exports.createService = async (body, file) => {
   const service = new serviceCategory({
     creatorId,
     serviceName,
-    ecosystemDomain,  
+    ecosystemDomain,
     description,
     homePrice,
     shopPrice,
