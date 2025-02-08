@@ -535,8 +535,9 @@ exports.createLiteSubscribtion = async (body) => {
     ecosystemDomain,
     status: "successful",
   });
-
+  console.log("this is here 1")
   const result = await createSubdomain(ecosystemDomain);
+   console.log("this is here 2")
   const ecosystem = await Ecosystem.findOne({ecosystemDomain})
   if(ecosystem){
     ecosystem.completed = "true"
