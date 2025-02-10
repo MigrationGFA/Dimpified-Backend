@@ -10,6 +10,7 @@ const CreatorEarning = require("../models/CreatorEarning");
 const { Op } = require("sequelize");
 const Notification = require("../models/ecosystemNotification");
 const AdminNotification = require("../models/AdminNotification");
+const CreatorProfile = require("../models/CreatorProfile");
 
 // creating ecosystem business details
 exports.createBusinessDetails = async (body) => {
@@ -208,10 +209,8 @@ exports.getAnEcosystemTemplate = async (params) => {
   }
 
   const creator = await Creator.findByPk(ecosystem.creatorId);
+  const creatorProfile = await CreatorProfile.findOne({creatorId:ecosystem.creatorId})
 
-  ecosystem.email = creator.email;
-  ecosystem.phoneNumber = ecosystem.contact;
-  
 
   return {
     status: 200,
@@ -220,7 +219,7 @@ exports.getAnEcosystemTemplate = async (params) => {
       aboutUsDetails: {
         ...ecosystem.toObject(), // Ensure ecosystem is a plain object
         email: creator.email,
-        phoneNumber: ecosystem.contact || "Not available", // Ensure fallback if no contact is available
+        phoneNumber: creatorProfile.phoneNumber || "Not available", // Ensure fallback if no contact is available
       }
     },
   };
