@@ -8,16 +8,15 @@ const moment = require("moment");
 const EcosystemUser = require("../models/EcosystemUser");
 const Notification = require("../models/ecosystemNotification");
 const bcrypt = require("bcryptjs");
-const newsSendSMS = require("../helper/newSms")
+const newsSendSMS = require("../helper/newSms");
 const CreatorProfile = require("../models/CreatorProfile");
-
 
 const formatPhoneNumber = (phoneNumber) => {
   if (phoneNumber.startsWith("0")) {
     return `234${phoneNumber.slice(1)}`;
   }
-  
-  return phoneNumber; 
+
+  return phoneNumber;
 };
 
 exports.createBooking = async (body) => {
@@ -132,8 +131,6 @@ exports.createBooking = async (body) => {
   creator.transactionNumber += 1;
   await creator.save();
 
-  
-
   await sendBookingConfirmationPaidEmail({
     email: creator.email,
     name: creator.organizationName,
@@ -162,9 +159,9 @@ exports.createBooking = async (body) => {
     date,
     time,
     paymentStatus: newBooking.paymentStatus,
-    businessName, 
-    businessAddress, 
-    logo, 
+    businessName,
+    businessAddress,
+    logo,
   });
 
   console.log(creator);
@@ -180,14 +177,18 @@ exports.createBooking = async (body) => {
 
   await newNotification.save();
 
-   const creatorProfile = await CreatorProfile.findOne({
+  const creatorProfile = await CreatorProfile.findOne({
     creatorId: creator.id,
   });
-  console.log("this is creatorProfile", creatorProfile)
+  console.log("this is creatorProfile", creatorProfile);
 
-  if(creatorProfile){
-    const newPhoneNumber = formatPhoneNumber(creatorProfile.phoneNumber)
-  const response = await  newsSendSMS(newPhoneNumber , `DIMP, New booking order created by ${name} for  ${service} service on ${date} at ${time}. Booking ID: ${bookingId}`, "plain");
+  if (creatorProfile) {
+    const newPhoneNumber = formatPhoneNumber(creatorProfile.phoneNumber);
+    const response = await newsSendSMS(
+      newPhoneNumber,
+      `DIMP, New booking order created by ${name} for  ${service} service on ${date} at ${time}. Booking ID: ${bookingId}`,
+      "plain"
+    );
   }
 
   return {
@@ -198,7 +199,7 @@ exports.createBooking = async (body) => {
 
 exports.bookingOverview = async (params) => {
   const { ecosystemDomain } = params;
-  
+
   if (!ecosystemDomain) {
     return { status: 400, data: { message: "ecosystemDomain is required" } };
   }
@@ -210,7 +211,7 @@ exports.bookingOverview = async (params) => {
   const startOfWeek = new Date(now);
   startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
   startOfWeek.setHours(0, 0, 0, 0);
-  
+
   const endOfWeek = new Date(startOfWeek);
   endOfWeek.setDate(endOfWeek.getDate() + 6);
   endOfWeek.setHours(23, 59, 59, 999);
@@ -268,7 +269,6 @@ exports.bookingOverview = async (params) => {
     },
   };
 };
-
 
 exports.weeklyBookingStats = async (params) => {
   const { ecosystemDomain } = params;
