@@ -3,10 +3,12 @@ const router = express.Router();
 const adminController = require("../controllers/AdminController/dashboard");
 const adminSubscriptionController = require("../controllers/AdminController/subscription");
 const adminTransactionController = require("../controllers/AdminController/transaction");
+const adminUserBase = require("../controllers/AdminController/userBase")
+const adminSubCategory = require("../controllers/AdminController/subCategory")
 const withdrawalController = require("../controllers/AdminController/withdrawal");
 
 // const authenticatedUser = require("../middleware/authentication");
-const { getEcosystemData } = require("../controllers/AdminController/access");
+const { getEcosystemData, upGradeUser } = require("../controllers/AdminController/access");
 
 const adminSupportController = require("../controllers/AdminController/supportTicket");
 const adminAuthController = require("../controllers/AdminController/authentication");
@@ -17,16 +19,25 @@ const adminNotificationController = require("../controllers/AdminController/noti
 const {
   monthlySubscriptions,
   planTypeTotalSubscription,
+  getRevAndSubStat,
+  getPlanTypeCount,
+  getTotalSales
 } = require("../services/adminServices/subscription");
 const {
   monthlyRegistration,
   userStats,
+  getTotalSubscription
 } = require("../services/adminServices/dashboard");
 const { supportTickets } = require("../services/adminServices/supportTicket");
 const {
   ecosystemTransactions,
 } = require("../services/adminServices/transaction");
+const {
+  getUsersByPlan,
+  
+} = require("../services/adminServices/userBase");
 
+// registration
 router.post("/admin/registration", adminAuthController.adminRegister);
 router.post("/admin/login", adminAuthController.adminLogin);
 router.post(
@@ -45,11 +56,18 @@ router.post(
   adminAuthController.resendPasswordResetOTP
 );
 router.post(
+  "/admin/upgrade-user",
+
+  upGradeUser
+);
+
+router.post(
   "/admin/verify-password",
 
   adminAuthController.verifyResetPasswordOtp
 );
 
+// admin dashboard
 router.get(
   "/admin/all-users/:email",
   verifyAdmin,
@@ -72,10 +90,88 @@ router.get(
 router.get(
   "/user-information/:creatorId/:email",
   verifyAdmin,
-  authenticatedAdmin,
+  // authenticatedAdmin,
   adminController.getAUserInformation
 );
 
+router.get(
+  "/categories-count/:email",
+  verifyAdmin,
+  authenticatedAdmin,
+  adminController.getAllCategory
+);
+
+router.get(
+  "/stores-count/:email",
+  verifyAdmin,
+  authenticatedAdmin,
+  adminController.getAllStores
+);
+
+router.get(
+  "/ecosystem-subcategories/:email",
+  verifyAdmin,
+  authenticatedAdmin,
+  adminController.getTopStores
+);
+
+router.get(
+  "/total-subscription/:email",
+  verifyAdmin,
+  authenticatedAdmin,
+  getTotalSubscription
+);
+
+// user base
+router.get(
+  "/store-by-country/:email",
+  verifyAdmin,
+  authenticatedAdmin,
+  adminUserBase.getStoreByCountry
+);
+router.post(
+  "/store-by-state/:email",
+  verifyAdmin,
+  authenticatedAdmin,
+  adminUserBase.getStoreByCountryState
+);
+router.post(
+  "/store-by-localGovernment/:email",
+  verifyAdmin,
+  authenticatedAdmin,
+  adminUserBase.getStoreByLocalGovernment
+);
+
+router.post(
+  "/store-by-location/:email",
+  verifyAdmin,
+  authenticatedAdmin,
+  adminUserBase.getStoreByLocation
+);
+
+router.get(
+  "/store-by-date/:email/:date",
+  verifyAdmin,
+  authenticatedAdmin,
+  adminUserBase.getStoreByDate
+);
+
+router.get(
+  "/get-plan/:email/:plan",
+  verifyAdmin,
+  // authenticatedAdmin,
+  getUsersByPlan
+);
+
+// subCategory
+router.get(
+  "/get-a-subcategory/:email/:subcategory",
+  verifyAdmin,
+  // authenticatedAdmin,
+  adminSubCategory.getASubcategory
+);
+
+// subscribtion
 router.get(
   "/admin/all-subscription/:email",
   verifyAdmin,
@@ -107,7 +203,7 @@ router.get(
 router.get(
   "/admin/all-creator-withdrawals/:email",
   verifyAdmin,
-  authenticatedAdmin,
+  // authenticatedAdmin,
   adminTransactionController.getWithdrawalHistory
 );
 
@@ -174,6 +270,25 @@ router.get(
   monthlySubscriptions
 );
 
+router.get(
+  "/total-revenue-sub/:email/:date",
+  verifyAdmin,
+  authenticatedAdmin,
+ getRevAndSubStat
+);
+router.get(
+  "/total-sales-record/:email/:date",
+  verifyAdmin,
+  // authenticatedAdmin,
+ getTotalSales
+);
+
+router.get(
+  "/get-plan-stats/:email",
+  verifyAdmin,
+  authenticatedAdmin,
+ getPlanTypeCount
+);
 // short access
 router.get(
   "/ecosystem-monthly-data",

@@ -49,6 +49,14 @@ const WithdrawalRequest = sequelize.define(
         key: "id",
       },
     },
+    adminId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: "AdminUser",
+        key: "id",
+      },
+    },
     creatorId: {
       type: DataTypes.INTEGER,
       allowNull: false,

@@ -7,7 +7,7 @@ const sendWelcomeEmailCreator = async ({ organizationName, email }) => {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Welcome to Dimpified</title>
+    <title>We're thrilled to have you join our community</title>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Outfit&display=swap");
 
@@ -125,27 +125,20 @@ const sendWelcomeEmailCreator = async ({ organizationName, email }) => {
             style="height: 60px"
           />
         </div>
-        <p>Dear ${organizationName},</p>
+        <p>Hello ${organizationName},</p>
         <p>
-          Welcome to DIMP – your all-in-one platform to move your business
-          online, attract more clients, and boost more sales!
+         We're so excited to welcome you to the DIMP! 
         </p>
 
-        <div class="gettingStarted">
-          <h3>Why Choose DIMP?</h3>
-          <p>
-            In today’s fast-paced world, your business should not be limited to
-            a physical shop. With DIMP, you can easily set up an online presence
-            and start earning from anywhere. Here’s how we empower you:
-          </p>
-          <ul>
-            <li>Easy Website Setup In 3Mins – 100+ customizable templates.</li>
-            <li>Service Management – List services & set prices.</li>
-            <li>Booking & Invoicing – Automated, real-time solutions.</li>
-            <li>Secure Payments – Seamless upfront payments.</li>
-            <li>User Dashboard – Manage everything from one place.</li>
-          </ul>
-        </div>
+         <p>
+        You are one step closer to having your own free business website.   
+        </p>
+
+         <p>
+        Complete your profile registration and access your business website with the button below. 
+        </p>
+
+      
         <div class="click">
           <a
             href="https://dimpified.com/creator/signin"
@@ -172,7 +165,7 @@ const sendWelcomeEmailCreator = async ({ organizationName, email }) => {
 
   return sendEmail({
     to: email,
-    subject: "Welcome to DIMP – Transform Your Business!",
+    subject: "Welcome to DIMP!",
     html: message,
   });
 };

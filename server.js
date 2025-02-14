@@ -20,7 +20,6 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: "10mb" }));
 
 app.use("/api/v1/", require("./src/routes/template.js"));
-//app.use("/api/v1/", require("./src/routes/templates.js"));
 app.use("/api/v1/", require("./src/routes/payment.js"));
 app.use("/api/v1/", require("./src/routes/authentication.js"));
 app.use("/api/v1/", require("./src/routes/creatorProducts.js"));

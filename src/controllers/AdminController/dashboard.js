@@ -67,3 +67,33 @@ exports.getAdminDashboardSubcategoryInformation = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+exports.getAllCategory = async (req, res) => {
+  try {
+    const response = await adminDashboardServices.getAllCategory();
+    return res.status(response.status).json(response.data);
+  } catch (error) {
+    console.error("error getting all category", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+exports.getAllStores = async (req, res) => {
+  try {
+    const response = await adminDashboardServices.getAllStores();
+    return res.status(response.status).json(response.data);
+  } catch (error) {
+    console.error("error getting all store", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+exports.getTopStores = async (req, res) => {
+  try {
+    const response = await adminDashboardServices.getTopStores();
+    return res.status(response.status).json(response.data);
+  } catch (error) {
+    console.error("error getting all store", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
