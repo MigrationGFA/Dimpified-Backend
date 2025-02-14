@@ -209,8 +209,8 @@ router.get(
 
 router.get(
   "/admin/withdrawal-details/:withdrawalId/:email",
-  verifyAdmin,
-  authenticatedAdmin,
+  // verifyAdmin,
+  // authenticatedAdmin,
   adminTransactionController.getWithdrawalHistoryForProfile
 );
 

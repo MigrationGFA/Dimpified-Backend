@@ -34,11 +34,11 @@ exports.approveWithdrawalrequest = async (body) => {
       data: { message: "Withdrawal not found" },
     };
   }
-  console.log("withdrawal:", withdrawal);
 
   withdrawal.status = "approved";
   withdrawal.processedAt = Date.now();
   withdrawal.adminId = admin.id;
+  console.log("admin.id:", admin.id);
 
   await withdrawal.save();
 
