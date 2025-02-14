@@ -5,6 +5,7 @@ const adminSubscriptionController = require("../controllers/AdminController/subs
 const adminTransactionController = require("../controllers/AdminController/transaction");
 const adminUserBase = require("../controllers/AdminController/userBase")
 const adminSubCategory = require("../controllers/AdminController/subCategory")
+const withdrawalController = require("../controllers/AdminController/withdrawal");
 
 // const authenticatedUser = require("../middleware/authentication");
 const { getEcosystemData, upGradeUser } = require("../controllers/AdminController/access");
@@ -208,8 +209,8 @@ router.get(
 
 router.get(
   "/admin/withdrawal-details/:withdrawalId/:email",
-  verifyAdmin,
-  authenticatedAdmin,
+  // verifyAdmin,
+  // authenticatedAdmin,
   adminTransactionController.getWithdrawalHistoryForProfile
 );
 
@@ -319,6 +320,11 @@ router.get(
 router.get(
   "/admin/subcategory-information",
   adminController.getAdminDashboardSubcategoryInformation
+);
+
+router.post(
+  "/admin/approve-withdrawal",
+  withdrawalController.approveWithdrawalrequest
 );
 
 module.exports = router;
