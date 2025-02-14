@@ -3,6 +3,7 @@ const router = express.Router();
 const adminController = require("../controllers/AdminController/dashboard");
 const adminSubscriptionController = require("../controllers/AdminController/subscription");
 const adminTransactionController = require("../controllers/AdminController/transaction");
+const withdrawalController = require("../controllers/AdminController/withdrawal");
 
 // const authenticatedUser = require("../middleware/authentication");
 const { getEcosystemData } = require("../controllers/AdminController/access");
@@ -204,6 +205,11 @@ router.get(
 router.get(
   "/admin/subcategory-information",
   adminController.getAdminDashboardSubcategoryInformation
+);
+
+router.post(
+  "/admin/approve-withdrawal",
+  withdrawalController.approveWithdrawalrequest
 );
 
 module.exports = router;

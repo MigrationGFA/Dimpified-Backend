@@ -8,15 +8,16 @@ const moment = require("moment");
 const EcosystemUser = require("../models/EcosystemUser");
 const Notification = require("../models/ecosystemNotification");
 const bcrypt = require("bcryptjs");
-const newsSendSMS = require("../helper/newSms");
+const newsSendSMS = require("../helper/newSms")
 const CreatorProfile = require("../models/CreatorProfile");
+
 
 const formatPhoneNumber = (phoneNumber) => {
   if (phoneNumber.startsWith("0")) {
     return `234${phoneNumber.slice(1)}`;
   }
-
-  return phoneNumber;
+  
+  return phoneNumber; 
 };
 
 exports.createBooking = async (body) => {
@@ -131,6 +132,8 @@ exports.createBooking = async (body) => {
   creator.transactionNumber += 1;
   await creator.save();
 
+  
+
   await sendBookingConfirmationPaidEmail({
     email: creator.email,
     name: creator.organizationName,
@@ -159,9 +162,9 @@ exports.createBooking = async (body) => {
     date,
     time,
     paymentStatus: newBooking.paymentStatus,
-    businessName,
-    businessAddress,
-    logo,
+    businessName, 
+    businessAddress, 
+    logo, 
   });
 
   console.log(creator);
@@ -177,18 +180,14 @@ exports.createBooking = async (body) => {
 
   await newNotification.save();
 
-  const creatorProfile = await CreatorProfile.findOne({
+   const creatorProfile = await CreatorProfile.findOne({
     creatorId: creator.id,
   });
-  console.log("this is creatorProfile", creatorProfile);
+  console.log("this is creatorProfile", creatorProfile)
 
-  if (creatorProfile) {
-    const newPhoneNumber = formatPhoneNumber(creatorProfile.phoneNumber);
-    const response = await newsSendSMS(
-      newPhoneNumber,
-      `DIMP, New booking order created by ${name} for  ${service} service on ${date} at ${time}. Booking ID: ${bookingId}`,
-      "plain"
-    );
+  if(creatorProfile){
+    const newPhoneNumber = formatPhoneNumber(creatorProfile.phoneNumber)
+  const response = await  newsSendSMS(newPhoneNumber , `DIMP, New booking order created by ${name} for  ${service} service on ${date} at ${time}. Booking ID: ${bookingId}`, "plain");
   }
 
   return {
@@ -200,70 +199,45 @@ exports.createBooking = async (body) => {
 exports.bookingOverview = async (params) => {
   const { ecosystemDomain } = params;
 
-  if (!ecosystemDomain) {
-    return { status: 400, data: { message: "ecosystemDomain is required" } };
-  }
+  const today = new Date();
+  const startOfToday = new Date(today.setHours(0, 0, 0, 0));
+  const endOfToday = new Date(today.setHours(23, 59, 59, 999));
 
-  const now = new Date();
-  const startOfToday = new Date(now.setHours(0, 0, 0, 0));
-  const endOfToday = new Date(now.setHours(23, 59, 59, 999));
-
-  const startOfWeek = new Date(now);
-  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+  const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
   startOfWeek.setHours(0, 0, 0, 0);
-
   const endOfWeek = new Date(startOfWeek);
   endOfWeek.setDate(endOfWeek.getDate() + 6);
   endOfWeek.setHours(23, 59, 59, 999);
 
-  // Fetch all bookings
   const allBookings = await Booking.find({ ecosystemDomain });
-
-  // Function to update booking status if time has passed
-  const updatedBookings = await Promise.all(
-    allBookings.map(async (booking) => {
-      const bookingDateTime = new Date(booking.date);
-      const [hours, minutes] = booking.time.split(":").map(Number);
-      bookingDateTime.setHours(hours, minutes, 0, 0);
-
-      if (booking.status === "Pending" && bookingDateTime < new Date()) {
-        booking.status = "Completed";
-        await booking.save();
-      }
-      return booking;
-    })
-  );
 
   const sortByDateDesc = (a, b) => new Date(b.date) - new Date(a.date);
 
-  const todayBookings = updatedBookings
+  const todayBookings = allBookings
     .filter((booking) => {
       const bookingDate = new Date(booking.date);
       return bookingDate >= startOfToday && bookingDate <= endOfToday;
     })
     .sort(sortByDateDesc);
 
-  const weekBookings = updatedBookings
+  const weekBookings = allBookings
     .filter((booking) => {
       const bookingDate = new Date(booking.date);
       return bookingDate >= startOfWeek && bookingDate <= endOfWeek;
     })
     .sort(sortByDateDesc);
 
-  const pendingBookings = updatedBookings
-    .filter((booking) => booking.status === "Pending")
-    .sort(sortByDateDesc);
-
-  const completedBookings = updatedBookings
-    .filter((booking) => booking.status === "Completed")
-    .sort(sortByDateDesc);
+  const [pendingBookings, completedBookings] = await Promise.all([
+    Booking.find({ ecosystemDomain, status: "Pending" }).sort({ date: -1 }),
+    Booking.find({ ecosystemDomain, status: "Completed" }).sort({ date: -1 }),
+  ]);
 
   return {
     status: 200,
     data: {
       todayBookings,
       weekBookings,
-      allBookings: updatedBookings.sort(sortByDateDesc),
+      allBookings: allBookings.sort(sortByDateDesc),
       pendingBookings,
       completedBookings,
     },
