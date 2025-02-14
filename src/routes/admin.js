@@ -202,7 +202,7 @@ router.get(
 router.get(
   "/admin/all-creator-withdrawals/:email",
   verifyAdmin,
-  authenticatedAdmin,
+  // authenticatedAdmin,
   adminTransactionController.getWithdrawalHistory
 );
 

@@ -199,51 +199,77 @@ exports.createBooking = async (body) => {
 
 exports.bookingOverview = async (params) => {
   const { ecosystemDomain } = params;
+  
+  if (!ecosystemDomain) {
+    return { status: 400, data: { message: "ecosystemDomain is required" } };
+  }
 
-  const today = new Date();
-  const startOfToday = new Date(today.setHours(0, 0, 0, 0));
-  const endOfToday = new Date(today.setHours(23, 59, 59, 999));
+  const now = new Date();
+  const startOfToday = new Date(now.setHours(0, 0, 0, 0));
+  const endOfToday = new Date(now.setHours(23, 59, 59, 999));
 
-  const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
   startOfWeek.setHours(0, 0, 0, 0);
+  
   const endOfWeek = new Date(startOfWeek);
   endOfWeek.setDate(endOfWeek.getDate() + 6);
   endOfWeek.setHours(23, 59, 59, 999);
 
+  // Fetch all bookings
   const allBookings = await Booking.find({ ecosystemDomain });
+
+  // Function to update booking status if time has passed
+  const updatedBookings = await Promise.all(
+    allBookings.map(async (booking) => {
+      const bookingDateTime = new Date(booking.date);
+      const [hours, minutes] = booking.time.split(":").map(Number);
+      bookingDateTime.setHours(hours, minutes, 0, 0);
+
+      if (booking.status === "Pending" && bookingDateTime < new Date()) {
+        booking.status = "Completed";
+        await booking.save();
+      }
+      return booking;
+    })
+  );
 
   const sortByDateDesc = (a, b) => new Date(b.date) - new Date(a.date);
 
-  const todayBookings = allBookings
+  const todayBookings = updatedBookings
     .filter((booking) => {
       const bookingDate = new Date(booking.date);
       return bookingDate >= startOfToday && bookingDate <= endOfToday;
     })
     .sort(sortByDateDesc);
 
-  const weekBookings = allBookings
+  const weekBookings = updatedBookings
     .filter((booking) => {
       const bookingDate = new Date(booking.date);
       return bookingDate >= startOfWeek && bookingDate <= endOfWeek;
     })
     .sort(sortByDateDesc);
 
-  const [pendingBookings, completedBookings] = await Promise.all([
-    Booking.find({ ecosystemDomain, status: "Pending" }).sort({ date: -1 }),
-    Booking.find({ ecosystemDomain, status: "Completed" }).sort({ date: -1 }),
-  ]);
+  const pendingBookings = updatedBookings
+    .filter((booking) => booking.status === "Pending")
+    .sort(sortByDateDesc);
+
+  const completedBookings = updatedBookings
+    .filter((booking) => booking.status === "Completed")
+    .sort(sortByDateDesc);
 
   return {
     status: 200,
     data: {
       todayBookings,
       weekBookings,
-      allBookings: allBookings.sort(sortByDateDesc),
+      allBookings: updatedBookings.sort(sortByDateDesc),
       pendingBookings,
       completedBookings,
     },
   };
 };
+
 
 exports.weeklyBookingStats = async (params) => {
   const { ecosystemDomain } = params;
