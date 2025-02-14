@@ -13,6 +13,7 @@ const Account = require("../../models/Account");
 const CreatorEarning = require("../../models/CreatorEarning");
 const Booking = require("../../models/DimpBooking");
 const { createTransport } = require("nodemailer");
+const AdminUser = require("../../models/AdminUser");
 
 exports.ecosystemTransactions = async (req, res) => {
   try {
@@ -209,36 +210,35 @@ exports.getWithdrawalDetailsForProfile = async (params) => {
     };
   }
 
-  const { creatorId, amount, status, requestedAt } = specificWithdrawal;
-  const { accountName, accountNumber, bankName } =
-    specificWithdrawal.Account || {};
+  const { creatorId, amount, status, requestedAt, adminId } = specificWithdrawal;
+  console.log("specificWithdrawal:",adminId)
+  const { accountName, accountNumber, bankName } = specificWithdrawal.Account || {};
   const { email } = specificWithdrawal.Creator || {};
 
   // Fetch fullName from CreatorProfile using creatorId
-  const creatorProfile = await CreatorProfile.findOne({ creatorId }).exec();
+  const creatorProfile = await CreatorProfile.findOne({ where: { id: creatorId } });
   const fullName = creatorProfile?.fullName || "N/A";
+
+  // Fetch the admin fullName if withdrawal is approved
+  let approvedBy = "N/A";
+  if (status === "approved" && adminId) {
+    const admin = await AdminUser.findOne({ where: { id: adminId }, attributes: ["fullName"] });
+  
+    approvedBy = admin?.fullName || "N/A";
+  }
 
   // Fetch all withdrawal requests for the creator
   const withdrawalHistory = await WithdrawalRequest.findAll({
     where: { creatorId },
-    include: [
-      {
-        model: Account,
-        attributes: ["accountName", "accountNumber", "bankName"],
-      },
-    ],
+    include: [{ model: Account, attributes: ["accountName", "accountNumber", "bankName"] }],
     order: [["requestedAt", "DESC"]],
   });
 
   // Fetch ecosystem data for the specific creator
-  const ecosystem = await Ecosystem.findOne({ creatorId }).select(
-    "ecosystemDomain"
-  );
+  const ecosystem = await Ecosystem.findOne({ where: { creatorId }, attributes: ["ecosystemDomain"] });
 
   // Fetch transactions to calculate incoming amount and wallet balance
-  const transactions = await ecosystemTransaction.findAll({
-    where: { creatorId },
-  });
+  const transactions = await ecosystemTransaction.findAll({ where: { creatorId } });
 
   const incomingAmount = transactions.reduce(
     (total, transaction) => total + parseFloat(transaction.amount || 0),
@@ -258,10 +258,7 @@ exports.getWithdrawalDetailsForProfile = async (params) => {
   const historyResponse = withdrawalHistory.map((withdrawal) => {
     const { accountName, accountNumber, bankName } = withdrawal.Account || {};
     const withdrawalDate = withdrawal.requestedAt.toISOString().split("T")[0];
-    const withdrawalTime = withdrawal.requestedAt
-      .toISOString()
-      .split("T")[1]
-      .split(".")[0];
+    const withdrawalTime = withdrawal.requestedAt.toISOString().split("T")[1].split(".")[0];
 
     return {
       withdrawalId: withdrawal.id,
@@ -271,7 +268,7 @@ exports.getWithdrawalDetailsForProfile = async (params) => {
         bankName: bankName || "N/A",
       },
       ecosystemDomain: ecosystem?.ecosystemDomain || "N/A",
-      amount: parseFloat(withdrawal.amount || 0).toFixed(2), // Requested amount
+      amount: parseFloat(withdrawal.amount || 0).toFixed(2),
       status: withdrawal.status || "N/A",
       date: withdrawalDate,
       time: withdrawalTime,
@@ -280,10 +277,7 @@ exports.getWithdrawalDetailsForProfile = async (params) => {
 
   // Format the specific withdrawal response
   const specificWithdrawalDate = requestedAt.toISOString().split("T")[0];
-  const specificWithdrawalTime = requestedAt
-    .toISOString()
-    .split("T")[1]
-    .split(".")[0];
+  const specificWithdrawalTime = requestedAt.toISOString().split("T")[1].split(".")[0];
 
   return {
     status: 200,
@@ -300,9 +294,10 @@ exports.getWithdrawalDetailsForProfile = async (params) => {
         },
         ecosystemDomain: ecosystem?.ecosystemDomain || "N/A",
         amount: parseFloat(amount || 0).toFixed(2),
-        // status: status || "N/A",
-        // date: specificWithdrawalDate,
-        // time: specificWithdrawalTime,
+        status: status || "N/A",
+        date: specificWithdrawalDate,
+        time: specificWithdrawalTime,
+        approvedBy: approvedBy, // Added field
       },
       withdrawalHistory: historyResponse,
       incomingAmount: parseFloat(incomingAmount).toFixed(2),
@@ -311,6 +306,7 @@ exports.getWithdrawalDetailsForProfile = async (params) => {
     },
   };
 };
+
 
 exports.transactionDetails = async () => {
   // Fetch all withdrawal requests
