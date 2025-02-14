@@ -375,12 +375,15 @@ exports.creatorLogin = async (req) => {
       creatorId: creator.id,
     },
   });
-
+  let joinDate;
   let plan;
   if (!getSubscription) {
     plan = "Lite";
+    joinDate = getSubscription.createdAt;
+    
   } else {
     plan = getSubscription.planType;
+    joinDate = getSubscription.createdAt;
   }
 
   const creatorEcosystem = await Ecosystem.findOne({
@@ -415,6 +418,7 @@ exports.creatorLogin = async (req) => {
     plan: plan,
     step: creator.step,
     ecosystemDomain: ecosystemDomain,
+    joinDate: joinDate
   };
 
   return {

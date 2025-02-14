@@ -117,7 +117,6 @@ exports.createBooking = async (body) => {
   await newBooking.save();
   console.log("ecosystem:", ecosystem);
   const creator = await Creator.findByPk(ecosystem.creatorId);
-  console.log("creator:", creator);
 
   if (!creator) {
     return { status: 404, data: { message: "Creator not found" } };
@@ -180,14 +179,16 @@ exports.createBooking = async (body) => {
 
   await newNotification.save();
 
-   const creatorProfile = await CreatorProfile.findOne({
+  const creatorProfile = await CreatorProfile.findOne({
     creatorId: creator.id,
   });
   console.log("this is creatorProfile", creatorProfile)
 
   if(creatorProfile){
     const newPhoneNumber = formatPhoneNumber(creatorProfile.phoneNumber)
-  const response = await  newsSendSMS(newPhoneNumber , `DIMP, New booking order created by ${name} for  ${service} service on ${date} at ${time}. Booking ID: ${bookingId}`, "plain");
+    const customerPhoneNumber = formatPhoneNumber(phone)
+    const response = await newsSendSMS(newPhoneNumber, `DIMP, New booking order created by ${name} for  ${service} service on ${date} at ${time}. Booking ID: ${bookingId}`, "plain");
+     const customer = await newsSendSMS(customerPhoneNumber, `Hi ${name}, you've successfully booked the ${service} service from ${ecosystem.ecosystemName}. Your appointment is confirmed for ${date} at ${time} with Booking ID: ${bookingId}. We look forward to serving you!`, "plain");
   }
 
   return {

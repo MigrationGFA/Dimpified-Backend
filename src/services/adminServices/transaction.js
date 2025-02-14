@@ -30,84 +30,151 @@ exports.ecosystemTransactions = async (req, res) => {
   }
 };
 
+// exports.getWithdrawalDetails = async () => {
+//   // Fetch all withdrawal requests
+//   const withdrawalHistory = await WithdrawalRequest.findAll({
+//     order: [["createdAt", "DESC"]], // Order by latest request first
+//   });
+
+//   if (!withdrawalHistory.length) {
+//     return {
+//       status: 404,
+//       message: "No withdrawal history found.",
+//     };
+//   }
+
+//   // Fetch all unique creator IDs from withdrawals
+//     const creatorIds = [...new Set(withdrawalHistory.map(w => w.creatorId))];
+
+//   // Fetch creator profiles for the creator IDs
+//   const creatorProfiles = await CreatorProfile.find({
+//     creatorId: { $in: creatorIds },
+//   }).select("creatorId fullName");
+
+//   // Map creator profiles by creatorId for quick access
+//   const creatorMap = creatorProfiles.reduce((map, profile) => {
+//     map[profile.creatorId] = profile.fullName;
+//     return map;
+//   }, {});
+
+//   // Fetch balances for each creator from ecosystemTransaction
+//   const balances = await Promise.all(
+//     creatorIds.map(async (creatorId) => {
+//       const transactions = await ecosystemTransaction.findAll({
+//         where: { creatorId },
+//       });
+//       const balance = transactions.reduce(
+//         (total, transaction) => total + parseFloat(transaction.amount || 0),
+//         0
+//       );
+//       return { creatorId, balance };
+//     })
+//   );
+
+//   // Map balances by creatorId for quick access
+//   const balanceMap = balances.reduce((map, { creatorId, balance }) => {
+//     map[creatorId] = parseFloat(balance).toFixed(2);
+//     return map;
+//   }, {});
+
+//   // Map the most recent withdrawal history to the desired format
+//   const response = Object.values(groupedWithdrawals).map((withdrawal) => {
+//     const fullName = creatorMap[withdrawal.creatorId] || "N/A";
+//     const balance = balanceMap[withdrawal.creatorId] || "0.00";
+
+//     return {
+//       withdrawalId: withdrawal.id, // Correct ID from the database
+//       // creatorId: withdrawal.creatorId,
+//       fullName,
+//       ecosystemDomain: withdrawal.ecosystemDomain,
+//       balance,
+//       amount: withdrawal.amount,
+//       status: withdrawal.status,
+//       requestedAt: withdrawal.requestedAt,
+//       processedAt: withdrawal.processedAt || "Pending",
+//       balance,
+//     };
+//   });
+
+//   return {
+//     status: 200,
+//     data: response,
+//   };
+// };
+
 exports.getWithdrawalDetails = async () => {
-  // Fetch all withdrawal requests
-  const withdrawalHistory = await WithdrawalRequest.findAll({
-    order: [["createdAt", "DESC"]], // Order by latest request first
-  });
+  try {
+    // Fetch all withdrawal requests ordered by latest first
+    const withdrawalHistory = await WithdrawalRequest.findAll({
+      order: [["createdAt", "DESC"]],
+    });
 
-  if (!withdrawalHistory.length) {
-    return {
-      status: 404,
-      message: "No withdrawal history found.",
-    };
-  }
-
-  // Group by creatorId and keep only the first (most recent) withdrawal for each creator
-  const groupedWithdrawals = withdrawalHistory.reduce((map, withdrawal) => {
-    if (!map[withdrawal.creatorId]) {
-      map[withdrawal.creatorId] = withdrawal;
+    if (!withdrawalHistory.length) {
+      return {
+        status: 404,
+        message: "No withdrawal history found.",
+      };
     }
-    return map;
-  }, {});
 
-  // Fetch unique creator IDs
-  const creatorIds = Object.keys(groupedWithdrawals);
+    // Fetch all unique creator IDs from withdrawals
+    const creatorIds = [...new Set(withdrawalHistory.map(w => w.creatorId))];
 
-  // Fetch creator profiles for the creator IDs
-  const creatorProfiles = await CreatorProfile.find({
-    creatorId: { $in: creatorIds },
-  }).select("creatorId fullName");
+    // Fetch creator profiles for the creator IDs
+    const creatorProfiles = await CreatorProfile.find({
+      creatorId: { $in: creatorIds },
+    }).select("creatorId fullName");
 
-  // Map creator profiles by creatorId for quick access
-  const creatorMap = creatorProfiles.reduce((map, profile) => {
-    map[profile.creatorId] = profile.fullName;
-    return map;
-  }, {});
+    // Map creator profiles by creatorId for quick access
+    const creatorMap = creatorProfiles.reduce((map, profile) => {
+      map[profile.creatorId] = profile.fullName;
+      return map;
+    }, {});
 
-  // Fetch balances for each creator from ecosystemTransaction
-  const balances = await Promise.all(
-    creatorIds.map(async (creatorId) => {
-      const transactions = await ecosystemTransaction.findAll({
-        where: { creatorId },
-      });
-      const balance = transactions.reduce(
-        (total, transaction) => total + parseFloat(transaction.amount || 0),
-        0
-      );
-      return { creatorId, balance };
-    })
-  );
+    // Fetch balances for each creator from ecosystemTransaction
+    const balances = await Promise.all(
+      creatorIds.map(async (creatorId) => {
+        const transactions = await ecosystemTransaction.findAll({
+          where: { creatorId },
+        });
+        const balance = transactions.reduce(
+          (total, transaction) => total + parseFloat(transaction.amount || 0),
+          0
+        );
+        return { creatorId, balance };
+      })
+    );
 
-  // Map balances by creatorId for quick access
-  const balanceMap = balances.reduce((map, { creatorId, balance }) => {
-    map[creatorId] = parseFloat(balance).toFixed(2);
-    return map;
-  }, {});
+    // Map balances by creatorId for quick access
+    const balanceMap = balances.reduce((map, { creatorId, balance }) => {
+      map[creatorId] = parseFloat(balance).toFixed(2);
+      return map;
+    }, {});
 
-  // Map the most recent withdrawal history to the desired format
-  const response = Object.values(groupedWithdrawals).map((withdrawal) => {
-    const fullName = creatorMap[withdrawal.creatorId] || "N/A";
-    const balance = balanceMap[withdrawal.creatorId] || "0.00";
+    // Map all withdrawal requests
+    const response = withdrawalHistory.map((withdrawal) => {
+      const fullName = creatorMap[withdrawal.creatorId] || "N/A";
+      const balance = balanceMap[withdrawal.creatorId] || "0.00";
+
+      return {
+        withdrawalId: withdrawal.id, 
+        fullName,
+        ecosystemDomain: withdrawal.ecosystemDomain,
+        balance,
+        amount: withdrawal.amount,
+        status: withdrawal.status,
+        requestedAt: withdrawal.requestedAt,
+        processedAt: withdrawal.processedAt || "Pending",
+      };
+    });
 
     return {
-      withdrawalId: withdrawal.id, // Correct ID from the database
-      // creatorId: withdrawal.creatorId,
-      fullName,
-      ecosystemDomain: withdrawal.ecosystemDomain,
-      balance,
-      amount: withdrawal.amount,
-      status: withdrawal.status,
-      requestedAt: withdrawal.requestedAt,
-      processedAt: withdrawal.processedAt || "Pending",
-      balance,
+      status: 200,
+      data: response,
     };
-  });
-
-  return {
-    status: 200,
-    data: response,
-  };
+  } catch (error) {
+    console.error("Error fetching withdrawal details:", error);
+    return { status: 500, data: { error: "Internal Server Error" } };
+  }
 };
 
 exports.getWithdrawalDetailsForProfile = async (params) => {

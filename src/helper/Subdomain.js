@@ -91,6 +91,7 @@ const createSubdomain = async (subdomain) => {
         );
         return "Subdomain creation successful"
     } catch (error) {
+        console.log("this is error", error)
         console.error(`Error in automation: ${error.message}`);
         throw error;
     }
