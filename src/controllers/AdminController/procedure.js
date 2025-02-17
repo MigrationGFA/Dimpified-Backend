@@ -120,6 +120,69 @@ const getTotalSales = async (date) => {
     throw error;
   }
 };
+
+const GetGMV = async () => { 
+  try {
+    const [results] = await sequelize.query("CALL GetGMV()");
+    return results;
+  } catch (error) {
+    console.error("Error fetching GMV:", error.message);
+    throw error;
+  }
+};
+
+const GetNMV = async () => {
+  try {
+    const [results] = await sequelize.query("CALL GetNMV()");
+    return results;
+  } catch (error) {
+    console.error("Error fetching NMV:", error.message);
+    throw error;
+  }
+};
+
+const GetAmountPaid = async () => {
+  try {
+    const [results] = await sequelize.query("CALL GetAmountPaid()");
+    return results;
+  } catch (error) {
+    console.error("Error fetching amount paid:", error.message);
+    throw error;
+  }
+};
+
+const GetUnpaidAmount = async () => {
+  try {
+    const [results] = await sequelize.query("CALL GetUnpaidAmount()");
+    return results;
+  } catch (error) {
+    console.error("Error fetching unpaid amount:", error.message);
+    throw error;
+  }
+};
+
+const GetTransactionIncome = async () => {
+  try {
+    const [results] = await sequelize.query("CALL GetTransactionIncome()");
+    return results;
+  } catch (error) {
+    console.error("Error fetching transaction income:", error.message);
+    throw error;
+  }
+};
+
+const GetTotalWithdrawals = async () => {
+  try {
+    const [results] = await sequelize.query("CALL GetTotal_Withdrawals()");
+    console.log("results:",results)
+    
+    return results;
+  } catch (error) {
+    console.error("Error fetching total withdrawals:", error.message);
+    throw error;
+  }
+};
+
 module.exports = {
   getAllUsers,
   getMonthlyRegistration,
@@ -131,5 +194,12 @@ module.exports = {
   getRevAndSubStat,
   getUsersByPlan,
   getPlanTypeCount,
-  getTotalSales
+  getTotalSales,
+  GetGMV,
+  GetNMV,
+  GetAmountPaid,
+  GetUnpaidAmount,
+  GetTransactionIncome,
+  GetTotalWithdrawals
 };
+
