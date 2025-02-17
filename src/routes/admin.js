@@ -3,12 +3,15 @@ const router = express.Router();
 const adminController = require("../controllers/AdminController/dashboard");
 const adminSubscriptionController = require("../controllers/AdminController/subscription");
 const adminTransactionController = require("../controllers/AdminController/transaction");
-const adminUserBase = require("../controllers/AdminController/userBase")
-const adminSubCategory = require("../controllers/AdminController/subCategory")
+const adminUserBase = require("../controllers/AdminController/userBase");
+const adminSubCategory = require("../controllers/AdminController/subCategory");
 const withdrawalController = require("../controllers/AdminController/withdrawal");
 
 // const authenticatedUser = require("../middleware/authentication");
-const { getEcosystemData, upGradeUser } = require("../controllers/AdminController/access");
+const {
+  getEcosystemData,
+  upGradeUser,
+} = require("../controllers/AdminController/access");
 
 const adminSupportController = require("../controllers/AdminController/supportTicket");
 const adminAuthController = require("../controllers/AdminController/authentication");
@@ -21,21 +24,26 @@ const {
   planTypeTotalSubscription,
   getRevAndSubStat,
   getPlanTypeCount,
-  getTotalSales
+  getTotalSales,
 } = require("../services/adminServices/subscription");
 const {
   monthlyRegistration,
   userStats,
-  getTotalSubscription
+  getTotalSubscription,
 } = require("../services/adminServices/dashboard");
 const { supportTickets } = require("../services/adminServices/supportTicket");
 const {
   ecosystemTransactions,
 } = require("../services/adminServices/transaction");
+const { getUsersByPlan } = require("../services/adminServices/userBase");
 const {
-  getUsersByPlan,
-  
-} = require("../services/adminServices/userBase");
+  getGMV,
+  getNMV,
+  getAmountPaid,
+  getUnpaidAmount,
+  getTransactionIncome,
+  getTotalWithdrawals,
+} = require("../services/adminServices/finance");
 
 const createSubdomain = require("../helper/Subdomain")
 
@@ -279,20 +287,20 @@ router.get(
   "/total-revenue-sub/:email/:date",
   verifyAdmin,
   authenticatedAdmin,
- getRevAndSubStat
+  getRevAndSubStat
 );
 router.get(
   "/total-sales-record/:email/:date",
   verifyAdmin,
   // authenticatedAdmin,
- getTotalSales
+  getTotalSales
 );
 
 router.get(
   "/get-plan-stats/:email",
   verifyAdmin,
   authenticatedAdmin,
- getPlanTypeCount
+  getPlanTypeCount
 );
 // short access
 router.get(
@@ -332,4 +340,10 @@ router.post(
   withdrawalController.approveWithdrawalrequest
 );
 
+router.get("/admin/gmv", getGMV);
+router.get("/admin/nmv", getNMV);
+router.get("/admin/amount-paid", getAmountPaid);
+router.get("/admin/unpaid-amount", getUnpaidAmount);
+router.get("/admin/transaction-income", getTransactionIncome);
+router.get("/admin/total-withdrawals", getTotalWithdrawals);
 module.exports = router;
