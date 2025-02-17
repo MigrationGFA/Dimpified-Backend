@@ -173,7 +173,7 @@ const GetTransactionIncome = async () => {
 
 const GetTotalWithdrawals = async () => {
   try {
-    const [results] = await sequelize.query("CALL GetTotal_Withdrawals()");
+    const [results] = await sequelize.query("CALL GetTotalWithdrawals()");
     console.log("results:",results)
     
     return results;
