@@ -389,7 +389,7 @@ exports.creatorLogin = async (req) => {
   let plan;
   if (!getSubscription) {
     plan = "Lite";
-    joinDate = getSubscription.createdAt;
+    joinDate = Date.now();
     
   } else {
     plan = getSubscription.planType;
