@@ -93,8 +93,8 @@ router.get(
 );
 router.get(
   "/admin/all-users-informations/:email",
-  verifyAdmin,
-  authenticatedAdmin,
+  // verifyAdmin,
+  // authenticatedAdmin,
   adminController.getAdminDashboardUsersInformations
 );
 
