@@ -5,6 +5,9 @@ const {
   GetUnpaidAmount,
   GetTransactionIncome,
   GetTotalWithdrawals,
+  GetTransactionsPro,
+  GetSubscriptionDetails,
+  GetCommissions,
 } = require("../../controllers/AdminController/procedure");
 
 exports.getGMV = async (req, res) => {
@@ -90,7 +93,7 @@ exports.getTransactionIncome = async (req, res) => {
 exports.getTotalWithdrawals = async (req, res) => {
   try {
     const result = await GetTotalWithdrawals();
-    console.log("results2:",result)
+    console.log("results2:", result);
 
     res.status(200).json({
       success: true,
@@ -102,5 +105,85 @@ exports.getTotalWithdrawals = async (req, res) => {
       success: false,
       message: "Failed to fetch total withdrawals.",
     });
+  }
+};
+
+exports.getTransactions = async (req, res) => {
+  try {
+    const { filterType, year, month, day } = req.query;
+
+    // Ensure valid values for each filter
+    const filters = {
+      filterType: filterType || "alltime", // Default to "alltime" if not provided
+      year: filterType === "alltime" ? 0 : parseInt(year) || 0,
+      month:
+        filterType === "month" || filterType === "day"
+          ? parseInt(month) || 0
+          : 0,
+      day: filterType === "day" ? parseInt(day) || 0 : 0,
+    };
+
+    console.log("Filters:", filters);
+
+    // Execute stored procedure
+    const transactions = await GetTransactionsPro(filters);
+
+    res.json({ success: true, data: transactions });
+  } catch (error) {
+    console.error("Error fetching transactions:", error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getSubcriptionDetails = async (req, res) => {
+  try {
+    const { filterType, year, month, day } = req.query;
+
+    // Ensure valid values for each filter
+    const filters = {
+      filterType: filterType || "alltime", // Default to "alltime" if not provided
+      year: filterType === "alltime" ? 0 : parseInt(year) || 0,
+      month:
+        filterType === "month" || filterType === "day"
+          ? parseInt(month) || 0
+          : 0,
+      day: filterType === "day" ? parseInt(day) || 0 : 0,
+    };
+
+    console.log("Filters:", filters);
+
+    // Execute stored procedure
+    const transactions = await GetSubscriptionDetails(filters);
+
+    res.json({ success: true, data: transactions });
+  } catch (error) {
+    console.error("Error fetching transactions:", error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+exports.getcommissions = async (req, res) => {
+  try {
+    const { filterType, year, month, day } = req.query;
+
+    // Ensure valid values for each filter
+    const filters = {
+      filterType: filterType || "alltime", // Default to "alltime" if not provided
+      year: filterType === "alltime" ? 0 : parseInt(year) || 0,
+      month:
+        filterType === "month" || filterType === "day"
+          ? parseInt(month) || 0
+          : 0,
+      day: filterType === "day" ? parseInt(day) || 0 : 0,
+    };
+
+    console.log("Filters:", filters);
+
+    // Execute stored procedure
+    const transactions = await GetCommissions(filters);
+
+    res.json({ success: true, data: transactions });
+  } catch (error) {
+    console.error("Error fetching transactions:", error.message);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
