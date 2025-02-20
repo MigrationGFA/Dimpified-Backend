@@ -265,6 +265,17 @@ const GetCommissions = async ({ filterType, year, month, day }) => {
   }
 };
 
+const GetWithdrawals = async (status) => {
+  try {
+    console.log("this is status", status);
+    const results = await sequelize.query(`CALL GetWithdrawalTable(${status})`);
+    return results;
+  } catch (error) {
+    console.error("Error fetching total sales:", error.message);
+    throw error;
+  }
+};
+
 module.exports = {
   getAllUsers,
   getMonthlyRegistration,
@@ -286,4 +297,5 @@ module.exports = {
   GetTransactionsPro,
   GetSubscriptionDetails,
   GetCommissions,
+  GetWithdrawals
 };
