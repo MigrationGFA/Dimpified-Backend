@@ -8,6 +8,7 @@ const {
   GetTransactionsPro,
   GetSubscriptionDetails,
   GetCommissions,
+  GetWithdrawals,
 } = require("../../controllers/AdminController/procedure");
 
 exports.getGMV = async (req, res) => {
@@ -187,3 +188,29 @@ exports.getcommissions = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+exports.getWithdrawals = async (req, res) => {
+    const {status} = req.params
+    if (!status) {
+      return {
+        status: 400,
+        data: {
+          message: "status is required",
+        },
+      };
+    }
+    try {
+      console.log("this is status", `'${status}'`)
+      const users = await GetWithdrawals(`'${status}'`);
+      res.status(200).json({
+        success: true,
+        data: users,
+      });
+    } catch (error) {
+      console.log("this is total sub and revenue state error", error)
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch total sub and revenue stat.",
+      });
+    }
+  };
