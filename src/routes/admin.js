@@ -46,6 +46,7 @@ const {
   getTransactions,
   getSubcriptionDetails,
   getcommissions,
+  getWithdrawals,
 } = require("../services/adminServices/finance");
 
 // registration
@@ -347,5 +348,6 @@ router.get("/admin/total-withdrawals", getTotalWithdrawals);
 router.get("/admin/transactions", getTransactions);
 router.get("/admin/subscription-details", getSubcriptionDetails);
 router.get("/admin/commissions", getcommissions);
+router.get("/admin/withdrawals/:status", getWithdrawals);
 
 module.exports = router;
