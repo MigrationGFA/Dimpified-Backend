@@ -183,26 +183,18 @@ const GetTotalWithdrawals = async () => {
 
 const GetTransactionsPro = async ({ filterType, year, month, day }) => {
   try {
-    // Ensure values are properly formatted
-    const filterTypeStr = String(filterType); // Convert to string
-    const yearNum = Number(year) || 0; // Ensure it's an integer
-    const monthNum = Number(month) || 0;
-    const dayNum = Number(day) || 0;
-
-    // Call the stored procedure with properly structured data
-    const [results] = await sequelize.query(
+    const results = await sequelize.query(
       "CALL GetTransactionsPro(:filterType, :year, :month, :day)",
       {
-        replacements: {
-          filterType: filterTypeStr,
-          year: yearNum,
-          month: monthNum,
-          day: dayNum,
-        },
+        replacements: { filterType, year, month, day },
+        raw: true,
       }
     );
 
-    return results;
+    console.log("Raw SQL Results:", results);
+
+    // If results is an array, return everything
+    return results|| []; // Ensure it's returning an array
   } catch (error) {
     console.error("Error fetching transactions:", error.message);
     throw error;
@@ -211,54 +203,37 @@ const GetTransactionsPro = async ({ filterType, year, month, day }) => {
 
 const GetSubscriptionDetails = async ({ filterType, year, month, day }) => {
   try {
-    // Ensure values are properly formatted
-    const filterTypeStr = String(filterType); // Convert to string
-    const yearNum = Number(year) || 0; // Ensure it's an integer
-    const monthNum = Number(month) || 0;
-    const dayNum = Number(day) || 0;
-
     // Call the stored procedure with properly structured data
-    const [results] = await sequelize.query(
+    const results = await sequelize.query(
       "CALL GetSubscriptionDetails(:filterType, :year, :month, :day)",
       {
-        replacements: {
-          filterType: filterTypeStr,
-          year: yearNum,
-          month: monthNum,
-          day: dayNum,
-        },
+        replacements: { filterType, year, month, day },
+        raw: true,
       }
     );
 
-    return results;
+    console.log("Raw SQL Results:", results); // Log full SQL response
+    return results || []; // Return full results array
   } catch (error) {
-    console.error("Error fetching transactions:", error.message);
+    console.error("Error fetching subscription details:", error.message);
     throw error;
   }
 };
 
 const GetCommissions = async ({ filterType, year, month, day }) => {
   try {
-    // Ensure values are properly formatted
-    const filterTypeStr = String(filterType); // Convert to string
-    const yearNum = Number(year) || 0; // Ensure it's an integer
-    const monthNum = Number(month) || 0;
-    const dayNum = Number(day) || 0;
+    
 
     // Call the stored procedure with properly structured data
-    const [results] = await sequelize.query(
+    const results= await sequelize.query(
       "CALL GetCommissions(:filterType, :year, :month, :day)",
       {
-        replacements: {
-          filterType: filterTypeStr,
-          year: yearNum,
-          month: monthNum,
-          day: dayNum,
-        },
+        replacements: { filterType, year, month, day },
+        raw: true,
       }
     );
 
-    return results;
+    return results || [];
   } catch (error) {
     console.error("Error fetching transactions:", error.message);
     throw error;
@@ -297,5 +272,5 @@ module.exports = {
   GetTransactionsPro,
   GetSubscriptionDetails,
   GetCommissions,
-  GetWithdrawals
+  GetWithdrawals,
 };
