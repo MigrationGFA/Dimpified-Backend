@@ -78,7 +78,7 @@ const getTotalSubscription = async () => {
 
 const getRevAndSubStat = async (date) => {
   try {
-    console.log("this is date", date)
+    console.log("this is date", date);
     const results = await sequelize.query(`CALL GetRevAndSubStat(${date})`);
     return results; // Return the result of the procedure
   } catch (error) {
@@ -87,10 +87,9 @@ const getRevAndSubStat = async (date) => {
   }
 };
 
-
 const getUsersByPlan = async (plan) => {
   try {
-    console.log("this is date", plan)
+    console.log("this is date", plan);
     const results = await sequelize.query(`CALL GetUsersByPlan(${plan})`);
     return results; // Return the result of the procedure
   } catch (error) {
@@ -98,7 +97,6 @@ const getUsersByPlan = async (plan) => {
     throw error;
   }
 };
-
 
 const getPlanTypeCount = async () => {
   try {
@@ -112,16 +110,16 @@ const getPlanTypeCount = async () => {
 
 const getTotalSales = async (date) => {
   try {
-    console.log("this is date", date)
+    console.log("this is date", date);
     const results = await sequelize.query(`CALL GetTotalSales(${date})`);
-    return results; 
+    return results;
   } catch (error) {
     console.error("Error fetching total sales:", error.message);
     throw error;
   }
 };
 
-const GetGMV = async () => { 
+const GetGMV = async () => {
   try {
     const [results] = await sequelize.query("CALL GetGMV()");
     return results;
@@ -174,11 +172,81 @@ const GetTransactionIncome = async () => {
 const GetTotalWithdrawals = async () => {
   try {
     const [results] = await sequelize.query("CALL GetTotalWithdrawals()");
-    console.log("results:",results)
-    
+    console.log("results:", results);
+
     return results;
   } catch (error) {
     console.error("Error fetching total withdrawals:", error.message);
+    throw error;
+  }
+};
+
+const GetTransactionsPro = async ({ filterType, year, month, day }) => {
+  try {
+    const results = await sequelize.query(
+      "CALL GetTransactionsPro(:filterType, :year, :month, :day)",
+      {
+        replacements: { filterType, year, month, day },
+        raw: true,
+      }
+    );
+
+    console.log("Raw SQL Results:", results);
+
+    // If results is an array, return everything
+    return results|| []; // Ensure it's returning an array
+  } catch (error) {
+    console.error("Error fetching transactions:", error.message);
+    throw error;
+  }
+};
+
+const GetSubscriptionDetails = async ({ filterType, year, month, day }) => {
+  try {
+    // Call the stored procedure with properly structured data
+    const results = await sequelize.query(
+      "CALL GetSubscriptionDetails(:filterType, :year, :month, :day)",
+      {
+        replacements: { filterType, year, month, day },
+        raw: true,
+      }
+    );
+
+    console.log("Raw SQL Results:", results); // Log full SQL response
+    return results || []; // Return full results array
+  } catch (error) {
+    console.error("Error fetching subscription details:", error.message);
+    throw error;
+  }
+};
+
+const GetCommissions = async ({ filterType, year, month, day }) => {
+  try {
+    
+
+    // Call the stored procedure with properly structured data
+    const results= await sequelize.query(
+      "CALL GetCommissions(:filterType, :year, :month, :day)",
+      {
+        replacements: { filterType, year, month, day },
+        raw: true,
+      }
+    );
+
+    return results || [];
+  } catch (error) {
+    console.error("Error fetching transactions:", error.message);
+    throw error;
+  }
+};
+
+const GetWithdrawals = async (status) => {
+  try {
+    console.log("this is status", status);
+    const results = await sequelize.query(`CALL GetWithdrawalTable(${status})`);
+    return results;
+  } catch (error) {
+    console.error("Error fetching total sales:", error.message);
     throw error;
   }
 };
@@ -200,6 +268,9 @@ module.exports = {
   GetAmountPaid,
   GetUnpaidAmount,
   GetTransactionIncome,
-  GetTotalWithdrawals
+  GetTotalWithdrawals,
+  GetTransactionsPro,
+  GetSubscriptionDetails,
+  GetCommissions,
+  GetWithdrawals,
 };
-

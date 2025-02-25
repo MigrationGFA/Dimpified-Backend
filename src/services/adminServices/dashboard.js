@@ -1,5 +1,6 @@
 const Creator = require("../../models/Creator");
 const { Op } = require("sequelize");
+const moment = require("moment");
 const Subscription = require("../../models/Subscription");
 const Ecosystem = require("../../models/Ecosystem");
 const CreatorProfile = require("../../models/CreatorProfile");
@@ -68,8 +69,9 @@ exports.AdminSubscriptionCounts = async () => {
   };
 };
 
+
+
 exports.dashboardUsersInformation = async () => {
-  // Fetch all creators with id, email, and isVerified status
   const creators = await Creator.findAll({
     attributes: ["id", "email", "isVerified"],
     order: [["createdAt", "DESC"]],
@@ -79,30 +81,26 @@ exports.dashboardUsersInformation = async () => {
     return {
       status: 200,
       data: {
-        allTheUsers: [],
+        allUsers: [],
         verifiedUsers: [],
         unVerifiedUsers: [],
+        activeStores: [],
+        nonActiveStores: [],
       },
-      message: "No creators found.",
+      message: "No creators found."
     };
   }
 
-  // Extract creator IDs
   const creatorIds = creators.map((creator) => creator.id);
 
-  // Fetch profiles (fullName, phoneNumber)
   const creatorProfiles = await CreatorProfile.find({
     creatorId: { $in: creatorIds },
   }).select("creatorId fullName phoneNumber");
 
-  console.log(creatorProfiles);
-
-  // Fetch ecosystems (ecosystemDomain, createdAt)
   const ecosystems = await Ecosystem.find({
     creatorId: { $in: creatorIds },
-  }).select("creatorId ecosystemDomain createdAt");
+  }).select("creatorId ecosystemDomain createdAt targetAudienceSector");
 
-  // Map ecosystem domains to creatorId
   const ecosystemMap = ecosystems.reduce((map, ecosystem) => {
     if (!map[ecosystem.creatorId]) {
       map[ecosystem.creatorId] = [];
@@ -110,12 +108,11 @@ exports.dashboardUsersInformation = async () => {
     map[ecosystem.creatorId].push({
       domain: ecosystem.ecosystemDomain,
       createdAt: ecosystem.createdAt,
+      targetAudienceSector: ecosystem.targetAudienceSector,
     });
-
     return map;
   }, {});
 
-  // Map profiles to creators
   const profileMap = creatorProfiles.reduce((map, profile) => {
     map[profile.creatorId] = {
       fullName: profile.fullName,
@@ -124,7 +121,6 @@ exports.dashboardUsersInformation = async () => {
     return map;
   }, {});
 
-  // Prepare the user data
   const users = creators.map((creator) => {
     const profile = profileMap[creator.id] || {};
     const ecosystems = ecosystemMap[creator.id] || [];
@@ -137,24 +133,101 @@ exports.dashboardUsersInformation = async () => {
       ecosystems: ecosystems.map((eco) => ({
         domain: eco.domain,
         createdAt: eco.createdAt,
+        targetAudienceSector: eco.targetAudienceSector,
       })),
     };
   });
 
-  // Separate verified and unverified users
   const verifiedUsers = users.filter((user) => user.isVerified);
   const unVerifiedUsers = users.filter((user) => !user.isVerified);
 
-  // Return the response
+  const activeStoresData = await activeStores(creatorIds);
+  const nonActiveStoresData = await nonActiveStores(creatorIds);
+
   return {
     status: 200,
     data: {
       allUsers: users,
       verifiedUsers,
       unVerifiedUsers,
+      activeStores: activeStoresData,
+      nonActiveStores: nonActiveStoresData,
     },
   };
 };
+
+const activeStores = async (creatorIds) => {
+  const twoMonthsAgo = moment().subtract(2, "months").toDate();
+
+  const transactions = await ecosystemTransaction.findAll({
+    where: {
+      createdAt: { [Op.gte]: twoMonthsAgo },
+    },
+    attributes: ["id", "amount", "ecosystemDomain", "transactionDate", "createdAt"],
+    order: [["createdAt", "DESC"]],
+    raw: true,
+  });
+
+  if (!transactions.length) return [];
+
+  const subscriptionDetails = await Subscription.findAll({
+    where: { ecosystemDomain: transactions.map(txn => txn.ecosystemDomain) },
+    attributes: ["id", "planType", "ecosystemDomain"],
+    raw: true,
+  });
+
+  const ecosystems = await Ecosystem.find({ creatorId: { $in: creatorIds } }).select("targetAudienceSector ecosystemDomain");
+
+  return transactions.map((transaction) => {
+    const ecosystem = ecosystems.find(
+      (eco) => eco.ecosystemDomain === transaction.ecosystemDomain
+    );
+    
+    const subscription = subscriptionDetails.find(sub => sub.ecosystemDomain === transaction.ecosystemDomain);
+    
+    return {
+      domain: transaction.ecosystemDomain,
+      date: transaction.transactionDate,
+      amount: transaction.amount,
+      category: ecosystem ? ecosystem.targetAudienceSector : null,
+      plan: subscription ? subscription.planType : null,
+      status: "active",
+    };
+  });
+};
+
+const nonActiveStores = async (creatorIds) => {
+  creatorIds = Array.isArray(creatorIds) ? creatorIds.map(Number).filter(id => !isNaN(id)) : [];
+  
+  const twoMonthsAgo = moment().subtract(2, "months").toDate();
+
+  const transactions = await ecosystemTransaction.findAll({
+    where: {
+      createdAt: { [Op.gte]: twoMonthsAgo },
+    },
+    attributes: ["ecosystemDomain"],
+    raw: true,
+  });
+
+  const activeStoreDomains = [...new Set(transactions.map(txn => txn.ecosystemDomain))];
+
+  const allEcosystems = await Ecosystem.find({}).select("creatorId ecosystemDomain targetAudienceSector");
+  if (!allEcosystems.length) return [];
+
+  const nonActiveStores = allEcosystems.filter(
+    (eco) => !activeStoreDomains.includes(eco.ecosystemDomain)
+  );
+
+  const ecosystemDomain = await Ecosystem.find().sort({createdAt: -1}).select("creatorId ecosystemDomain targetAudienceSector");
+
+  return nonActiveStores.map((eco) => ({
+    domain: eco.ecosystemDomain,
+    category: eco.targetAudienceSector,
+    status: "non-active",
+  }));
+};
+
+
 // exports.getAuserInformations = async (params) => {
 //   const { creatorId } = params;
 
@@ -215,7 +288,7 @@ exports.dashboardUsersInformation = async () => {
 //     balance: balance ? balance.Naira : null,
 //   };
 
-//   return {
+//   return {}
 //     status: 200,
 //     data: response,
 //   };
