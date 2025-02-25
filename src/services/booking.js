@@ -131,6 +131,8 @@ console.log("Step 2:", fullTime);
       ecosystemDomain,
       username: name,
       password: hashedPassword,
+      phoneNumber: phone,
+      address: address
     });
   }
 
