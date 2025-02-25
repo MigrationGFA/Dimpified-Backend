@@ -49,6 +49,11 @@ const {
   getWithdrawals,
 } = require("../services/adminServices/finance");
 
+const createSubdomain = require("../helper/Subdomain")
+
+
+router.post("/create-subdomain/:subdomain", createSubdomain);
+
 // registration
 router.post("/admin/registration", adminAuthController.adminRegister);
 router.post("/admin/login", adminAuthController.adminLogin);

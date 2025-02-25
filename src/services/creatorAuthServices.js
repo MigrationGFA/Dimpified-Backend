@@ -16,6 +16,7 @@ const CreatorToken = require("../models/CreatorToken");
 const Subscription = require("../models/Subscription");
 const Ecosystem = require("../models/Ecosystem");
 const newsSendSMS = require("../helper/newSms")
+const Affiliate = require("../models/Affiliate")
 
 const cloudinary = require("cloudinary").v2;
 
@@ -160,6 +161,15 @@ exports.creatorSignup = async (body) => {
   const hashedPassword = await bcrypt.hash(password, 10);
   const OTP = Math.floor(100000 + Math.random() * 900000);
 
+  let affiliateId = null
+  if (refCode !== "not available") {
+    
+  const affiliateDetails = await Affiliate.findOne({ where: { affiliateId:  refCode} });
+  if (affiliateDetails) {
+    affiliateId = affiliateDetails.id
+  } 
+  }
+    
   const newCreator = await Creator.create({
     organizationName,
     email,
@@ -168,7 +178,7 @@ exports.creatorSignup = async (body) => {
     isVerified: false,
     role,
     step: 1,
-    affiliateId: refCode === "not available" ? null : refCode,
+    affiliateId: affiliateId,
   });
 
   const newCreatorProfile = await CreatorProfile.create({
@@ -379,7 +389,7 @@ exports.creatorLogin = async (req) => {
   let plan;
   if (!getSubscription) {
     plan = "Lite";
-    joinDate = getSubscription.createdAt;
+    joinDate = Date.now();
     
   } else {
     plan = getSubscription.planType;
