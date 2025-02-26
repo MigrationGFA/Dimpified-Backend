@@ -97,3 +97,13 @@ exports.getTopStores = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+// exports.getTotalSubIncome = async (req, res) => {
+//   try {
+//     const response = await adminDashboardServices.getTotalSubIncome();
+//     return res.status(response.status).json(response.data);
+//   } catch (error) {
+//     console.error("error getting all users", error);
+//     res.status(500).json({ message: "Server error", error: error.message });
+//   }
+// };

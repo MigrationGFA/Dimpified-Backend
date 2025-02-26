@@ -8,7 +8,8 @@ const ecosystemTransaction = require("../../models/ecosystemTransaction");
 const {
   getAllUsers,
   getMonthlyRegistration,
-  getTotalSubscription
+  getTotalSubscription,
+  GetSubscriptionIncome
 } = require("../../controllers/AdminController/procedure");
 const CreatorEarning = require("../../models/CreatorEarning");
 const Service = require("../../models/Service");
@@ -633,6 +634,22 @@ exports.getTotalSubscription = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch total sub stat.",
+    });
+  }
+};
+
+
+exports.getTotalSubIncome = async (req, res) => {
+  try {
+    const sub = await GetSubscriptionIncome();
+    res.status(200).json({
+      success: true,
+      data: sub,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch sub income.",
     });
   }
 };
