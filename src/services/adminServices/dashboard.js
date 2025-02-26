@@ -73,7 +73,7 @@ exports.AdminSubscriptionCounts = async () => {
 
 exports.dashboardUsersInformation = async () => {
   const creators = await Creator.findAll({
-    attributes: ["id", "email", "isVerified"],
+    attributes: ["id", "email", "isVerified", "step"],
     order: [["createdAt", "DESC"]],
   });
 
@@ -141,8 +141,12 @@ exports.dashboardUsersInformation = async () => {
   const verifiedUsers = users.filter((user) => user.isVerified);
   const unVerifiedUsers = users.filter((user) => !user.isVerified);
 
-  const activeStoresData = await activeStores(creatorIds);
-  const nonActiveStoresData = await nonActiveStores(creatorIds);
+  const completedCreatorIds = creators
+  .filter((creator) => creator.step === 5) 
+  .map((creator) => creator.id);
+
+  const activeStoresData = await activeStores(completedCreatorIds);
+  const nonActiveStoresData = await nonActiveStores(completedCreatorIds);
 
   return {
     status: 200,
@@ -155,12 +159,21 @@ exports.dashboardUsersInformation = async () => {
     },
   };
 };
-
-const activeStores = async (creatorIds) => {
+const activeStores = async (completedCreatorIds) => {
   const twoMonthsAgo = moment().subtract(2, "months").toDate();
 
+  // Fetch ecosystems for completed creator IDs
+  const ecosystems = await Ecosystem.find({ creatorId: { $in: completedCreatorIds } })
+    .select("targetAudienceSector ecosystemDomain creatorId");
+    console.log("this is ecosystem length", ecosystems.length)
+  if (!ecosystems.length) return []; // No ecosystems found for these creatorIds
+
+  const ecosystemDomainMap = new Map(ecosystems.map(eco => [eco.ecosystemDomain, eco]));
+
+  // Fetch only transactions related to these ecosystemDomains
   const transactions = await ecosystemTransaction.findAll({
     where: {
+      ecosystemDomain: { [Op.in]: Array.from(ecosystemDomainMap.keys()) },
       createdAt: { [Op.gte]: twoMonthsAgo },
     },
     attributes: ["id", "amount", "ecosystemDomain", "transactionDate", "createdAt"],
@@ -170,129 +183,78 @@ const activeStores = async (creatorIds) => {
 
   if (!transactions.length) return [];
 
+  // Fetch subscriptions for relevant ecosystem domains
   const subscriptionDetails = await Subscription.findAll({
-    where: { ecosystemDomain: transactions.map(txn => txn.ecosystemDomain) },
+    where: { ecosystemDomain: { [Op.in]: Array.from(ecosystemDomainMap.keys()) } },
     attributes: ["id", "planType", "ecosystemDomain"],
     raw: true,
   });
 
-  const ecosystems = await Ecosystem.find({ creatorId: { $in: creatorIds } }).select("targetAudienceSector ecosystemDomain");
+  const subscriptionMap = new Map(subscriptionDetails.map(sub => [sub.ecosystemDomain, sub.planType]));
 
   return transactions.map((transaction) => {
-    const ecosystem = ecosystems.find(
-      (eco) => eco.ecosystemDomain === transaction.ecosystemDomain
-    );
-    
-    const subscription = subscriptionDetails.find(sub => sub.ecosystemDomain === transaction.ecosystemDomain);
-    
+    const ecosystem = ecosystemDomainMap.get(transaction.ecosystemDomain);
+
     return {
+      creatorId: ecosystem ? ecosystem.creatorId : null, // Now correctly fetched
       domain: transaction.ecosystemDomain,
       date: transaction.transactionDate,
       amount: transaction.amount,
       category: ecosystem ? ecosystem.targetAudienceSector : null,
-      plan: subscription ? subscription.planType : null,
+      plan: subscriptionMap.get(transaction.ecosystemDomain) || null,
       status: "active",
     };
   });
 };
 
-const nonActiveStores = async (creatorIds) => {
+
+const nonActiveStores =  async (completedCreatorIds) => {
+  let creatorIds = completedCreatorIds
+ 
   creatorIds = Array.isArray(creatorIds) ? creatorIds.map(Number).filter(id => !isNaN(id)) : [];
-  
+
   const twoMonthsAgo = moment().subtract(2, "months").toDate();
 
+  // Fetch transactions in the last 2 months
   const transactions = await ecosystemTransaction.findAll({
-    where: {
-      createdAt: { [Op.gte]: twoMonthsAgo },
-    },
+    where: { createdAt: { [Op.gte]: twoMonthsAgo } },
     attributes: ["ecosystemDomain"],
     raw: true,
   });
 
   const activeStoreDomains = [...new Set(transactions.map(txn => txn.ecosystemDomain))];
 
-  const allEcosystems = await Ecosystem.find({}).select("creatorId ecosystemDomain targetAudienceSector");
+  // Fetch all ecosystems
+  const allEcosystems = await Ecosystem.find().sort({ createdAt: -1 }).select("creatorId ecosystemDomain targetAudienceSector");
+
   if (!allEcosystems.length) return [];
 
-  const nonActiveStores = allEcosystems.filter(
-    (eco) => !activeStoreDomains.includes(eco.ecosystemDomain)
-  );
+  // Filter out non-active stores
+  const nonActiveStores = allEcosystems.filter(eco => !activeStoreDomains.includes(eco.ecosystemDomain));
 
-  const ecosystemDomain = await Ecosystem.find().sort({createdAt: -1}).select("creatorId ecosystemDomain targetAudienceSector");
+  // Fetch subscription details for non-active stores
+  const subscriptionDetails = await Subscription.findAll({
+    where: { ecosystemDomain: nonActiveStores.map(eco => eco.ecosystemDomain) },
+    attributes: ["ecosystemDomain", "planType"],
+    raw: true,
+  });
 
-  return nonActiveStores.map((eco) => ({
-    domain: eco.ecosystemDomain,
-    category: eco.targetAudienceSector,
-    status: "non-active",
-  }));
+  return nonActiveStores.map(eco => {
+    const subscription = subscriptionDetails.find(sub => sub.ecosystemDomain === eco.ecosystemDomain);
+
+    return {
+      creatorId: eco.creatorId,
+      domain: eco.ecosystemDomain,
+      date: null,  // No recent transaction
+      amount: null, // No recent transaction
+      category: eco.targetAudienceSector,
+      plan: subscription ? subscription.planType : null,
+      status: "non-active",
+    };
+  });
 };
 
 
-// exports.getAuserInformations = async (params) => {
-//   const { creatorId } = params;
-
-//   if (!creatorId) {
-//     return {
-//       status: 400,
-//       data: {
-//         message: "creatorId is required",
-//       },
-//     };
-//   }
-
-//   const [creator, creatorProfile, ecosystems, subscription, balance] =
-//     await Promise.all([
-//       Creator.findOne({
-//         where: { id: creatorId },
-//         attributes: ["id", "email", "password"],
-//       }),
-//       CreatorProfile.findOne({
-//         where: { creatorId },
-//         attributes: [
-//           "fullName",
-//           "phoneNumber",
-//           "state",
-//           "localGovernment",
-//           "country",
-//         ],
-//       }),
-//       Ecosystem.find({ creatorId }).select("ecosystemDomain createdAt address"),
-//       Subscription.findOne({ where: { creatorId }, attributes: ["planType"] }),
-//       CreatorEarning.findOne({ where: { creatorId }, attributes: ["Naira"] }),
-//     ]);
-
-//   if (!creator) {
-//     return {
-//       status: 404,
-//       data: {
-//         message: "Creator not found",
-//       },
-//     };
-//   }
-
-//   const response = {
-//     id: creator.id,
-//     email: creator.email,
-//     password: creator.password, // Exclude this if not needed
-//     fullName: creatorProfile.fullName,
-//     phoneNumber: creatorProfile.phoneNumber,
-//     state: creatorProfile.state,
-//     localGovernment: creatorProfile.localGovernment,
-//     country: creatorProfile.country,
-//     ecosystems: (ecosystems || []).map((eco) => ({
-//       domain: eco.ecosystemDomain,
-//       address: eco.address,
-//       createdAt: eco.createdAt,
-//     })),
-//     subscription: subscription ? subscription.planType : null,
-//     balance: balance ? balance.Naira : null,
-//   };
-
-//   return {}
-//     status: 200,
-//     data: response,
-//   };
-// };
 
 exports.getAuserInformations = async (params) => {
   const { creatorId } = params;
