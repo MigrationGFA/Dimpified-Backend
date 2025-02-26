@@ -228,13 +228,13 @@ router.get(
 router.get(
   "/admin/all-creator-withdrawals/:email",
   verifyAdmin,
-  // authenticatedAdmin,
+  authenticatedAdmin,
   adminTransactionController.getWithdrawalHistory
 );
 
 router.get(
   "/admin/withdrawal-details/:withdrawalId/:email",
-  // verifyAdmin,
+  verifyAdmin,
   // authenticatedAdmin,
   adminTransactionController.getWithdrawalHistoryForProfile
 );
