@@ -30,6 +30,7 @@ const {
   monthlyRegistration,
   userStats,
   getTotalSubscription,
+  getTotalSubIncome
 } = require("../services/adminServices/dashboard");
 const { supportTickets } = require("../services/adminServices/supportTicket");
 const {
@@ -48,6 +49,11 @@ const {
   getcommissions,
   getWithdrawals,
 } = require("../services/adminServices/finance");
+
+const createSubdomain = require("../helper/Subdomain")
+
+
+router.post("/create-subdomain/:subdomain", createSubdomain);
 
 // registration
 router.post("/admin/registration", adminAuthController.adminRegister);
@@ -95,14 +101,14 @@ router.get(
 router.get(
   "/admin/all-users-informations/:email",
   verifyAdmin,
-  authenticatedAdmin,
+  // authenticatedAdmin,
   adminController.getAdminDashboardUsersInformations
 );
 
 router.get(
   "/user-information/:creatorId/:email",
   verifyAdmin,
-  // authenticatedAdmin,
+  authenticatedAdmin,
   adminController.getAUserInformation
 );
 
@@ -132,6 +138,13 @@ router.get(
   verifyAdmin,
   authenticatedAdmin,
   getTotalSubscription
+);
+
+router.get(
+  "/total-subscription-income/:email",
+  verifyAdmin,
+  // authenticatedAdmin,
+  getTotalSubIncome
 );
 
 // user base
@@ -271,7 +284,7 @@ router.get(
 router.get(
   "/ecosystem-subscription-plan-type-and-total-subscription/:email",
   verifyAdmin,
-  authenticatedAdmin,
+  // authenticatedAdmin,
   planTypeTotalSubscription
 );
 

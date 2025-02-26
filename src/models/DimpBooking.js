@@ -58,6 +58,10 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    fullTime: {
+      type: Date,
+      // required: true,
+    },
     price: {
       type: Number,
       required: true,

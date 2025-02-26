@@ -13,9 +13,22 @@ const EcosystemUser = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+   
     username: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    phoneNumber: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    gender: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    address: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     email: {
       type: DataTypes.STRING,
@@ -34,6 +47,10 @@ const EcosystemUser = sequelize.define(
     isVerified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+     dob: {
+      type: DataTypes.DATE,
+      allowNull: true,
     },
     imageUrl: DataTypes.STRING,
     passwordToken: DataTypes.STRING,

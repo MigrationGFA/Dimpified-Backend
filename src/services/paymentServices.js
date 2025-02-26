@@ -956,6 +956,8 @@ exports.createBookingRecord = async (body) => {
       ecosystemDomain,
       username: name,
       password: hashedPassword,
+      phoneNumber: phone,
+      address: address
     });
   }
 

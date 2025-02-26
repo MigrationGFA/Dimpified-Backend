@@ -249,6 +249,16 @@ const GetWithdrawals = async (status) => {
   }
 };
 
+const GetSubscriptionIncome = async () => {
+  try {
+    const results = await sequelize.query(`CALL GetSubscriptionIncome`);
+    return results;
+  } catch (error) {
+    console.error("Error fetching total sub income:", error.message);
+    throw error;
+  }
+};
+
 module.exports = {
   getAllUsers,
   getMonthlyRegistration,
@@ -271,4 +281,5 @@ module.exports = {
   GetSubscriptionDetails,
   GetCommissions,
   GetWithdrawals,
+  GetSubscriptionIncome,
 };

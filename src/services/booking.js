@@ -4,13 +4,13 @@ const Ecosystem = require("../models/Ecosystem");
 const CreatorTemplate = require("../models/creatorTemplate");
 const sendBookingConfirmationUnpaidEmail = require("../utils/sendBookingConfirmationUnpaid");
 const sendBookingConfirmationPaidEmail = require("../utils/sendBoookingConfirmationEmailPaid");
-const moment = require("moment");
+// const moment = require("moment");
 const EcosystemUser = require("../models/EcosystemUser");
 const Notification = require("../models/ecosystemNotification");
 const bcrypt = require("bcryptjs");
 const newsSendSMS = require("../helper/newSms")
 const CreatorProfile = require("../models/CreatorProfile");
-
+const momentTime = require("moment-timezone");
 
 const formatPhoneNumber = (phoneNumber) => {
   if (phoneNumber.startsWith("0")) {
@@ -34,6 +34,7 @@ exports.createBooking = async (body) => {
     time,
     price,
     ecosystemDomain,
+    timezone,
   } = body;
 
   const requiredFields = [
@@ -47,6 +48,7 @@ exports.createBooking = async (body) => {
     "date",
     "time",
     "price",
+    "timezone"
   ];
 
   // Check for missing fields
@@ -60,10 +62,46 @@ exports.createBooking = async (body) => {
   if (!ecosystem) {
     return { status: 400, data: { message: "Ecosystem not found" } };
   }
+//   if (ecosystem) {
+//     console.log("User Input - Date:", date);
+// console.log("User Input - Time:", time);
+//     console.log("User Input - Timezone:", timezone);
+//     // Combine Date & Time First
+// const combinedDateTime = `${date} ${time}`;
+// console.log("Step 1 - Combined DateTime:", combinedDateTime);
+
+//     const testDate = momentTime.tz(combinedDateTime, "YYYY-MM-DD hh:mm A",  timezone);
+//     console.log("Test Date:", testDate.isValid() ? testDate.format() : "Invalid date");
+//     const localDateTimes = momentTime.tz(combinedDateTime, "YYYY-MM-DD hh:mm A",  timezone);
+
+//     if (!localDateTimes.isValid()) {
+//       console.error("❌ Error: Invalid Date and Time Format.");
+//     } else {
+//       console.log("✅ Step 3 - Parsed Local DateTime:", localDateTimes.format());
+//     }
+// const fullTime = localDateTimes.utc().toISOString(); // Convert to UTC
+// console.log("Step 2:", fullTime);
+//     return
+//   }
+  console.log("this is date", date)
+  console.log("this is time", time)
+  const combinedDateTime = `${date} ${time}`;
+  const localDateTime = momentTime.tz(combinedDateTime, "YYYY-MM-DD hh:mm A", timezone);
+
+console.log("Step 1:", localDateTime.format()); // Check if it's valid
+
+const fullTime = localDateTime.utc().toISOString(); // Convert to UTC
+console.log("Step 2:", fullTime);
+
+  // const existingBooking = await Booking.findOne({
+  //   date,
+  //   time,
+  //   ecosystemDomain,
+  // });
 
   const existingBooking = await Booking.findOne({
     date,
-    time,
+    time,// Use `fullTime` for unique check
     ecosystemDomain,
   });
 
@@ -93,11 +131,12 @@ exports.createBooking = async (body) => {
       ecosystemDomain,
       username: name,
       password: hashedPassword,
+      phoneNumber: phone,
+      address: address
     });
   }
 
   const bookingId = generateUniqueId();
-
   const newBooking = new Booking({
     bookingId,
     name,
@@ -112,10 +151,11 @@ exports.createBooking = async (body) => {
     price,
     bookingType,
     ecosystemDomain,
+    fullTime,
   });
 
+
   await newBooking.save();
-  console.log("ecosystem:", ecosystem);
   const creator = await Creator.findByPk(ecosystem.creatorId);
 
   if (!creator) {
@@ -143,11 +183,9 @@ exports.createBooking = async (body) => {
     date,
     time,
   });
-  console.log("ecosystem:", ecosystem);
 
   // Get creator's business logo and address from the template
   const creatorTemplate = await CreatorTemplate.findOne({ ecosystemDomain });
-  console.log("logo:", creatorTemplate.navbar.logo);
   const logo = creatorTemplate.navbar.logo; // Business logo
   const businessAddress = ecosystem.address; // Business address
   const businessName = creator.organizationName; // Business name
@@ -166,7 +204,6 @@ exports.createBooking = async (body) => {
     logo, 
   });
 
-  console.log(creator);
 
   // Create a notification for the booking
   const notificationMessage = `New booking created by ${name} for the ${service} service on ${date} at ${time}. Booking ID: ${bookingId}`;
@@ -182,7 +219,6 @@ exports.createBooking = async (body) => {
   const creatorProfile = await CreatorProfile.findOne({
     creatorId: creator.id,
   });
-  console.log("this is creatorProfile", creatorProfile)
 
   if(creatorProfile){
     const newPhoneNumber = formatPhoneNumber(creatorProfile.phoneNumber)
