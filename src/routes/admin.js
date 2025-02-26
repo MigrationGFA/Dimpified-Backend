@@ -100,14 +100,14 @@ router.get(
 router.get(
   "/admin/all-users-informations/:email",
   verifyAdmin,
-  authenticatedAdmin,
+  // authenticatedAdmin,
   adminController.getAdminDashboardUsersInformations
 );
 
 router.get(
   "/user-information/:creatorId/:email",
   verifyAdmin,
-  // authenticatedAdmin,
+  authenticatedAdmin,
   adminController.getAUserInformation
 );
 
