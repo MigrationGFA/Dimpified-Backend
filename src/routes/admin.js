@@ -30,6 +30,7 @@ const {
   monthlyRegistration,
   userStats,
   getTotalSubscription,
+  getTotalSubIncome
 } = require("../services/adminServices/dashboard");
 const { supportTickets } = require("../services/adminServices/supportTicket");
 const {
@@ -137,6 +138,13 @@ router.get(
   verifyAdmin,
   authenticatedAdmin,
   getTotalSubscription
+);
+
+router.get(
+  "/total-subscription-income/:email",
+  verifyAdmin,
+  // authenticatedAdmin,
+  getTotalSubIncome
 );
 
 // user base
@@ -276,7 +284,7 @@ router.get(
 router.get(
   "/ecosystem-subscription-plan-type-and-total-subscription/:email",
   verifyAdmin,
-  authenticatedAdmin,
+  // authenticatedAdmin,
   planTypeTotalSubscription
 );
 
