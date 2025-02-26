@@ -194,7 +194,7 @@ const GetTransactionsPro = async ({ filterType, year, month, day }) => {
     console.log("Raw SQL Results:", results);
 
     // If results is an array, return everything
-    return results|| []; // Ensure it's returning an array
+    return results || []; // Ensure it's returning an array
   } catch (error) {
     console.error("Error fetching transactions:", error.message);
     throw error;
@@ -222,10 +222,8 @@ const GetSubscriptionDetails = async ({ filterType, year, month, day }) => {
 
 const GetCommissions = async ({ filterType, year, month, day }) => {
   try {
-    
-
     // Call the stored procedure with properly structured data
-    const results= await sequelize.query(
+    const results = await sequelize.query(
       "CALL GetCommissions(:filterType, :year, :month, :day)",
       {
         replacements: { filterType, year, month, day },
