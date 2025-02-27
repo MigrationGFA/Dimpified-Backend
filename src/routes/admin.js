@@ -284,7 +284,7 @@ router.get(
 router.get(
   "/ecosystem-subscription-plan-type-and-total-subscription/:email",
   verifyAdmin,
-  authenticatedAdmin,
+  // authenticatedAdmin,
   planTypeTotalSubscription
 );
 

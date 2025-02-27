@@ -22,7 +22,7 @@ const getMonthlyRegistration = async () => {
 
 const GetPlanTypeAndTotalSubscription = async () => {
   try {
-    const [results] = await sequelize.query(
+    const results = await sequelize.query(
       "CALL GetPlanTypeAndTotalSubscription()"
     );
     return results; // Return the result of the procedure
