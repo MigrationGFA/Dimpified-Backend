@@ -104,6 +104,21 @@ router.get(
   authenticatedUser,
   ecosystemController.getNotification
 );
+router.get(
+  "/customers/:ecosystemDomain",
+  // authenticatedUser,
+  ecosystemController.getMerchantCustomers
+);
+router.post(
+  "/add-customer",
+  // authenticatedUser,
+  ecosystemController.addCustomer
+);
+router.delete(
+  "/delete-customer",
+  // authenticatedUser,
+  ecosystemController.deleteCustomer
+);
 
 // Dimp Contact US
 router.post("/make-an-enquiry", SupportController.dimpContactUs);
