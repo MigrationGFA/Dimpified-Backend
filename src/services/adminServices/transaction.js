@@ -216,7 +216,7 @@ exports.getWithdrawalDetailsForProfile = async (params) => {
   const { email } = specificWithdrawal.Creator || {};
 
   // Fetch fullName from CreatorProfile using creatorId
-  const creatorProfile = await CreatorProfile.findOne({ where: { id: creatorId } });
+  const creatorProfile = await CreatorProfile.findOne({creatorId});
   const fullName = creatorProfile?.fullName || "N/A";
 
   // Fetch the admin fullName if withdrawal is approved
@@ -235,7 +235,7 @@ exports.getWithdrawalDetailsForProfile = async (params) => {
   });
 
   // Fetch ecosystem data for the specific creator
-  const ecosystem = await Ecosystem.findOne({ where: { creatorId }, attributes: ["ecosystemDomain"] });
+  const ecosystem = await Ecosystem.findOne({ creatorId });
 
   // Fetch transactions to calculate incoming amount and wallet balance
   const transactions = await ecosystemTransaction.findAll({ where: { creatorId } });
@@ -287,6 +287,7 @@ exports.getWithdrawalDetailsForProfile = async (params) => {
         creatorId,
         email: email || "N/A",
         fullName: fullName,
+        phoneNumber: creatorProfile?.phoneNumber || "N/A",
         accountDetails: {
           accountName: accountName || "N/A",
           accountNumber: accountNumber || "N/A",
@@ -297,7 +298,11 @@ exports.getWithdrawalDetailsForProfile = async (params) => {
         status: status || "N/A",
         date: specificWithdrawalDate,
         time: specificWithdrawalTime,
-        approvedBy: approvedBy, // Added field
+        approvedBy: approvedBy,
+        country: ecosystem?.country || "N/A",
+        state: ecosystem?.state || "N/A",
+        localgovernment: ecosystem?.localgovernment || "N/A",
+        location: ecosystem?.address || "N/A",
       },
       withdrawalHistory: historyResponse,
       incomingAmount: parseFloat(incomingAmount).toFixed(2),

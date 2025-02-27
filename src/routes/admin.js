@@ -101,7 +101,7 @@ router.get(
 router.get(
   "/admin/all-users-informations/:email",
   verifyAdmin,
-  // authenticatedAdmin,
+  authenticatedAdmin,
   adminController.getAdminDashboardUsersInformations
 );
 
@@ -143,7 +143,7 @@ router.get(
 router.get(
   "/total-subscription-income/:email",
   verifyAdmin,
-  // authenticatedAdmin,
+  authenticatedAdmin,
   getTotalSubIncome
 );
 
@@ -184,7 +184,7 @@ router.get(
 router.get(
   "/get-plan/:email/:plan",
   verifyAdmin,
-  // authenticatedAdmin,
+  authenticatedAdmin,
   getUsersByPlan
 );
 
@@ -192,7 +192,7 @@ router.get(
 router.get(
   "/get-a-subcategory/:email/:subcategory",
   verifyAdmin,
-  // authenticatedAdmin,
+  authenticatedAdmin,
   adminSubCategory.getASubcategory
 );
 
@@ -228,14 +228,14 @@ router.get(
 router.get(
   "/admin/all-creator-withdrawals/:email",
   verifyAdmin,
-  // authenticatedAdmin,
+  authenticatedAdmin,
   adminTransactionController.getWithdrawalHistory
 );
 
 router.get(
   "/admin/withdrawal-details/:withdrawalId/:email",
-  // verifyAdmin,
-  // authenticatedAdmin,
+  verifyAdmin,
+  authenticatedAdmin,
   adminTransactionController.getWithdrawalHistoryForProfile
 );
 
@@ -284,7 +284,7 @@ router.get(
 router.get(
   "/ecosystem-subscription-plan-type-and-total-subscription/:email",
   verifyAdmin,
-  // authenticatedAdmin,
+  authenticatedAdmin,
   planTypeTotalSubscription
 );
 
@@ -304,7 +304,7 @@ router.get(
 router.get(
   "/total-sales-record/:email/:date",
   verifyAdmin,
-  // authenticatedAdmin,
+  authenticatedAdmin,
   getTotalSales
 );
 
