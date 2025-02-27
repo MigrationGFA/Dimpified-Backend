@@ -908,7 +908,7 @@ exports.addCustomer = async (body) => {
       gender,
       address,
       dob,
-      imageUrl,
+     
     } = body;
 
     if (!ecosystemDomain || !fullName || !phoneNumber || !email) {
@@ -926,7 +926,7 @@ exports.addCustomer = async (body) => {
       gender,
       address,
       dob,
-      imageUrl,
+   
     });
     console.log("customers:", newCustomer);
 
@@ -974,3 +974,50 @@ exports.deleteCustomer = async (body) => {
     };
   }
 };
+
+exports.getCustomerDetails = async (params) => {
+  try {
+    const { customerId } = params;
+    if (!customerId) {
+      return { status: 400, data: { message: "Customer ID is required" } };
+    }
+
+    const customer = await EcosystemUser.findByPk(customerId);
+    if (!customer) {
+      return { status: 404, data: { message: "Customer not found" } };
+    }
+
+    return { status: 200, data: { customer } };
+  } catch (error) {
+    return { status: 500, data: { message: "Internal server error", error: error.message } };
+  }
+};
+
+exports.editCustomerDetails = async (body) => {
+  try {
+    const { id, fullName, phoneNumber, email, gender, address, dob } = body;
+    if (!id) {
+      return { status: 400, data: { message: "Customer ID is required" } };
+    }
+
+    const customer = await EcosystemUser.findByPk(id);
+    if (!customer) {
+      return { status: 404, data: { message: "Customer not found" } };
+    }
+
+    await customer.update({
+      username: fullName,
+      phoneNumber,
+      email,
+      gender,
+      address,
+      dob,
+ 
+    });
+
+    return { status: 200, data: { message: "Customer details updated successfully", customer } };
+  } catch (error) {
+    return { status: 500, data: { message: "Internal server error", error: error.message } };
+  }
+};
+

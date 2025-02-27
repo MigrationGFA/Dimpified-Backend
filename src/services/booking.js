@@ -544,3 +544,29 @@ function generateMonthlyBookingRange(startMonth, endMonth) {
 
   return months;
 }
+
+exports.getCustomerAppointments = async (params) => {
+ 
+    const { email, ecosystemDomain } = params;
+    if (!email || !ecosystemDomain) {
+      return { status: 400, data: { message: "Customer email and ecosystem domain are required" } };
+    }
+
+    const appointments = await Booking.find({ email, ecosystemDomain });
+    if (!appointments.length) {
+      return { status: 404, data: { message: "No appointments found for this customer" } };
+    }
+
+    const completed = appointments.filter(appt => appt.status === "Completed");
+    const pending = appointments.filter(appt => appt.status === "Pending");
+
+    return { 
+      status: 200, 
+      data: { 
+        all: appointments, 
+        completed, 
+        pending 
+      } 
+    };
+ 
+};

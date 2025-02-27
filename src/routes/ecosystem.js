@@ -50,6 +50,12 @@ router.get(
   bookingController.monthlyBookingStats
 );
 
+router.get(
+  "/get-appointments/:email/:ecosystemDomain",
+  // authenticatedUser,
+  bookingController.getCustomerAppointments
+);
+
 router.post("/check-domain", ecosystemController.checkDomainAvailability);
 router.post("/ecosysystem-near-me", ecosystemController.getEcosystemNearMe);
 // Support Request
@@ -118,6 +124,16 @@ router.delete(
   "/delete-customer",
   // authenticatedUser,
   ecosystemController.deleteCustomer
+);
+router.patch(
+  "/update-customer",
+  // authenticatedUser,
+  ecosystemController.editCustomerDetails
+);
+router.get(
+  "/customer-details/:customerId",
+  // authenticatedUser,
+  ecosystemController.getCustomerDetails
 );
 
 // Dimp Contact US
