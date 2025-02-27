@@ -121,7 +121,7 @@ exports.addCustomer = async (req, res) => {
 
 exports.deleteCustomer = async (req, res) => {
   try {
-    const response = await ecosystemDetails.deleteCustomer(req.body);
+    const response = await ecosystemDetails.deleteCustomer(req.query);
     return res.status(response.status).json(response.data);
   } catch (error) {
     console.error("Error getting business near me:", error);

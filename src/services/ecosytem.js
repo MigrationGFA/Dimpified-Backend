@@ -942,36 +942,32 @@ exports.addCustomer = async (body) => {
   }
 };
 
-exports.deleteCustomer = async (body) => {
+exports.deleteCustomer = async (query) => {
   try {
-    const { ecosystemDomain, ids } = body;
-    if (!ecosystemDomain || !ids || !Array.isArray(ids) || ids.length === 0) {
-      return { status: 400, data: { message: "Missing required parameters" } };
+    const { ecosystemDomain, ids } = query;
+    if (!ecosystemDomain || !ids) {
+      return res.status(400).json({ message: "Missing required parameters" });
     }
+
+    const idArray = ids.split(",").map(id => parseInt(id.trim(), 10));
 
     const deletedCount = await EcosystemUser.destroy({
       where: {
         ecosystemDomain,
-        id: { [Op.in]: ids },
+        id: { [Op.in]: idArray },
       },
     });
 
     if (deletedCount === 0) {
-      return {
-        status: 404,
-        data: { message: "No matching records found to delete" },
-      };
-    }
+      return { status: 404, data: { message: "No matching records found to delete" } };
 
-    return {
-      status: 200,
-      data: { message: "Customer(s) deleted successfully" },
-    };
+    }
+    return { status: 200, data: { message: "Customer(s) deleted successfully" } };
+
+  
   } catch (error) {
-    return {
-      status: 500,
-      data: { message: "Internal server error", error: error.message },
-    };
+    return { status: 500, data: { message: "Internal server error", error: error.message } };
+
   }
 };
 
