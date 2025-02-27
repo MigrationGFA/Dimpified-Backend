@@ -121,7 +121,25 @@ exports.addCustomer = async (req, res) => {
 
 exports.deleteCustomer = async (req, res) => {
   try {
-    const response = await ecosystemDetails.deleteCustomer(req.body);
+    const response = await ecosystemDetails.deleteCustomer(req.query);
+    return res.status(response.status).json(response.data);
+  } catch (error) {
+    console.error("Error getting business near me:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+exports.editCustomerDetails = async (req, res) => {
+  try {
+    const response = await ecosystemDetails.editCustomerDetails(req.body);
+    return res.status(response.status).json(response.data);
+  } catch (error) {
+    console.error("Error getting business near me:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+exports.getCustomerDetails = async (req, res) => {
+  try {
+    const response = await ecosystemDetails.getCustomerDetails(req.params);
     return res.status(response.status).json(response.data);
   } catch (error) {
     console.error("Error getting business near me:", error);
