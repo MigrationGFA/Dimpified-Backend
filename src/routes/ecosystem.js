@@ -112,27 +112,27 @@ router.get(
 );
 router.get(
   "/customers/:ecosystemDomain",
-  // authenticatedUser,
+  authenticatedUser,
   ecosystemController.getMerchantCustomers
 );
 router.post(
   "/add-customer",
-  // authenticatedUser,
+  authenticatedUser,
   ecosystemController.addCustomer
 );
 router.delete(
   "/delete-customer",
-  // authenticatedUser,
+  authenticatedUser,
   ecosystemController.deleteCustomer
 );
 router.patch(
   "/update-customer",
-  // authenticatedUser,
+  authenticatedUser,
   ecosystemController.editCustomerDetails
 );
 router.get(
   "/customer-details/:customerId",
-  // authenticatedUser,
+  authenticatedUser,
   ecosystemController.getCustomerDetails
 );
 
