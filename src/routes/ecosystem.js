@@ -136,6 +136,12 @@ router.get(
   ecosystemController.getCustomerDetails
 );
 
+router.patch(
+  "/complete-booking/:bookingId",
+  authenticatedUser,
+  bookingController.completeBooking
+);
+
 // Dimp Contact US
 router.post("/make-an-enquiry", SupportController.dimpContactUs);
 
