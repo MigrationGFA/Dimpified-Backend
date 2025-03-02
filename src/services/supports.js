@@ -4,6 +4,7 @@ const sendCreatorSupportRequestFeedback = require("../utils/sendCreatorSupportFe
 //const sendHelpRequestFeedback = require("../../utils/sendHelpRequestFeedback");
 const sendSupportRequestCompletedEmail = require("../utils/supportRequestCompleted");
 const dimpContactUs = require("../models/DimpContactUs");
+const HelpCenter = require("../models/EcosystemHelpCenter");
 
 exports.creatorSupportRequest = async (body) => {
   await CreatorSupport.sync();
