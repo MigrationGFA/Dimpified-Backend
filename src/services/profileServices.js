@@ -26,14 +26,14 @@ exports.getProfileDetails = async (params) => {
     gender: creatorProfile.gender,
     ecosystemDomain: ecosystem.ecosystemDomain,
     phoneNumber: creatorProfile.phoneNumber,
-    localGovernment: creatorProfile.localGovernment || "",
-    state: creatorProfile.state || "",
-    country: creatorProfile.country || "",
+    localGovernment: ecosystem.localgovernment || "",
+    state: ecosystem.state || "",
+    country: ecosystem.country || "",
     profileImage: creatorProfile.image || "",
     subCategory: ecosystem.mainObjective,
     description: ecosystem.ecosystemDescription,
     businessName: creatorProfile.organizationName,
-    category: creator.categoryInterest,
+    category: ecosystem.targetAudienceSector,
    
   };
 
