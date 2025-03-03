@@ -62,13 +62,20 @@ exports.getMerchantSupportTickets = async (req, res) => {
         .json({ message: "EcosystemDomain and status are required" });
     }
 
-    if (!["pending", "completed"].includes(status)) {
-      return res.status(400).json({ message: "Invalid status value" });
-    }
+    // if (!["pending", "completed"].includes(status)) {
+    //   return res.status(400).json({ message: "Invalid status value" });
+    // }
 
     const tickets = await HelpCenter.findAll({
       where: { ecosystemDomain, status },
+      include: [
+        {
+          model: EndUser,
+          attributes: ["id", "username", "email"],
+        }
+      ],
     });
+
 
     return res.status(200).json({ tickets });
   } catch (error) {
@@ -86,27 +93,25 @@ exports.getSupportTicketById = async (req, res) => {
       return res.status(400).json({ message: "Ticket ID is required" });
     }
 
-    const ticket = await HelpCenter.findByPk(id);
-    console.log("ticket:",ticket)
-    // const ticket = await HelpCenter.findByPk(id, {
-    //   include: [{ model: EndUser }, { model: Creator }],
-    // });
+    const ticket = await HelpCenter.findByPk(id, {
+      include: [
+        {
+          model: EndUser,
+          attributes: ["id", "username", "email"],
+        },
+      ],
+    });
 
     if (!ticket) {
       return res.status(404).json({ message: "Support ticket not found" });
     }
-    if (ticket.view == false) {
-      ticket.view = true;
-    }
-    console.log("ticket:",ticket)
 
     return res.status(200).json(ticket);
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "Internal server error", error: error.message });
+    return res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
+
 
 exports.getSupportBoxStats = async (req, res) => {
   try {
