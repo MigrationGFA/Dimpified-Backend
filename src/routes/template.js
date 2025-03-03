@@ -9,7 +9,7 @@ router.get(
 );
 
 router.post("/create-template", 
-  authenticatedUser,
+  // authenticatedUser,
   ecosystemTemplate.createNewTemplate);
 
 router.post("/create/reserved-template", 
