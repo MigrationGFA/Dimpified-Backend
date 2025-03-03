@@ -8,7 +8,7 @@ const sendBookingConfirmationPaidEmail = require("../utils/sendBoookingConfirmat
 const EcosystemUser = require("../models/EcosystemUser");
 const Notification = require("../models/ecosystemNotification");
 const bcrypt = require("bcryptjs");
-const newsSendSMS = require("../helper/newSms")
+const newsSendSMS = require("../helper/newSms");
 const CreatorProfile = require("../models/CreatorProfile");
 const momentTime = require("moment-timezone");
 
@@ -16,8 +16,8 @@ const formatPhoneNumber = (phoneNumber) => {
   if (phoneNumber.startsWith("0")) {
     return `234${phoneNumber.slice(1)}`;
   }
-  
-  return phoneNumber; 
+
+  return phoneNumber;
 };
 
 exports.createBooking = async (body) => {
@@ -48,7 +48,7 @@ exports.createBooking = async (body) => {
     "date",
     "time",
     "price",
-    "timezone"
+    "timezone",
   ];
 
   // Check for missing fields
@@ -62,36 +62,40 @@ exports.createBooking = async (body) => {
   if (!ecosystem) {
     return { status: 400, data: { message: "Ecosystem not found" } };
   }
-//   if (ecosystem) {
-//     console.log("User Input - Date:", date);
-// console.log("User Input - Time:", time);
-//     console.log("User Input - Timezone:", timezone);
-//     // Combine Date & Time First
-// const combinedDateTime = `${date} ${time}`;
-// console.log("Step 1 - Combined DateTime:", combinedDateTime);
+  //   if (ecosystem) {
+  //     console.log("User Input - Date:", date);
+  // console.log("User Input - Time:", time);
+  //     console.log("User Input - Timezone:", timezone);
+  //     // Combine Date & Time First
+  // const combinedDateTime = `${date} ${time}`;
+  // console.log("Step 1 - Combined DateTime:", combinedDateTime);
 
-//     const testDate = momentTime.tz(combinedDateTime, "YYYY-MM-DD hh:mm A",  timezone);
-//     console.log("Test Date:", testDate.isValid() ? testDate.format() : "Invalid date");
-//     const localDateTimes = momentTime.tz(combinedDateTime, "YYYY-MM-DD hh:mm A",  timezone);
+  //     const testDate = momentTime.tz(combinedDateTime, "YYYY-MM-DD hh:mm A",  timezone);
+  //     console.log("Test Date:", testDate.isValid() ? testDate.format() : "Invalid date");
+  //     const localDateTimes = momentTime.tz(combinedDateTime, "YYYY-MM-DD hh:mm A",  timezone);
 
-//     if (!localDateTimes.isValid()) {
-//       console.error("❌ Error: Invalid Date and Time Format.");
-//     } else {
-//       console.log("✅ Step 3 - Parsed Local DateTime:", localDateTimes.format());
-//     }
-// const fullTime = localDateTimes.utc().toISOString(); // Convert to UTC
-// console.log("Step 2:", fullTime);
-//     return
-//   }
-  console.log("this is date", date)
-  console.log("this is time", time)
+  //     if (!localDateTimes.isValid()) {
+  //       console.error("❌ Error: Invalid Date and Time Format.");
+  //     } else {
+  //       console.log("✅ Step 3 - Parsed Local DateTime:", localDateTimes.format());
+  //     }
+  // const fullTime = localDateTimes.utc().toISOString(); // Convert to UTC
+  // console.log("Step 2:", fullTime);
+  //     return
+  //   }
+  console.log("this is date", date);
+  console.log("this is time", time);
   const combinedDateTime = `${date} ${time}`;
-  const localDateTime = momentTime.tz(combinedDateTime, "YYYY-MM-DD hh:mm A", timezone);
+  const localDateTime = momentTime.tz(
+    combinedDateTime,
+    "YYYY-MM-DD hh:mm A",
+    timezone
+  );
 
-console.log("Step 1:", localDateTime.format()); // Check if it's valid
+  console.log("Step 1:", localDateTime.format()); // Check if it's valid
 
-const fullTime = localDateTime.utc().toISOString(); // Convert to UTC
-console.log("Step 2:", fullTime);
+  const fullTime = localDateTime.utc().toISOString(); // Convert to UTC
+  console.log("Step 2:", fullTime);
 
   // const existingBooking = await Booking.findOne({
   //   date,
@@ -101,7 +105,7 @@ console.log("Step 2:", fullTime);
 
   const existingBooking = await Booking.findOne({
     date,
-    time,// Use `fullTime` for unique check
+    time, // Use `fullTime` for unique check
     ecosystemDomain,
   });
 
@@ -132,7 +136,7 @@ console.log("Step 2:", fullTime);
       username: name,
       password: hashedPassword,
       phoneNumber: phone,
-      address: address
+      address: address,
     });
   }
 
@@ -154,7 +158,6 @@ console.log("Step 2:", fullTime);
     fullTime,
   });
 
-
   await newBooking.save();
   const creator = await Creator.findByPk(ecosystem.creatorId);
 
@@ -170,8 +173,6 @@ console.log("Step 2:", fullTime);
   }
   creator.transactionNumber += 1;
   await creator.save();
-
-  
 
   await sendBookingConfirmationPaidEmail({
     email: creator.email,
@@ -199,11 +200,10 @@ console.log("Step 2:", fullTime);
     date,
     time,
     paymentStatus: newBooking.paymentStatus,
-    businessName, 
-    businessAddress, 
-    logo, 
+    businessName,
+    businessAddress,
+    logo,
   });
-
 
   // Create a notification for the booking
   const notificationMessage = `New booking created by ${name} for the ${service} service on ${date} at ${time}. Booking ID: ${bookingId}`;
@@ -220,11 +220,19 @@ console.log("Step 2:", fullTime);
     creatorId: creator.id,
   });
 
-  if(creatorProfile){
-    const newPhoneNumber = formatPhoneNumber(creatorProfile.phoneNumber)
-    const customerPhoneNumber = formatPhoneNumber(phone)
-    const response = await newsSendSMS(newPhoneNumber, `DIMP, New booking order created by ${name} for  ${service} service on ${date} at ${time}. Booking ID: ${bookingId}`, "plain");
-     const customer = await newsSendSMS(customerPhoneNumber, `Hi ${name}, you've successfully booked the ${service} service from ${ecosystem.ecosystemName}. Your appointment is confirmed for ${date} at ${time} with Booking ID: ${bookingId}. We look forward to serving you!`, "plain");
+  if (creatorProfile) {
+    const newPhoneNumber = formatPhoneNumber(creatorProfile.phoneNumber);
+    const customerPhoneNumber = formatPhoneNumber(phone);
+    const response = await newsSendSMS(
+      newPhoneNumber,
+      `DIMP, New booking order created by ${name} for  ${service} service on ${date} at ${time}. Booking ID: ${bookingId}`,
+      "plain"
+    );
+    const customer = await newsSendSMS(
+      customerPhoneNumber,
+      `Hi ${name}, you've successfully booked the ${service} service from ${ecosystem.ecosystemName}. Your appointment is confirmed for ${date} at ${time} with Booking ID: ${bookingId}. We look forward to serving you!`,
+      "plain"
+    );
   }
 
   return {
@@ -544,3 +552,52 @@ function generateMonthlyBookingRange(startMonth, endMonth) {
 
   return months;
 }
+
+exports.getCustomerAppointments = async (params) => {
+  const { email, ecosystemDomain } = params;
+  if (!email || !ecosystemDomain) {
+    return {
+      status: 400,
+      data: { message: "Customer email and ecosystem domain are required" },
+    };
+  }
+
+  const appointments = await Booking.find({ email, ecosystemDomain });
+  if (!appointments.length) {
+    return {
+      status: 404,
+      data: { message: "No appointments found for this customer" },
+    };
+  }
+
+  const completed = appointments.filter((appt) => appt.status === "Completed");
+  const pending = appointments.filter((appt) => appt.status === "Pending");
+
+  return {
+    status: 200,
+    data: {
+      all: appointments,
+      completed,
+      pending,
+    },
+  };
+};
+
+exports.completeBooking = async (params) => {
+  const { bookingId } = params;
+  const booking = await Booking.findById(bookingId);
+  if (!booking) {
+    return { status: 404, data: { message: "Booking not found" } };
+  }
+
+  booking.status = "Completed";
+
+  await booking.save();
+  console.log("booking:", booking);
+  return {
+    status: 200,
+    data: {
+      message: "Booking completed",
+    },
+  };
+};

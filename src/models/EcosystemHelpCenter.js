@@ -33,16 +33,17 @@ const HelpCenter = sequelize.define('HelpCenter', {
         type: DataTypes.INTEGER,
         allowNull: true,
     },
+     view: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+    },
+
     ecosystemDomain: { type: DataTypes.STRING, required: true },
     status: {
         type: DataTypes.ENUM("pending", "completed"),
         allowNull: false,
         defaultValue: "pending",
-    },
-    view: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false,
     },
 },
     {

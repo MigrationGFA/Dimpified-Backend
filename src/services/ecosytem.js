@@ -11,6 +11,8 @@ const { Op } = require("sequelize");
 const Notification = require("../models/ecosystemNotification");
 const AdminNotification = require("../models/AdminNotification");
 const CreatorProfile = require("../models/CreatorProfile");
+const EcosystemUser = require("../models/EcosystemUser");
+const bcrypt = require("bcryptjs");
 
 // creating ecosystem business details
 exports.createBusinessDetails = async (body) => {
@@ -52,7 +54,7 @@ exports.createBusinessDetails = async (body) => {
   if (!creator) {
     return { status: 404, data: { message: "Creator not found" } };
   }
-  
+
   creator.step = 3;
   creator.organizationName = ecosystemName;
 
@@ -215,8 +217,9 @@ exports.getAnEcosystemTemplate = async (params) => {
   }
 
   const creator = await Creator.findByPk(ecosystem.creatorId);
-  const creatorProfile = await CreatorProfile.findOne({creatorId:ecosystem.creatorId})
-
+  const creatorProfile = await CreatorProfile.findOne({
+    creatorId: ecosystem.creatorId,
+  });
 
   return {
     status: 200,
@@ -226,7 +229,7 @@ exports.getAnEcosystemTemplate = async (params) => {
         ...ecosystem.toObject(), // Ensure ecosystem is a plain object
         email: creator.email,
         phoneNumber: creatorProfile.phoneNumber || "Not available", // Ensure fallback if no contact is available
-      }
+      },
     },
   };
 };
@@ -817,18 +820,18 @@ exports.markNotificationAsViewed = async (params) => {
 
 exports.getEcosystemNearMe = async (body) => {
   try {
-    const { 
-      country, 
-      state, 
-      localGovernment,
-      Category,
-      SubCategory,
-      format
-    } = body;
+    const { country, state, localGovernment, Category, SubCategory, format } =
+      body;
 
     // Validate required fields
-    const details = ["country", "state", "localGovernment", "Category",
-      "SubCategory", "format"];
+    const details = [
+      "country",
+      "state",
+      "localGovernment",
+      "Category",
+      "SubCategory",
+      "format",
+    ];
 
     for (const detail of details) {
       if (!body[detail]) {
@@ -837,11 +840,30 @@ exports.getEcosystemNearMe = async (body) => {
     }
 
     // Query ecosystems
-    const exactMatch = await Ecosystem.find({ country, state, localgovernment: localGovernment, targetAudienceSector: Category, mainObjective: SubCategory, completed: "true"  });
-    const stateMatch = await Ecosystem.find({ country, state, targetAudienceSector: Category, mainObjective: SubCategory, completed: "true"  }).lean();
-    const countryMatch = stateMatch.length === 0 
-      ? await Ecosystem.find({ country, targetAudienceSector: Category, mainObjective: SubCategory, completed: "true" }).lean() 
-      : [];
+    const exactMatch = await Ecosystem.find({
+      country,
+      state,
+      localgovernment: localGovernment,
+      targetAudienceSector: Category,
+      mainObjective: SubCategory,
+      completed: "true",
+    });
+    const stateMatch = await Ecosystem.find({
+      country,
+      state,
+      targetAudienceSector: Category,
+      mainObjective: SubCategory,
+      completed: "true",
+    }).lean();
+    const countryMatch =
+      stateMatch.length === 0
+        ? await Ecosystem.find({
+            country,
+            targetAudienceSector: Category,
+            mainObjective: SubCategory,
+            completed: "true",
+          }).lean()
+        : [];
 
     // Combine results with priority
     let ecosystems = [];
@@ -865,9 +887,139 @@ exports.getEcosystemNearMe = async (body) => {
     }
 
     return { status: 200, data: { ecosystems } };
-
   } catch (error) {
     console.error("Error fetching ecosystems:", error);
     return { status: 500, data: { message: "Internal server error" } };
   }
 };
+
+exports.getMerchantCustomers = async (params) => {
+  const { ecosystemDomain } = params;
+  if (!ecosystemDomain) {
+    return { status: 500, data: { message: "Internal server error" } };
+  }
+
+  const customers = await EcosystemUser.findAll({ where: { ecosystemDomain } });
+
+  return { status: 200, data: { customers } };
+};
+
+exports.addCustomer = async (body) => {
+  try {
+    const {
+      ecosystemDomain,
+      fullName,
+      phoneNumber,
+      email,
+      gender,
+      address,
+      dob,
+     
+    } = body;
+
+    if (!ecosystemDomain || !fullName || !phoneNumber || !email) {
+      return { status: 400, data: { message: "Missing required fields" } };
+    }
+
+    const hashedPassword = await bcrypt.hash(email, 10);
+
+    const newCustomer = await EcosystemUser.create({
+      ecosystemDomain,
+      username: fullName,
+      phoneNumber,
+      email,
+      password: hashedPassword,
+      gender,
+      address,
+      dob,
+   
+    });
+    console.log("customers:", newCustomer);
+
+    return {
+      status: 201,
+      data: { message: "Customer added successfully", customer: newCustomer },
+    };
+  } catch (error) {
+    return {
+      status: 500,
+      data: { message: "Internal server error", error: error.message },
+    };
+  }
+};
+
+exports.deleteCustomer = async (query) => {
+  try {
+    const { ecosystemDomain, ids } = query;
+    if (!ecosystemDomain || !ids) {
+      return res.status(400).json({ message: "Missing required parameters" });
+    }
+
+    const idArray = ids.split(",").map(id => parseInt(id.trim(), 10));
+
+    const deletedCount = await EcosystemUser.destroy({
+      where: {
+        ecosystemDomain,
+        id: { [Op.in]: idArray },
+      },
+    });
+
+    if (deletedCount === 0) {
+      return { status: 404, data: { message: "No matching records found to delete" } };
+
+    }
+    return { status: 200, data: { message: "Customer(s) deleted successfully" } };
+
+  
+  } catch (error) {
+    return { status: 500, data: { message: "Internal server error", error: error.message } };
+
+  }
+};
+
+exports.getCustomerDetails = async (params) => {
+  try {
+    const { customerId } = params;
+    if (!customerId) {
+      return { status: 400, data: { message: "Customer ID is required" } };
+    }
+
+    const customer = await EcosystemUser.findByPk(customerId);
+    if (!customer) {
+      return { status: 404, data: { message: "Customer not found" } };
+    }
+
+    return { status: 200, data: { customer } };
+  } catch (error) {
+    return { status: 500, data: { message: "Internal server error", error: error.message } };
+  }
+};
+
+exports.editCustomerDetails = async (body) => {
+  try {
+    const { id, fullName, phoneNumber, email, gender, address, dob } = body;
+    if (!id) {
+      return { status: 400, data: { message: "Customer ID is required" } };
+    }
+
+    const customer = await EcosystemUser.findByPk(id);
+    if (!customer) {
+      return { status: 404, data: { message: "Customer not found" } };
+    }
+
+    await customer.update({
+      username: fullName,
+      phoneNumber,
+      email,
+      gender,
+      address,
+      dob,
+ 
+    });
+
+    return { status: 200, data: { message: "Customer details updated successfully", customer } };
+  } catch (error) {
+    return { status: 500, data: { message: "Internal server error", error: error.message } };
+  }
+};
+
