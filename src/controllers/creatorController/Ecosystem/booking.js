@@ -56,6 +56,7 @@ exports.checkAvailableTime = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 exports.getCustomerAppointments = async (req, res) => {
   try {
     const response = await booking.getCustomerAppointments(req.params);
@@ -65,4 +66,13 @@ exports.getCustomerAppointments = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
- 
+
+exports.completeBooking = async (req, res) => {
+  try {
+    const response = await booking.completeBooking(req.params);
+    return res.status(response.status).json(response.data);
+  } catch (error) {
+    console.error("Error checking time:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
