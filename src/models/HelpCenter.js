@@ -39,6 +39,11 @@ const HelpCenter = sequelize.define('HelpCenter', {
         allowNull: false,
         defaultValue: "pending",
     },
+    view: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+    },
 },
     {
         tableName: "HelpCenter",
