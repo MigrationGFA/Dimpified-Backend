@@ -54,24 +54,15 @@ exports.createSupportTicket = async (req, res) => {
 
 exports.getMerchantSupportTickets = async (req, res) => {
   try {
-    const { ecosystemDomain, status } = req.query;
+    const { ecosystemDomain } = req.params;
 
-    if (!ecosystemDomain || !status) {
-      return res.status(400).json({ message: "EcosystemDomain and status are required" });
+    if (!ecosystemDomain) {
+      return res.status(400).json({ message: "EcosystemDomain is required" });
     }
 
-    // Convert status to the corresponding "view" value
-    let viewFilter = {};
-    if (status === "read") {
-      viewFilter.view = true;
-    } else if (status === "unread") {
-      viewFilter.view = false;
-    } else {
-      return res.status(400).json({ message: "Invalid status value, use 'read' or 'unread'" });
-    }
-
+    // Fetch all tickets for the given ecosystemDomain
     const tickets = await HelpCenter.findAll({
-      where: { ecosystemDomain, ...viewFilter },
+      where: { ecosystemDomain },
       include: [
         {
           model: EndUser,
@@ -80,13 +71,17 @@ exports.getMerchantSupportTickets = async (req, res) => {
       ],
     });
 
-    return res.status(200).json({ tickets });
+    // Separate tickets into read and unread
+    const readTickets = tickets.filter((ticket) => ticket.view === true);
+    const unreadTickets = tickets.filter((ticket) => ticket.view === false);
+
+    return res.status(200).json({ read: readTickets, unread: unreadTickets });
   } catch (error) {
-    return res.status(500).json({ message: "Internal server error", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
-
-
 
 exports.getSupportTicketById = async (req, res) => {
   try {
@@ -108,13 +103,18 @@ exports.getSupportTicketById = async (req, res) => {
     if (!ticket) {
       return res.status(404).json({ message: "Support ticket not found" });
     }
+    if (ticket.view == false) {
+      ticket.view = true;
+    }
 
+    await ticket.save();
     return res.status(200).json(ticket);
   } catch (error) {
-    return res.status(500).json({ message: "Internal server error", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
-
 
 exports.getSupportBoxStats = async (req, res) => {
   try {
