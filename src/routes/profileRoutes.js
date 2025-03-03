@@ -4,7 +4,7 @@ const profileController = require("../controllers/creatorController/profile");
 const authenticatedUser  = require("../middleware/authentication")
 
 router.get("/creator/profile/:creatorId", 
-    authenticatedUser,
+    //authenticatedUser,
     profileController.getProfileDetails);
 router.patch("/creator/edit-profile", 
      authenticatedUser,
