@@ -32,7 +32,7 @@ exports.getProfileDetails = async (params) => {
     profileImage: creatorProfile.image || "",
     subCategory: ecosystem.mainObjective,
     description: ecosystem.ecosystemDescription,
-    businessName: creatorProfile.organizationName,
+    businessName: ecosystem.organizationName,
     category: ecosystem.targetAudienceSector,
    
   };
