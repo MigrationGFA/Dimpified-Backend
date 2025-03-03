@@ -21,25 +21,42 @@ exports.getProfileDetails = async (params) => {
 
   const profile = {
     fullname: creatorProfile.fullName,
+    email: creatorProfile.email,
     dateOfBirth: creatorProfile.dateOfBirth,
     gender: creatorProfile.gender,
+    ecosystemDomain: ecosystem.ecosystemDomain,
     phoneNumber: creatorProfile.phoneNumber,
     localGovernment: creatorProfile.localGovernment || "",
     state: creatorProfile.state || "",
     country: creatorProfile.country || "",
-    profileImage: creatorProfile.image,
+    profileImage: creatorProfile.image || "",
     subCategory: ecosystem.mainObjective,
     description: ecosystem.ecosystemDescription,
     businessName: creatorProfile.organizationName,
     category: creator.categoryInterest,
+   
   };
 
+  console.log("profile:", creatorProfile);
   return { status: 200, data: { profile } };
 };
 
 exports.editProfileDetails = async (body) => {
   try {
-    const { creatorId, fullName, dateOfBirth, gender, phoneNumber, localGovernment, state, country, profileImage, category, description, businessName } = body;
+    const {
+      creatorId,
+      fullName,
+      dateOfBirth,
+      gender,
+      phoneNumber,
+      localGovernment,
+      state,
+      country,
+      profileImage,
+      category,
+      description,
+      businessName,
+    } = body;
 
     if (!creatorId) {
       return { status: 400, data: { message: "Creator ID is required" } };
@@ -108,6 +125,9 @@ exports.editProfileDetails = async (body) => {
       },
     };
   } catch (error) {
-    return { status: 500, data: { message: "Internal server error", error: error.message } };
+    return {
+      status: 500,
+      data: { message: "Internal server error", error: error.message },
+    };
   }
 };
