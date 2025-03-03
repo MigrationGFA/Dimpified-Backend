@@ -11,7 +11,7 @@ router.get("/support-tickets", supportController.getMerchantSupportTickets);
 // Get a single support ticket by ID
 router.get("/support-ticket/:id", supportController.getSupportTicketById);
 
-router.get("/support-box", supportController.getSupportBoxStats);
+router.get("/support-box/:ecosystemDomain", supportController.getSupportBoxStats);
 
 
 module.exports = router;

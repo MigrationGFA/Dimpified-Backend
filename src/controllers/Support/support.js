@@ -57,33 +57,36 @@ exports.getMerchantSupportTickets = async (req, res) => {
     const { ecosystemDomain, status } = req.query;
 
     if (!ecosystemDomain || !status) {
-      return res
-        .status(400)
-        .json({ message: "EcosystemDomain and status are required" });
+      return res.status(400).json({ message: "EcosystemDomain and status are required" });
     }
 
-    // if (!["pending", "completed"].includes(status)) {
-    //   return res.status(400).json({ message: "Invalid status value" });
-    // }
+    // Convert status to the corresponding "view" value
+    let viewFilter = {};
+    if (status === "read") {
+      viewFilter.view = true;
+    } else if (status === "unread") {
+      viewFilter.view = false;
+    } else {
+      return res.status(400).json({ message: "Invalid status value, use 'read' or 'unread'" });
+    }
 
     const tickets = await HelpCenter.findAll({
-      where: { ecosystemDomain, status },
+      where: { ecosystemDomain, ...viewFilter },
       include: [
         {
           model: EndUser,
           attributes: ["id", "username", "email"],
-        }
+        },
       ],
     });
 
-
     return res.status(200).json({ tickets });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "Internal server error", error: error.message });
+    return res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
+
+
 
 exports.getSupportTicketById = async (req, res) => {
   try {
@@ -115,7 +118,7 @@ exports.getSupportTicketById = async (req, res) => {
 
 exports.getSupportBoxStats = async (req, res) => {
   try {
-    const { ecosystemDomain } = req.query;
+    const { ecosystemDomain } = req.params;
 
     if (!ecosystemDomain) {
       return res.status(400).json({ message: "Ecosystem domain is required" });
