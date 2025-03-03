@@ -317,7 +317,7 @@ exports.updateSubscription = async (body) => {
   const planCode = "one time payment";
 
   // Calculate subscription duration based on interval from request
-  const validPlanCodes = { monthly: 1, "Bi-annually": 6, annually: 12 };
+  const validPlanCodes = { "monthly": 1, "Bi-annually": 6, "annually": 12 };
   const months = validPlanCodes[interval.toLowerCase()] || 1;
   const startDate = new Date();
   const endDate = new Date();

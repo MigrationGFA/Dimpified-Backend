@@ -38,6 +38,7 @@ const HelpCenter = sequelize.define('HelpCenter', {
         allowNull: false,
         defaultValue: false,
     },
+
     ecosystemDomain: { type: DataTypes.STRING, required: true },
     status: {
         type: DataTypes.ENUM("pending", "completed"),
