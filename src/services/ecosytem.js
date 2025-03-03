@@ -125,27 +125,33 @@ exports.createNewTemplate = async (body) => {
     return { status: 404, data: { message: "Ecosystem not found" } };
   }
 
+  // Fetch the template model
+  const templateModel = await ReservedTemplate.findOne({ templateId });
+  if (!templateModel) {
+    return { status: 404, data: { message: "Template model not found" } };
+  }
+
   // Prepare the template data
   const templateData = {
     creatorId,
     ecosystemDomain,
     templateId,
-    navbar: body.navbar,
-    hero: body.hero,
-    aboutUs: body.aboutUs,
-    Vision: body.Vision,
-    Statistics: body.Statistics,
-    Patrners: body.Patrners,
-    Events: body.Events,
-    Gallery: body.Gallery,
-    LargeCta: body.LargeCta,
-    Team: body.Team,
-    Blog: body.Blog,
-    Reviews: body.Reviews,
-    contactUs: body.contactUs,
-    faq: body.faq,
-    faqStyles: body.faqStyles,
-    footer: body.footer,
+    navbar: body.navbar ?? templateModel.navbar,
+    hero: body.hero ?? templateModel.hero,
+    aboutUs: body.aboutUs ?? templateModel.aboutUs,
+    Vision: body.Vision ?? templateModel.Vision,
+    Statistics: body.Statistics ?? templateModel.Statistics,
+    Patrners: body.Patrners ?? templateModel.Patrners,
+    Events: body.Events ?? templateModel.Events,
+    Gallery: body.Gallery ?? templateModel.Gallery,
+    LargeCta: body.LargeCta ?? templateModel.LargeCta,
+    Team: body.Team ?? templateModel.Team,
+    Blog: body.Blog ?? templateModel.Blog,
+    Reviews: body.Reviews ?? templateModel.Reviews,
+    contactUs: body.contactUs ?? templateModel.contactUs,
+    faq: body.faq ?? templateModel.faq,
+    faqStyles: body.faqStyles ?? templateModel.faqStyles,
+    footer: body.footer ?? templateModel.footer,
   };
 
   // Create the template
