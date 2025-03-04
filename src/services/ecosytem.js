@@ -914,7 +914,6 @@ exports.addCustomer = async (body) => {
       gender,
       address,
       dob,
-     
     } = body;
 
     if (!ecosystemDomain || !fullName || !phoneNumber || !email) {
@@ -932,7 +931,6 @@ exports.addCustomer = async (body) => {
       gender,
       address,
       dob,
-   
     });
     console.log("customers:", newCustomer);
 
@@ -955,7 +953,7 @@ exports.deleteCustomer = async (query) => {
       return res.status(400).json({ message: "Missing required parameters" });
     }
 
-    const idArray = ids.split(",").map(id => parseInt(id.trim(), 10));
+    const idArray = ids.split(",").map((id) => parseInt(id.trim(), 10));
 
     const deletedCount = await EcosystemUser.destroy({
       where: {
@@ -965,15 +963,20 @@ exports.deleteCustomer = async (query) => {
     });
 
     if (deletedCount === 0) {
-      return { status: 404, data: { message: "No matching records found to delete" } };
-
+      return {
+        status: 404,
+        data: { message: "No matching records found to delete" },
+      };
     }
-    return { status: 200, data: { message: "Customer(s) deleted successfully" } };
-
-  
+    return {
+      status: 200,
+      data: { message: "Customer(s) deleted successfully" },
+    };
   } catch (error) {
-    return { status: 500, data: { message: "Internal server error", error: error.message } };
-
+    return {
+      status: 500,
+      data: { message: "Internal server error", error: error.message },
+    };
   }
 };
 
@@ -991,7 +994,10 @@ exports.getCustomerDetails = async (params) => {
 
     return { status: 200, data: { customer } };
   } catch (error) {
-    return { status: 500, data: { message: "Internal server error", error: error.message } };
+    return {
+      status: 500,
+      data: { message: "Internal server error", error: error.message },
+    };
   }
 };
 
@@ -1014,12 +1020,53 @@ exports.editCustomerDetails = async (body) => {
       gender,
       address,
       dob,
- 
     });
 
-    return { status: 200, data: { message: "Customer details updated successfully", customer } };
+    return {
+      status: 200,
+      data: { message: "Customer details updated successfully", customer },
+    };
   } catch (error) {
-    return { status: 500, data: { message: "Internal server error", error: error.message } };
+    return {
+      status: 500,
+      data: { message: "Internal server error", error: error.message },
+    };
   }
 };
 
+exports.updateEcosystemStatus = async (body) => {
+  try {
+    const { status, ecosystemDomain } = body;
+
+    // Validate status
+    const validStatuses = ["draft", "private", "live"];
+    if (!validStatuses.includes(status)) {
+      return { status: 400, data: { message: "Invalid status value" } };
+    }
+
+    // Find and update the ecosystem status
+    const updatedEcosystem = await Ecosystem.findOneAndUpdate(
+      { ecosystemDomain },  // Corrected filter
+      { status, updatedAt: Date.now() },
+      { new: true }
+    );
+
+    if (!updatedEcosystem) {
+      return { status: 404, data: { message: "Ecosystem not found" } };
+    }
+
+    console.log("ecosystem:",updatedEcosystem)
+    return {
+      status: 200,
+      data: {
+        message: "Ecosystem status updated successfully",
+        ecosystem: updatedEcosystem,
+      },
+    };
+  } catch (error) {
+    return {
+      status: 500,
+      data: { message: "Internal server error", error: error.message },
+    };
+  }
+};
