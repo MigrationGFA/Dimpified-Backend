@@ -23,6 +23,11 @@ router.get(
   "/website-details/:ecosystemDomain",
   ecosystemController.websiteDetails
 );
+//update ecosystem status
+router.put(
+  "/update-ecosystem-status",
+  ecosystemController.updateEcosystemStatus
+);
 
 router.get(
   "/booking-overview/:ecosystemDomain",
