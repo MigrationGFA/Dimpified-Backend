@@ -401,9 +401,10 @@ exports.creatorLogin = async (req) => {
   });
 
   let ecosystemDomain = null;
+  let status = null
   if (creatorEcosystem) {
     ecosystemDomain = creatorEcosystem.ecosystemDomain;
-    console.log(ecosystemDomain);
+    status = creatorEcosystem.status
   }
 
   let fullName = null;
@@ -428,7 +429,8 @@ exports.creatorLogin = async (req) => {
     plan: plan,
     step: creator.step,
     ecosystemDomain: ecosystemDomain,
-    joinDate: joinDate
+    joinDate: joinDate,
+    status
   };
 
   return {
@@ -624,6 +626,123 @@ exports.updateCreatorImage = async ({ creatorId, image }) => {
       message: "Profile image updated successfully",
       Profile: creatorProfile,
       creator
+    },
+  };
+};
+
+exports.autoCreatorLogin = async (req) => {
+  const { email, token } = req.body;
+  const details = ["email", "token"];
+
+  for (const [key, value] of Object.entries(details)) {
+    if (!value) {
+      return { status: 400, data: { message: `${key} is required` } };
+    }
+  }
+
+  const creator = await Creator.findOne({ where: { email: email } });
+  if (!creator) {
+    return { status: 401, data: { message: "Invalid email Credential" } };
+  }
+
+  if (!creator.isVerified) {
+    return {
+      status: 401,
+      data: { message: "Please check your email to verify your account" },
+    };
+  }
+
+  const creatorTokens = await CreatorToken.findOne({
+    where: {
+      userId: creator.id,
+      refreshToken: token
+    },
+  });
+
+  if (!creatorTokens) {
+    return {
+      status: 401,
+      data: { message: "Please login again" },
+    };
+  }
+
+
+  const hasInterests =
+    creator.categoryInterest && creator.categoryInterest !== null
+      ? "yes"
+      : "no";
+
+  let accessToken = creatorTokens.accessToken
+  let refreshToken = creatorTokens.refreshToken
+
+
+  // Assuming setProfile is determined by certain fields being non-null
+   const creatorProfile = await CreatorProfile.findOne({
+    creatorId: creator.id,
+  });
+  let setProfile = creatorProfile ? true : false;
+
+  // Get Subscription Plan
+  const getSubscription = await Subscription.findOne({
+    where: {
+      creatorId: creator.id,
+    },
+  });
+  let joinDate;
+  let plan;
+  if (!getSubscription) {
+    plan = "Lite";
+    joinDate = Date.now();
+    
+  } else {
+    plan = getSubscription.planType;
+    joinDate = getSubscription.createdAt;
+  }
+
+  const creatorEcosystem = await Ecosystem.findOne({
+    creatorId: creator.id,
+  });
+
+  let ecosystemDomain = null;
+  let status = null
+  if (creatorEcosystem) {
+    ecosystemDomain = creatorEcosystem.ecosystemDomain;
+    status = creatorEcosystem.status
+  }
+
+  let fullName = null;
+  const getProfile = await CreatorProfile.findOne({
+    creatorId: creator.id,
+  });
+
+  if (getProfile) {
+    fullName = getProfile.fullName;
+  }
+
+  // Subset of Creator's data for response
+  const creatorSubset = {
+    creatorId: creator.id,
+    organizationName: creator.organizationName,
+    fullName: fullName,
+    email: creator.email,
+    role: creator.role,
+    image: creator.imageUrl,
+    interest: hasInterests,
+    profile: setProfile,
+    plan: plan,
+    step: creator.step,
+    ecosystemDomain: ecosystemDomain,
+    joinDate: joinDate,
+    status
+  };
+
+  return {
+    status: 200,
+    data: {
+      message: "Login successful",
+      accessToken,
+      refreshToken,
+      user: creatorSubset,
     },
   };
 };
