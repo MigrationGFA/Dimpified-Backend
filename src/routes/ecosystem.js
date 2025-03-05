@@ -50,6 +50,12 @@ router.get(
   bookingController.monthlyBookingStats
 );
 
+router.get(
+  "/get-appointments/:email/:ecosystemDomain",
+  // authenticatedUser,
+  bookingController.getCustomerAppointments
+);
+
 router.post("/check-domain", ecosystemController.checkDomainAvailability);
 router.post("/ecosysystem-near-me", ecosystemController.getEcosystemNearMe);
 // Support Request
@@ -103,6 +109,37 @@ router.get(
   "/notifications/:ecosystemDomain",
   authenticatedUser,
   ecosystemController.getNotification
+);
+router.get(
+  "/customers/:ecosystemDomain",
+  authenticatedUser,
+  ecosystemController.getMerchantCustomers
+);
+router.post(
+  "/add-customer",
+  authenticatedUser,
+  ecosystemController.addCustomer
+);
+router.delete(
+  "/delete-customer",
+  authenticatedUser,
+  ecosystemController.deleteCustomer
+);
+router.patch(
+  "/update-customer",
+  authenticatedUser,
+  ecosystemController.editCustomerDetails
+);
+router.get(
+  "/customer-details/:customerId",
+  authenticatedUser,
+  ecosystemController.getCustomerDetails
+);
+
+router.patch(
+  "/complete-booking/:bookingId",
+  authenticatedUser,
+  bookingController.completeBooking
 );
 
 // Dimp Contact US
