@@ -591,7 +591,7 @@ exports.completeBooking = async (params) => {
   }
 
   booking.status = "Completed";
-
+  booking.paymentStatus = "Paid";
   await booking.save();
   console.log("booking:", booking);
   return {
