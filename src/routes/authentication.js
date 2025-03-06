@@ -11,9 +11,14 @@ const {
   resetPasswordLimiter,
   authLimiter,
 } = require("../middleware/RateLimter");
+const mobileHelper = require("../controllers/creatorController/MobileHelperController/autoLogin")
 
 const auth = require("../controllers/affiliateController/Authentication/auth");
 const refreshCreatorToken = require("../middleware/refreshToken");
+
+
+
+
 // category 1 register endpoint
 router.post("/creator/signup", authController.creatorSignup);
 router.post("/creator/verify-otp", generalAuthService.verifyOTPCreator);
@@ -25,6 +30,7 @@ router.post(
   generalAuthService.resendOTPCreator
 );
 router.post("/creator/sign-in", generalAuthService.creatorLogin);
+
 router.post("/creator/forgot/password", generalAuthService.forgotPassword);
 router.post(
   "/creator/resend-password-otp",
@@ -40,7 +46,9 @@ router.patch(
   resetPasswordLimiter,
   generalAuthService.resetPassword
 );
-// Configure Multer for handling file uploads
+
+// mobile helper auto login
+router.post("/creator/auto-login", mobileHelper.autoCreatorLogin);
 
 router.patch(
   "/creator/update-profile-image",

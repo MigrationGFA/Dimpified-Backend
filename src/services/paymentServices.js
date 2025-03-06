@@ -257,6 +257,7 @@ exports.verifySubscription = async (body) => {
   
   if(ecosystem){
     ecosystem.completed = "true"
+    ecosystem.status = "private"
     await ecosystem.save()
   }
 
@@ -541,6 +542,7 @@ exports.createLiteSubscribtion = async (body) => {
   const ecosystem = await Ecosystem.findOne({ecosystemDomain})
   if(ecosystem){
     ecosystem.completed = "true"
+    ecosystem.status = "private"
     await ecosystem.save()
   }
   creator.step = 5;
