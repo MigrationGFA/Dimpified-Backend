@@ -3,6 +3,9 @@ const EndUser = require("../../models/EcosystemUser");
 const Ecosystem = require("../../models/Ecosystem");
 const Creator = require("../../models/Creator");
 const bcrypt = require("bcryptjs");
+const CreatorTemplate = require("../../models/creatorTemplate");
+const newsSendSMS = require("../../helper/newSms");
+const sendSupportReplyEmail = require("../../utils/sendSupportReplyEmail");
 
 exports.createSupportTicket = async (req, res) => {
   try {
@@ -33,7 +36,7 @@ exports.createSupportTicket = async (req, res) => {
       console.log("customers:", user);
     }
 
-    await HelpCenter.create({
+   const helpcenter = await HelpCenter.create({
       userId: user.id,
       reason,
       message,
@@ -41,6 +44,8 @@ exports.createSupportTicket = async (req, res) => {
       ecosystemDomain,
       status: "pending",
     });
+
+console.log("helpcenter:",helpcenter)
 
     return res
       .status(201)
@@ -140,6 +145,61 @@ exports.getSupportBoxStats = async (req, res) => {
       attendedRequests,
       unattendedRequests,
     });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+exports.replyToSupportTicket = async (req, res) => {
+  try {
+    const { ticketId, replyMessage, ecosystemDomain } = req.body;
+
+    if (!ticketId || !replyMessage || !ecosystemDomain) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Find the support ticket and user details
+    const ticket = await HelpCenter.findOne({
+      where: { id: ticketId },
+      include: EndUser,
+    });
+
+    if (!ticket) {
+      return res.status(404).json({ message: "Support ticket not found" });
+    }
+
+    const { email, phoneNumber, username } = ticket.EcosystemUser;
+
+    // Update the reply field and mark as completed
+    await ticket.update({ reply: replyMessage, status: "completed" });
+
+    const merchant = await Ecosystem.findOne({ecosystemDomain})
+    if (!merchant) {
+      return res.status(404).json({ message: "Ecosystem not found" });
+    }
+
+
+    // Send SMS notification
+    const smsContent = `Hello ${username}, from ${merchant.ecosystemName} Your support request has been resolved with the following response:${replyMessage}.`;
+    await newsSendSMS(phoneNumber, smsContent, "support_reply");
+
+    // Get merchant details from ecosystemDomain
+  
+    const creatorTemplate = await CreatorTemplate.findOne({ ecosystemDomain });
+    const logo = creatorTemplate.navbar.logo; // Business logo
+    // Send formatted email response
+    await sendSupportReplyEmail({
+      email,
+      username,
+      supportMessage: ticket.message,
+      replyMessage,
+      merchantLogo: logo,
+      merchantName: merchant.ecosystemName,
+    });
+
+    return res.status(200).json({ message: "Reply sent successfully" });
   } catch (error) {
     return res
       .status(500)
