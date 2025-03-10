@@ -19,6 +19,7 @@ router.get(
   supportController.getSupportBoxStats
 );
 
+//reply ticket
 router.post("/reply-ticket", supportController.replyToSupportTicket);
 
 module.exports = router;
