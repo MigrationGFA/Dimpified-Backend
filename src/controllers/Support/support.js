@@ -182,7 +182,7 @@ exports.replyToSupportTicket = async (req, res) => {
     const { email, phoneNumber, username } = ticket.EcosystemUser;
 
     // Update the reply field and mark as completed
-    await ticket.update({ reply: replyMessage, status: "completed" });
+    await ticket.update({ response: replyMessage, status: "completed" });
 
     const merchant = await Ecosystem.findOne({ecosystemDomain})
     if (!merchant) {
