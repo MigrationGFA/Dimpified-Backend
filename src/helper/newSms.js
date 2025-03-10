@@ -24,6 +24,7 @@ const newsSendSMS = async (to, sms, type) => {
 
     return response.data;
   } catch (error) {
+    console.log(`Failed to send SMS: ${response}`);
     throw new Error(`Failed to send SMS: ${error}`);
   }
 };
