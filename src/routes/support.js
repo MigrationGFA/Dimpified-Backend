@@ -15,7 +15,9 @@ router.get(
 );
 
 // Get a single support ticket by ID
-router.get("/support-ticket/:id",authenticatedUser, supportController.getSupportTicketById);
+router.get("/support-ticket/:id",
+authenticatedUser,
+ supportController.getSupportTicketById);
 
 router.get(
   "/support-box/:ecosystemDomain",authenticatedUser,
