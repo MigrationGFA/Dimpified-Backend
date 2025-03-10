@@ -152,6 +152,15 @@ exports.getSupportBoxStats = async (req, res) => {
   }
 };
 
+
+const formatPhoneNumber = (phoneNumber) => {
+  if (phoneNumber.startsWith("0")) {
+    return `+234${phoneNumber.slice(1)}`;
+  }
+
+  return phoneNumber;
+};
+
 exports.replyToSupportTicket = async (req, res) => {
   try {
     const { ticketId, replyMessage, ecosystemDomain } = req.body;
@@ -180,10 +189,10 @@ exports.replyToSupportTicket = async (req, res) => {
       return res.status(404).json({ message: "Ecosystem not found" });
     }
 
-
+    const newPhoneNumber = formatPhoneNumber(phoneNumber);
     // Send SMS notification
     const smsContent = `Hello ${username}, from ${merchant.ecosystemName} Your support request has been resolved with the following response:${replyMessage}.`;
-    await newsSendSMS(phoneNumber, smsContent, "support_reply");
+    await newsSendSMS(newPhoneNumber, smsContent, "support_reply");
 
     // Get merchant details from ecosystemDomain
   
