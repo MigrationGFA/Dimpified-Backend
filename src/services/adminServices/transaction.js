@@ -211,7 +211,7 @@ exports.getWithdrawalDetailsForProfile = async (params) => {
   }
 
   const { creatorId, amount, status, requestedAt, adminId } = specificWithdrawal;
-  console.log("specificWithdrawal:",adminId)
+  console.log("specificWithdrawal:",creatorId)
   const { accountName, accountNumber, bankName } = specificWithdrawal.Account || {};
   const { email } = specificWithdrawal.Creator || {};
 
@@ -238,21 +238,31 @@ exports.getWithdrawalDetailsForProfile = async (params) => {
   const ecosystem = await Ecosystem.findOne({ creatorId });
 
   // Fetch transactions to calculate incoming amount and wallet balance
-  const transactions = await ecosystemTransaction.findAll({ where: { creatorId } });
-
+  const transactions = await ecosystemTransaction.findAll({ where: { ecosystemDomain: ecosystem.ecosystemDomain } });
+  console.log("this is transaction", transactions)
   const incomingAmount = transactions.reduce(
     (total, transaction) => total + parseFloat(transaction.amount || 0),
     0
   );
 
-  // Wallet balance (total amount from ecosystemTransaction)
-  const walletBalance = incomingAmount;
+  console.log("this is incoming amount", incomingAmount)
+
+  // Wallet balance
+  const creatorBalance = await CreatorEarning.findOne({
+    where: {
+      ecosystemDomain: ecosystem.ecosystemDomain
+    }
+  })
+
+  const nairaBalance = creatorBalance.Naira;
+  const dollarBalance = creatorBalance.Dollar;
 
   // Calculate the outgoing amount (sum of withdrawal amounts for the creator)
   const outgoingAmount = withdrawalHistory.reduce(
     (total, withdrawal) => total + parseFloat(withdrawal.amount || 0),
     0
   );
+  console.log("this is outgoing amount", outgoingAmount)
 
   // Map withdrawal history to the required format
   const historyResponse = withdrawalHistory.map((withdrawal) => {
@@ -307,7 +317,8 @@ exports.getWithdrawalDetailsForProfile = async (params) => {
       withdrawalHistory: historyResponse,
       incomingAmount: parseFloat(incomingAmount).toFixed(2),
       outgoingAmount: parseFloat(outgoingAmount).toFixed(2),
-      walletBalance: parseFloat(walletBalance).toFixed(2),
+       nairaBalance: parseFloat(nairaBalance).toFixed(2),
+       dollarBalance: parseFloat(dollarBalance).toFixed(2),
     },
   };
 };
@@ -373,35 +384,32 @@ exports.transactionDetails = async () => {
   };
 };
 
+// get user(merchant and enduser information)
 exports.endUserTransaction = async () => {
-  // Fetch all bookings
-  const bookings = await Booking.find({});
 
-  // Fetch all creators
   const creators = await Creator.findAll();
 
-  // Fetch all creator profiles
   const creatorProfiles = await CreatorProfile.find({});
 
-  // Fetch all ecosystems
   const ecosystems = await Ecosystem.find({});
 
-  // Fetch all withdrawal requests
   const withdrawals = await WithdrawalRequest.findAll();
 
-  // Map end user details directly from bookings and assign sequential IDs
-  const endUserDetails = bookings
-    .map((booking, index) => ({
-      id: bookings.length - index, // Assign sequential ID in descending order
-      userName: booking.name,
-      ecosystemDomain: booking.ecosystemDomain,
-      service: booking.service,
-      amountPaid: parseFloat(booking.price || 0).toFixed(2),
-      date: booking.date.toISOString().split("T")[0],
-      time: booking.time,
-      status: booking.status,
-    }))
-    .sort((a, b) => b.id - a.id); // Sort in descending order by ID
+   const transactions = await ecosystemTransaction.findAll({
+  include: [
+    {
+      model: EcosystemUser,
+      attributes: ["username"], 
+    },
+  ],
+});
+
+// Format the response to include fullName directly
+const endUserDetails = transactions.map((transaction) => ({
+  ...transaction.toJSON(),
+  userName: transaction.User?.username || null, 
+}));
+
 
   // Map creator details along with their withdrawals and ecosystem domain
   const creatorDetails = await Promise.all(
@@ -416,17 +424,26 @@ exports.endUserTransaction = async () => {
         (withdrawal) => withdrawal.creatorId === creator.id
       );
 
+      // Sum all withdrawal amounts
+      const totalAmountWithdrawn = creatorWithdrawals.reduce((sum, withdrawal) => {
+          return sum + parseFloat(withdrawal.amount);
+      }, 0);
+
+      const earnings = await CreatorEarning.findOne({
+        where: {
+          creatorId: creator.id
+        }
+      })
+
       return {
         id: creator.id, // Include creator ID
         creatorName: creatorProfile?.fullName || creator.organizationName,
         ecosystemDomain: ecosystem ? ecosystem.ecosystemDomain : "N/A",
-        balance: parseFloat(creator.balance || 0).toFixed(2),
+        balance: earnings,
         date: creator.createdAt.toISOString().split("T")[0],
         time: creator.createdAt.toISOString().split("T")[1].split(".")[0],
         status: creator.step === 5 ? "Completed" : "In progress",
-        withdrawals: creatorWithdrawals.map((withdrawal) => ({
-          amountWithdrawn: parseFloat(withdrawal.amount),
-        })),
+        withdrawals: totalAmountWithdrawn
       };
     })
   );
