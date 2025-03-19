@@ -317,7 +317,8 @@ router.get(
 // short access
 router.get(
   "/ecosystem-monthly-data",
-
+   verifyAdmin,
+  authenticatedAdmin,
   getEcosystemData
 );
 router.get(
@@ -334,33 +335,71 @@ router.get(
 
 router.get(
   "/admin/transaction-history/:email",
+   verifyAdmin,
+  authenticatedAdmin,
   adminTransactionController.getendUserTransactionDetails
 );
 
 router.get(
   "/admin/subcategory-overview",
+   verifyAdmin,
+  authenticatedAdmin,
   adminController.getAdminDashboardSubcategory
 );
 
 router.get(
   "/admin/subcategory-information",
+   verifyAdmin,
+  authenticatedAdmin,
   adminController.getAdminDashboardSubcategoryInformation
 );
 
 router.post(
   "/admin/approve-withdrawal",
+   verifyAdmin,
+  authenticatedAdmin,
   withdrawalController.approveWithdrawalrequest
 );
 
-router.get("/admin/gmv", getGMV);
-router.get("/admin/nmv", getNMV);
-router.get("/admin/amount-paid", getAmountPaid);
-router.get("/admin/unpaid-amount", getUnpaidAmount);
-router.get("/admin/transaction-income", getTransactionIncome);
-router.get("/admin/total-withdrawals", getTotalWithdrawals);
-router.get("/admin/transactions", getTransactions);
-router.get("/admin/subscription-details", getSubcriptionDetails);
-router.get("/admin/commissions", getcommissions);
-router.get("/admin/withdrawals/:status", getWithdrawals);
+router.get("/admin/gmv",
+   verifyAdmin,
+  authenticatedAdmin,
+  getGMV);
+router.get("/admin/nmv",
+   verifyAdmin,
+  authenticatedAdmin,
+  getNMV);
+router.get("/admin/amount-paid",
+   verifyAdmin,
+  authenticatedAdmin,
+  getAmountPaid);
+router.get("/admin/unpaid-amount",
+   verifyAdmin,
+  authenticatedAdmin,
+  getUnpaidAmount);
+router.get("/admin/transaction-income",
+   verifyAdmin,
+  authenticatedAdmin,
+  getTransactionIncome);
+router.get("/admin/total-withdrawals",
+   verifyAdmin,
+  authenticatedAdmin,
+  getTotalWithdrawals);
+router.get("/admin/transactions",
+   verifyAdmin,
+  authenticatedAdmin,
+  getTransactions);
+router.get("/admin/subscription-details",
+   verifyAdmin,
+  authenticatedAdmin,
+  getSubcriptionDetails);
+router.get("/admin/commissions",
+   verifyAdmin,
+  authenticatedAdmin,
+  getcommissions);
+router.get("/admin/withdrawals/:status",
+   verifyAdmin,
+  authenticatedAdmin,
+  getWithdrawals);
 
 module.exports = router;
