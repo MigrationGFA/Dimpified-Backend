@@ -21,30 +21,48 @@ exports.getProfileDetails = async (params) => {
 
   const profile = {
     fullname: creatorProfile.fullName,
+    email: creatorProfile.email,
     dateOfBirth: creatorProfile.dateOfBirth,
     gender: creatorProfile.gender,
+    ecosystemDomain: ecosystem.ecosystemDomain,
     phoneNumber: creatorProfile.phoneNumber,
-    localGovernment: creatorProfile.localGovernment || "",
-    state: creatorProfile.state || "",
-    country: creatorProfile.country || "",
-    profileImage: creatorProfile.image,
+    localGovernment: ecosystem.localgovernment || "",
+    state: ecosystem.state || "",
+    country: ecosystem.country || "",
+    profileImage: creatorProfile.image || "",
     subCategory: ecosystem.mainObjective,
     description: ecosystem.ecosystemDescription,
-    businessName: creatorProfile.organizationName,
-    category: creator.categoryInterest,
+    businessName: ecosystem.ecosystemName,
+    category: ecosystem.targetAudienceSector,
   };
 
+  console.log("profile:", creatorProfile);
   return { status: 200, data: { profile } };
 };
 
 exports.editProfileDetails = async (body) => {
   try {
-    const { creatorId, fullName, dateOfBirth, gender, phoneNumber, localGovernment, state, country, profileImage, category, description, businessName } = body;
+    const {
+      creatorId,
+      fullName,
+      dateOfBirth,
+      gender,
+      phoneNumber,
+      localGovernment,
+      state,
+      country,
+      profileImage,
+      category,
+      description,
+      businessName,
+    } = body;
 
     if (!creatorId) {
       return { status: 400, data: { message: "Creator ID is required" } };
     }
 
+
+    console.log("body:",body)
     // Update CreatorProfile and ensure fullName is correctly set
     const updatedProfile = await CreatorProfile.findOneAndUpdate(
       { creatorId },
@@ -54,9 +72,6 @@ exports.editProfileDetails = async (body) => {
           dateOfBirth: dateOfBirth || undefined,
           gender: gender || undefined,
           phoneNumber: phoneNumber || undefined,
-          localGovernment: localGovernment || undefined,
-          state: state || undefined,
-          country: country || undefined,
           image: profileImage || undefined,
         },
       },
@@ -74,11 +89,14 @@ exports.editProfileDetails = async (body) => {
         $set: {
           ecosystemDescription: description || undefined,
           businessName: businessName || undefined,
+          localgovernment: localGovernment || undefined,
+          state: state || undefined,
+          country: country || undefined,
         },
       },
       { new: true }
     );
-
+    console.log("body:",updatedEcosystem)
     // Update Creator category interest
     const updatedCreator = await Creator.findByPk(creatorId);
     if (updatedCreator && category) {
@@ -91,9 +109,9 @@ exports.editProfileDetails = async (body) => {
       dateOfBirth: updatedProfile.dateOfBirth,
       gender: updatedProfile.gender,
       phoneNumber: updatedProfile.phoneNumber,
-      localGovernment: updatedProfile.localGovernment || "",
-      state: updatedProfile.state || "",
-      country: updatedProfile.country || "",
+      localGovernment: updatedEcosystem.localGovernment || "",
+      state: updatedEcosystem.state || "",
+      country: updatedEcosystem.country || "",
       profileImage: updatedProfile.image,
       category: updatedCreator?.categoryInterest || "",
       description: updatedEcosystem?.ecosystemDescription || "",
@@ -108,6 +126,9 @@ exports.editProfileDetails = async (body) => {
       },
     };
   } catch (error) {
-    return { status: 500, data: { message: "Internal server error", error: error.message } };
+    return {
+      status: 500,
+      data: { message: "Internal server error", error: error.message },
+    };
   }
 };
