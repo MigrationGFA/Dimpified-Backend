@@ -1,10 +1,19 @@
 const axios = require("axios");
+const formatPhoneNumber = (phoneNumber) => {
+  if (phoneNumber.startsWith("0")) {
+    return `234${phoneNumber.slice(1)}`;
+  }
+  
+  return phoneNumber; 
+};
 
 const newsSendSMS = async (to, sms, type) => {
   try {
+    const newPhoneNumber = formatPhoneNumber(to)
     const data = {
-      to,
-      from: "DIMP",
+      to: newPhoneNumber,
+      from: 'DIMP',
+
       sms,
       type,
       api_key: process.env.TERMII_SMS_API,
@@ -24,6 +33,7 @@ const newsSendSMS = async (to, sms, type) => {
 
     return response.data;
   } catch (error) {
+
     console.log(`Failed to send SMS: ${response}`);
     throw new Error(`Failed to send SMS: ${error}`);
   }
