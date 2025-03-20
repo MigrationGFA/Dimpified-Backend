@@ -174,7 +174,8 @@ const sendBookingConfirmationUnpaidEmail = async ({
       </div>
     </div>
   </body>
-</html>`;
+</html>
+`;
 
   await sendEmail({
     to: email,

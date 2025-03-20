@@ -1,4 +1,17 @@
-<!DOCTYPE html>
+const sendEmail = require("./sendEmail");
+
+const sendSubscriptionReminder = async ({
+  day,
+      email,
+      organizationName,
+      websiteUrl,
+      plan,
+      amount,
+      formattedDate
+  
+}) => {
+      const date = new Date(formattedDate).toLocaleDateString();
+  const message = `<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -119,3 +132,16 @@
 </body>
 
 </html>
+
+`;
+
+  return sendEmail({
+    to: email,
+    subject: "Subscription Reminder",
+    html: `<h4>Subscription Reminder</h4>
+    ${message}
+    `,
+  });
+};
+
+module.exports = sendSubscriptionReminder;
