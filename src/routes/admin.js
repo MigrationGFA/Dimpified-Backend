@@ -52,7 +52,11 @@ const {
 
 const createSubdomain = require("../helper/Subdomain")
 
+const {
+  sendSubscriptionReminders
+} = require("../helper/subscriptionHelper")
 
+router.post("/test-reminder", sendSubscriptionReminders);
 router.post("/create-subdomain/:subdomain", createSubdomain);
 
 // registration
