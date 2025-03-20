@@ -32,8 +32,8 @@ const sendSubscriptionReminders = async () => {
                 endDate: {
                     [Op.or]: [
                             { [Op.between]: [sevenDaysAheadStart, sevenDaysAheadEnd] },
-                        //   { [Op.between]: [threeDaysAheadStart, threeDaysAheadEnd] },
-                        // { [Op.between]: [oneDayAheadStart, oneDayAheadEnd] },
+                          { [Op.between]: [threeDaysAheadStart, threeDaysAheadEnd] },
+                        { [Op.between]: [oneDayAheadStart, oneDayAheadEnd] },
                     ],
                 },
                  amount: {
@@ -51,8 +51,8 @@ const sendSubscriptionReminders = async () => {
         for (const sub of subscriptions) {
             let daysLeft;
             if (sub.endDate.toDateString() === sevenDaysAheadStart.toDateString()) daysLeft = "7 days";
-            // if (sub.endDate.toDateString() === threeDaysAheadStart.toDateString()) daysLeft = "3 days";
-            // if (sub.endDate.toDateString() === oneDayAheadStart.toDateString()) daysLeft = "24 hours";
+            if (sub.endDate.toDateString() === threeDaysAheadStart.toDateString()) daysLeft = "3 days";
+            if (sub.endDate.toDateString() === oneDayAheadStart.toDateString()) daysLeft = "24 hours";
             
             const creatorProfile = await CreatorProfile.findOne({ creatorId: sub.creatorId })
               if (!creatorProfile) {
