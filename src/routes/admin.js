@@ -320,7 +320,7 @@ router.get(
 );
 // short access
 router.get(
-  "/ecosystem-monthly-data",
+  "/ecosystem-monthly-data/:email",
    verifyAdmin,
   authenticatedAdmin,
   getEcosystemData
@@ -345,63 +345,63 @@ router.get(
 );
 
 router.get(
-  "/admin/subcategory-overview",
+  "/admin/subcategory-overview/:email",
    verifyAdmin,
   authenticatedAdmin,
   adminController.getAdminDashboardSubcategory
 );
 
 router.get(
-  "/admin/subcategory-information",
+  "/admin/subcategory-information/:email",
    verifyAdmin,
   authenticatedAdmin,
   adminController.getAdminDashboardSubcategoryInformation
 );
 
 router.post(
-  "/admin/approve-withdrawal",
+  "/admin/approve-withdrawal/:email",
    verifyAdmin,
   authenticatedAdmin,
   withdrawalController.approveWithdrawalrequest
 );
 
-router.get("/admin/gmv",
+router.get("/admin/gmv/:email",
    verifyAdmin,
   authenticatedAdmin,
   getGMV);
-router.get("/admin/nmv",
+router.get("/admin/nmv/:email",
    verifyAdmin,
   authenticatedAdmin,
   getNMV);
-router.get("/admin/amount-paid",
+router.get("/admin/amount-paid/:email",
    verifyAdmin,
   authenticatedAdmin,
   getAmountPaid);
-router.get("/admin/unpaid-amount",
+router.get("/admin/unpaid-amount/:email",
    verifyAdmin,
   authenticatedAdmin,
   getUnpaidAmount);
-router.get("/admin/transaction-income",
+router.get("/admin/transaction-income/:email",
    verifyAdmin,
   authenticatedAdmin,
   getTransactionIncome);
-router.get("/admin/total-withdrawals",
+router.get("/admin/total-withdrawals/:email",
    verifyAdmin,
   authenticatedAdmin,
   getTotalWithdrawals);
-router.get("/admin/transactions",
+router.get("/admin/transactions/:email",
    verifyAdmin,
   authenticatedAdmin,
   getTransactions);
-router.get("/admin/subscription-details",
+router.get("/admin/subscription-details/:email",
    verifyAdmin,
   authenticatedAdmin,
   getSubcriptionDetails);
-router.get("/admin/commissions",
+router.get("/admin/commissions/:email",
    verifyAdmin,
   authenticatedAdmin,
   getcommissions);
-router.get("/admin/withdrawals/:status",
+router.get("/admin/withdrawals/:status/:email",
    verifyAdmin,
   authenticatedAdmin,
   getWithdrawals);
