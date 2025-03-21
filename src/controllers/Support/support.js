@@ -3,6 +3,9 @@ const EndUser = require("../../models/EcosystemUser");
 const Ecosystem = require("../../models/Ecosystem");
 const Creator = require("../../models/Creator");
 const bcrypt = require("bcryptjs");
+const CreatorTemplate = require("../../models/creatorTemplate");
+const newsSendSMS = require("../../helper/newSms");
+const sendSupportReplyEmail = require("../../utils/sendSupportReplyEmail");
 
 exports.createSupportTicket = async (req, res) => {
   try {
@@ -33,7 +36,7 @@ exports.createSupportTicket = async (req, res) => {
       console.log("customers:", user);
     }
 
-    await HelpCenter.create({
+   const helpcenter = await HelpCenter.create({
       userId: user.id,
       reason,
       message,
@@ -41,6 +44,8 @@ exports.createSupportTicket = async (req, res) => {
       ecosystemDomain,
       status: "pending",
     });
+
+console.log("helpcenter:",helpcenter)
 
     return res
       .status(201)
@@ -54,23 +59,28 @@ exports.createSupportTicket = async (req, res) => {
 
 exports.getMerchantSupportTickets = async (req, res) => {
   try {
-    const { ecosystemDomain, status } = req.query;
+    const { ecosystemDomain } = req.params;
 
-    if (!ecosystemDomain || !status) {
-      return res
-        .status(400)
-        .json({ message: "EcosystemDomain and status are required" });
+    if (!ecosystemDomain) {
+      return res.status(400).json({ message: "EcosystemDomain is required" });
     }
 
-    if (!["pending", "completed"].includes(status)) {
-      return res.status(400).json({ message: "Invalid status value" });
-    }
-
+    // Fetch all tickets for the given ecosystemDomain
     const tickets = await HelpCenter.findAll({
-      where: { ecosystemDomain, status },
+      where: { ecosystemDomain },
+      include: [
+        {
+          model: EndUser,
+          attributes: ["id", "username", "email"],
+        },
+      ],
     });
 
-    return res.status(200).json({ tickets });
+    // Separate tickets into read and unread
+    const readTickets = tickets.filter((ticket) => ticket.view === true);
+    const unreadTickets = tickets.filter((ticket) => ticket.view === false);
+
+    return res.status(200).json({ read: readTickets, unread: unreadTickets });
   } catch (error) {
     return res
       .status(500)
@@ -86,11 +96,14 @@ exports.getSupportTicketById = async (req, res) => {
       return res.status(400).json({ message: "Ticket ID is required" });
     }
 
-    const ticket = await HelpCenter.findByPk(id);
-    console.log("ticket:",ticket)
-    // const ticket = await HelpCenter.findByPk(id, {
-    //   include: [{ model: EndUser }, { model: Creator }],
-    // });
+    const ticket = await HelpCenter.findByPk(id, {
+      include: [
+        {
+          model: EndUser,
+          attributes: ["id", "username", "email"],
+        },
+      ],
+    });
 
     if (!ticket) {
       return res.status(404).json({ message: "Support ticket not found" });
@@ -98,8 +111,8 @@ exports.getSupportTicketById = async (req, res) => {
     if (ticket.view == false) {
       ticket.view = true;
     }
-    console.log("ticket:",ticket)
 
+    await ticket.save();
     return res.status(200).json(ticket);
   } catch (error) {
     return res
@@ -110,7 +123,7 @@ exports.getSupportTicketById = async (req, res) => {
 
 exports.getSupportBoxStats = async (req, res) => {
   try {
-    const { ecosystemDomain } = req.query;
+    const { ecosystemDomain } = req.params;
 
     if (!ecosystemDomain) {
       return res.status(400).json({ message: "Ecosystem domain is required" });
@@ -132,6 +145,70 @@ exports.getSupportBoxStats = async (req, res) => {
       attendedRequests,
       unattendedRequests,
     });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+
+const formatPhoneNumber = (phoneNumber) => {
+  if (phoneNumber.startsWith("0")) {
+    return `+234${phoneNumber.slice(1)}`;
+  }
+
+  return phoneNumber;
+};
+
+exports.replyToSupportTicket = async (req, res) => {
+  try {
+    const { ticketId, replyMessage, ecosystemDomain } = req.body;
+
+    if (!ticketId || !replyMessage || !ecosystemDomain) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Find the support ticket and user details
+    const ticket = await HelpCenter.findOne({
+      where: { id: ticketId },
+      include: EndUser,
+    });
+
+    if (!ticket) {
+      return res.status(404).json({ message: "Support ticket not found" });
+    }
+
+    const { email, phoneNumber, username } = ticket.EcosystemUser;
+
+    // Update the reply field and mark as completed
+    await ticket.update({ response: replyMessage, status: "completed" });
+
+    const merchant = await Ecosystem.findOne({ecosystemDomain})
+    if (!merchant) {
+      return res.status(404).json({ message: "Ecosystem not found" });
+    }
+
+    const newPhoneNumber = formatPhoneNumber(phoneNumber);
+    // Send SMS notification
+    const smsContent = `Hello ${username}, from ${merchant.ecosystemName} Your support request has been resolved with the following response:${replyMessage}.`;
+    await newsSendSMS(newPhoneNumber, smsContent, "support_reply");
+
+    // Get merchant details from ecosystemDomain
+  
+    const creatorTemplate = await CreatorTemplate.findOne({ ecosystemDomain });
+    const logo = creatorTemplate.navbar.logo; // Business logo
+    // Send formatted email response
+    await sendSupportReplyEmail({
+      email,
+      username,
+      supportMessage: ticket.message,
+      replyMessage,
+      merchantLogo: logo,
+      merchantName: merchant.ecosystemName,
+    });
+
+    return res.status(200).json({ message: "Reply sent successfully" });
   } catch (error) {
     return res
       .status(500)

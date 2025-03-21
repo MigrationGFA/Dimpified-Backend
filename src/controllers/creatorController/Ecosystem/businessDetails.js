@@ -146,3 +146,12 @@ exports.getCustomerDetails = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+exports.updateEcosystemStatus = async (req, res) => {
+  try {
+    const response = await ecosystemDetails.updateEcosystemStatus(req.body);
+    return res.status(response.status).json(response.data);
+  } catch (error) {
+    console.error("Error getting business near me:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
