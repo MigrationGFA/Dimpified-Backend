@@ -204,7 +204,7 @@ router.get(
 router.get(
   "/admin/all-subscription/:email",
   verifyAdmin,
-  authenticatedAdmin,
+  // authenticatedAdmin,
   adminSubscriptionController.getAllSubscriptions
 );
 
@@ -389,7 +389,7 @@ router.get("/admin/total-withdrawals/:email",
    verifyAdmin,
   authenticatedAdmin,
   getTotalWithdrawals);
-router.get("/admin/transactions/:email",
+router.get("/admin/transactions/:email?",
    verifyAdmin,
   authenticatedAdmin,
   getTransactions);
