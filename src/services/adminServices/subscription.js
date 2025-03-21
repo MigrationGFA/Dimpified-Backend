@@ -9,12 +9,13 @@ const {
   getTotalSales
 } = require("../../controllers/AdminController/procedure");
 const Ecosystem = require("../../models/Ecosystem")
+const SubscriptionTransaction = require("../../models/subscriptionTransaction")
+const CreatorProfile = require("../../models/CreatorProfile")
 
 exports.allSubscription = async () => {
-  const subscriptions = await Subscription.findAll({
+  const subscriptions = await SubscriptionTransaction.findAll({
     attributes: [
       "creatorId",
-      "username",
       "planType",
       "ecosystemDomain",
       "amount",
@@ -31,20 +32,27 @@ exports.allSubscription = async () => {
     }, {});
 
   // Format subscriptions with separate date and time
-  const formattedSubscriptions = subscriptions.map((subscription) => {
+  const formattedSubscriptions = await Promise.all(
+  subscriptions.map(async (subscription) => {
     const createdAt = new Date(subscription.createdAt);
+    
+    // Fetch creator profile asynchronously
+    const creatorProfile = await CreatorProfile.findOne({ creatorId: subscription.creatorId });
+    console.log("this is cretaor", creatorProfile)
     return {
       id: subscription.creatorId,
-      username: subscription.username,
+      username: creatorProfile.fullName,
       planType: subscription.planType,
       ecosystemDomain: subscription.ecosystemDomain,
       amount: subscription.amount,
       status: subscription.status,
       category: ecosystemMap[subscription.ecosystemDomain] || "Unknown",
-      date: createdAt.toISOString().split("T")[0], // Extract date (YYYY-MM-DD)
-      time: createdAt.toISOString().split("T")[1].split(".")[0], // Extract time (HH:MM:SS)
+      date: createdAt.toISOString().split("T")[0], 
+      time: createdAt.toISOString().split("T")[1].split(".")[0], 
     };
-  });
+  })
+);
+
 
   // Group subscriptions by planType
   const groupedByPlanType = formattedSubscriptions.reduce(
