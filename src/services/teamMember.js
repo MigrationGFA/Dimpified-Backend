@@ -17,6 +17,19 @@ exports.addTeamMember = async (body) => {
     services,
   } = body;
 
+  const requiredFields = [
+    "fullName",
+    "gender",
+    "phoneNumber",
+    "email",
+    "ecosystemDomain",
+    "creatorId",
+  ];
+  for (const field of requiredFields) {
+    if (!body[field]) {
+      return { status: 400, data: { message: `${field} is required` } };
+    }
+  }
   // Check if the creator exists
   const creator = await Creator.findByPk(creatorId);
   if (!creator) {
@@ -40,7 +53,7 @@ exports.addTeamMember = async (body) => {
     role: "team_member",
   });
 
-  console.log("creator:",teamMember)
+  console.log("creator:", teamMember);
 
   // Create team member in MongoDB (DimpifiedTeamMember)
   const dimpifiedTeamMember = new DimpifiedTeamMember({
@@ -55,7 +68,7 @@ exports.addTeamMember = async (body) => {
     status: "active",
   });
   await dimpifiedTeamMember.save();
-console.log("teammeber:",dimpifiedTeamMember)
+  console.log("teammeber:", dimpifiedTeamMember);
 
   // Send onboarding email
   await sendOnboardingEmail({
@@ -79,6 +92,20 @@ exports.onboardTeamMember = async (body) => {
     country,
   } = body;
 
+  const requiredFields = [
+    "email",
+    "password",
+    "dateOfBirth",
+    "state",
+    "localGovernment",
+    "address",
+    "country",
+  ];
+  for (const field of requiredFields) {
+    if (!body[field]) {
+      return { status: 400, data: { message: `${field} is required` } };
+    }
+  }
   // Check if the team member exists
   const teamMember = await DimpifiedTeamMember.findOne({ email });
   if (!teamMember) {
@@ -103,7 +130,7 @@ exports.onboardTeamMember = async (body) => {
   };
 };
 
-exports.getTeamMembers = async ( params) => {
+exports.getTeamMembers = async (params) => {
   const { ecosystemDomain } = params;
 
   if (!ecosystemDomain) {
@@ -115,9 +142,12 @@ exports.getTeamMembers = async ( params) => {
   return { status: 200, data: { teamMembers } };
 };
 
-exports.deleteTeamMember = async ( params) => {
+exports.deleteTeamMember = async (params) => {
   const { teamMemberId } = params;
 
+  if (!teamMemberId) {
+    return { status: 400, data: { message: "teamMemberid is required" } };
+  }
   // Find and update the team member's status to "deactivated"
   const teamMember = await DimpifiedTeamMember.findByIdAndUpdate(
     teamMemberId,
