@@ -68,7 +68,6 @@ exports.websiteDetails = async (req, res) => {
   }
 };
 
-
 exports.getNotification = async (req, res) => {
   try {
     const response = await ecosystemDetails.getNotification(req.params);
