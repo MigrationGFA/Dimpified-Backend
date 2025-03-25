@@ -7,6 +7,7 @@ const ecosystemProduct = require("../controllers/creatorController/Products/serv
 router.post("/create-service", 
   authenticatedUser,
   ecosystemProduct.createService);
+  
 router.get(
   "/get-all-services/:ecosystemDomain",
   ecosystemProduct.getAllServices
