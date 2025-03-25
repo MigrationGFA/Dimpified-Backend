@@ -25,6 +25,17 @@ exports.allSubscription = async () => {
     order: [["createdAt", "DESC"]],
   });
 
+  const liteSubscriptions = await Subscription.findAll({
+    where: { planType: "Lite" },
+    attributes: [
+      "creatorId",
+      "planType",
+      "ecosystemDomain",
+      "startDate",  // No transaction date, so use startDate
+    ],
+    order: [["createdAt", "DESC"]],
+  });
+
   const ecosystems = await Ecosystem.find({}, { ecosystemDomain: 1, mainObjective: 1, _id: 0 }).lean();
     const ecosystemMap = ecosystems.reduce((map, ecosystem) => {
       map[ecosystem.ecosystemDomain] = ecosystem.mainObjective; // Map ecosystemDomain to mainObjective
@@ -53,9 +64,31 @@ exports.allSubscription = async () => {
   })
 );
 
+// Format Lite subscriptions
+  const formattedLiteSubscriptions = await Promise.all(
+    liteSubscriptions.map(async (subscription) => {
+      const startDate = new Date(subscription.startDate);
+      const creatorProfile = await CreatorProfile.findOne({ creatorId: subscription.creatorId });
+
+      return {
+        id: subscription.creatorId,
+        username: creatorProfile?.fullName || "Unknown",
+        planType: "Lite",
+        ecosystemDomain: subscription.ecosystemDomain,
+        amount: 0,  // Lite plan is free
+        status: "active",  // Lite plan is always active
+        category: ecosystemMap[subscription.ecosystemDomain] || "Unknown",
+        date: startDate.toISOString().split("T")[0], 
+        time: startDate.toISOString().split("T")[1].split(".")[0], 
+      };
+    })
+  );
+
+  // Merge both lists
+  const allSubscriptions = [...formattedSubscriptions, ...formattedLiteSubscriptions];
 
   // Group subscriptions by planType
-  const groupedByPlanType = formattedSubscriptions.reduce(
+  const groupedByPlanType = allSubscriptions.reduce(
     (acc, subscription) => {
       const { planType } = subscription;
       if (!acc[planType]) {
