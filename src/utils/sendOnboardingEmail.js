@@ -1,7 +1,7 @@
 const sendEmail = require("./sendEmail");
 
 const sendOnboardingEmail = async ({ email, fullName, organizationName, origin }) => {
-  const onboardingLink = `https://${origin}api/v1/onboard-team-member`;
+  const onboardingLink = `https://${origin}/api/v1/onboard-team-member`;
 
   const message = `
     <!DOCTYPE html>
