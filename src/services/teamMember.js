@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const Creator = require("../models/Creator");
 const DimpifiedTeamMember = require("../models/DimpTeamMember");
 const sendOnboardingEmail = require("../utils/sendOnboardingEmail");
+const mongoose = require("mongoose");
 
 const origin = process.env.ORIGIN;
 
@@ -138,28 +139,40 @@ exports.getTeamMembers = async (params) => {
   }
 
   // Fetch all team members under the given ecosystem domain
-  const teamMembers = await DimpifiedTeamMember.find({ ecosystemDomain });
+  const teamMembers = await DimpifiedTeamMember.find({ ecosystemDomain, status:"active" });
   return { status: 200, data: { teamMembers } };
 };
 
-exports.deleteTeamMember = async (params) => {
-  const { teamMemberId } = params;
+exports.deleteTeamMember = async (query) => {
+  const { ids, ecosystemDomain } = query;
 
-  if (!teamMemberId) {
-    return { status: 400, data: { message: "teamMemberid is required" } };
+  if (!ids) {
+    return { status: 400, data: { message: "ids are required" } };
   }
-  // Find and update the team member's status to "deactivated"
-  const teamMember = await DimpifiedTeamMember.findByIdAndUpdate(
-    teamMemberId,
-    { status: "deactivated" },
-    { new: true }
+
+  // Convert the comma-separated string into an array
+  const teamMemberIds = ids.split(",").map((id) => id.trim());
+
+  // Validate ObjectIds
+  const validIds = teamMemberIds.filter((id) => mongoose.Types.ObjectId.isValid(id));
+
+  if (validIds.length === 0) {
+    return { status: 400, data: { message: "Invalid team member IDs" } };
+  }
+
+  // Find and update the team members' status to "deactivated"
+  const result = await DimpifiedTeamMember.updateMany(
+    { _id: { $in: validIds } },
+    { $set: { status: "deactivated" } }
   );
 
-  if (!teamMember) {
-    return { status: 404, data: { message: "Team member not found" } };
+  if (result.modifiedCount === 0) {
+    return { status: 404, data: { message: "No team members found to deactivate" } };
   }
+
   return {
     status: 200,
-    data: { message: "Team member deactivated successfully" },
+    data: { message: `${result.modifiedCount} Team member(s) deactivated successfully` },
   };
 };
+

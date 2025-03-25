@@ -32,8 +32,8 @@ exports.getTeamMembers = async (req, res) => {
 };
 exports.deleteTeamMember = async (req, res) => {
   try {
-    console.log("params:", req.params);
-    const response = await teamServices.deleteTeamMember(req.params);
+    console.log("params:", req.query);
+    const response = await teamServices.deleteTeamMember(req.query);
     return res.status(response.status).json(response.data);
   } catch (error) {
     console.error("Error verifying email:", error);

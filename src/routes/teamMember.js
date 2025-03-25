@@ -13,9 +13,6 @@ router.post("/onboard-team-member", teamController.onboardTeamMember);
 router.get("/get-team-members/:ecosystemDomain", teamController.getTeamMembers);
 
 // Delete (deactivate) a team member
-router.delete(
-  "/delete-team-member/:teamMemberId",
-  teamController.deleteTeamMember
-);
+router.delete("/delete-team-member", teamController.deleteTeamMember);
 
 module.exports = router;
