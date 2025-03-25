@@ -1221,167 +1221,159 @@ exports.createBookingRecord = async (body) => {
 };
 
 
+exports.verifyFlutterwaveSubscription = async (req, res) => {
+  try {
+      const secretHash = process.env.FLW_SECRET_HASH;
+      const signature = req.headers["verif-hash"];
+      if (!signature || signature !== secretHash){
+	     // This response is not from Flutterwave; discard
+	          return res.status(401).json({ message: "invalid secret key" });
+       }
+    
+    const event = req.body;
+    const {
+      id: reference,
+      tx_ref,
+      amount,
+      currency,
+      customer,
+      status,
+      meta,
+    } = event.data;
 
+    if (status !== "successful") {
+      return res.status(400).json({ message: "Payment failed" });
+    }
 
+    // Extract subscription details
+    const { creatorId, ecosystemDomain, planType, interval, sizeLimit } =
+      meta || {};
 
-// exports.verifyFlutterwaveSubscription = async (req, res) => {
-//   try {
-//     const secret = process.env.FLUTTER_SECRET_KEY;
-//     const event = req.body;
+    if (!creatorId || !ecosystemDomain || !amount || !interval || !planType) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
 
-//     // Validate Flutterwave signature
-//     const hash = crypto
-//       .createHmac("sha512", secret)
-//       .update(JSON.stringify(event))
-//       .digest("hex");
+    // Validate ecosystem
+    const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
+    if (!ecosystem) {
+      return res.status(404).json({ message: "Ecosystem not found" });
+    }
 
-//     if (req.headers["verif-hash"] !== hash) {
-//       return res.status(403).json({ message: "Invalid Flutterwave signature" });
-//     }
+    // Determine subscription duration
+    const validPlanCodes = { monthly: 1, "bi-annually": 6, annually: 12 };
+    const months = validPlanCodes[interval.toLowerCase()] || 1;
 
-//     const {
-//       id: reference,
-//       tx_ref,
-//       amount,
-//       currency,
-//       customer,
-//       status,
-//       meta,
-//     } = event.data;
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + months);
 
-//     if (status !== "successful") {
-//       return res.status(400).json({ message: "Payment failed" });
-//     }
+    // Save transaction record
+    await SubscriptionTransaction.create({
+      creatorId,
+      reference,
+      planCode: "one time payment",
+      planType,
+      amount,
+      currency,
+      sizeLimit,
+      status: "successful",
+      ecosystemDomain,
+    });
 
-//     // Extract subscription details
-//     const { creatorId, ecosystemDomain, planType, interval, sizeLimit } =
-//       meta || {};
+    // Update or create subscription
+    let subscription = await Subscription.findOne({ where: { creatorId } });
+    if (subscription) {
+      await subscription.update({
+        planType,
+        startDate,
+        endDate,
+        sizeLimit,
+        amount,
+        currency,
+        email: customer.email,
+        username: customer.name,
+        interval,
+        status: "successful",
+        subscriptionCount: subscription.subscriptionCount + 1,
+        ecosystemDomain,
+      });
+    } else {
+      await Subscription.create({
+        creatorId,
+        planType,
+        startDate,
+        endDate,
+        sizeLimit,
+        amount,
+        currency,
+        email: customer.email,
+        username: customer.name,
+        interval,
+        status: "successful",
+        ecosystemDomain,
+      });
+    }
 
-//     if (!creatorId || !ecosystemDomain || !amount || !interval || !planType) {
-//       return res.status(400).json({ message: "Missing required fields" });
-//     }
+    // Affiliate earning logic
+    const creator = await Creator.findByPk(creatorId);
+    if (!creator) {
+      return res.status(404).json({ message: "Creator not found" });
+    }
 
-//     // Validate ecosystem
-//     const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
-//     if (!ecosystem) {
-//       return res.status(404).json({ message: "Ecosystem not found" });
-//     }
+    if (creator.affiliateId && subscription.subscriptionCount < 2) {
+      let affiliateEarning = await AffiliateEarning.findOne({
+        where: { affiliateId: creator.affiliateId },
+      });
 
-//     // Determine subscription duration
-//     const validPlanCodes = { monthly: 1, "bi-annually": 6, annually: 12 };
-//     const months = validPlanCodes[interval.toLowerCase()] || 1;
+      if (!affiliateEarning) {
+        affiliateEarning = await AffiliateEarning.create({
+          affiliateId: creator.affiliateId,
+          Naira: 0,
+          Dollar: 0,
+        });
+      }
 
-//     const startDate = new Date();
-//     const endDate = new Date();
-//     endDate.setMonth(endDate.getMonth() + months);
+      const affiliateShare = (15 / 100) * amount;
+      if (currency === "NGN") {
+        affiliateEarning.Naira = (
+          parseFloat(affiliateEarning.Naira) + affiliateShare
+        ).toFixed(2);
+      } else if (currency === "USD") {
+        affiliateEarning.Dollar = (
+          parseFloat(affiliateEarning.Dollar) + affiliateShare
+        ).toFixed(2);
+      } else {
+        return res.status(400).json({ message: "Unsupported currency" });
+      }
 
-//     // Save transaction record
-//     await SubscriptionTransaction.create({
-//       creatorId,
-//       reference,
-//       planCode: "one time payment",
-//       planType,
-//       amount,
-//       currency,
-//       sizeLimit,
-//       status: "successful",
-//       ecosystemDomain,
-//     });
+      await affiliateEarning.save();
+      await AffiliateEarningHistory.create({
+        affiliateId: creator.affiliateId,
+        userId: creatorId,
+        amount: parseFloat(affiliateShare).toFixed(2),
+        currency,
+        planType,
+        sizeLimit,
+        interval,
+      });
+    }
 
-//     // Update or create subscription
-//     let subscription = await Subscription.findOne({ where: { creatorId } });
-//     if (subscription) {
-//       await subscription.update({
-//         planType,
-//         startDate,
-//         endDate,
-//         sizeLimit,
-//         amount,
-//         currency,
-//         email: customer.email,
-//         username: customer.name,
-//         interval,
-//         status: "successful",
-//         subscriptionCount: subscription.subscriptionCount + 1,
-//         ecosystemDomain,
-//       });
-//     } else {
-//       await Subscription.create({
-//         creatorId,
-//         planType,
-//         startDate,
-//         endDate,
-//         sizeLimit,
-//         amount,
-//         currency,
-//         email: customer.email,
-//         username: customer.name,
-//         interval,
-//         status: "successful",
-//         ecosystemDomain,
-//       });
-//     }
+    // Create subdomain for ecosystem
+    await createSubdomain(ecosystemDomain);
+    creator.step = 5;
+    await creator.save();
 
-//     // Affiliate earning logic
-//     const creator = await Creator.findByPk(creatorId);
-//     if (!creator) {
-//       return res.status(404).json({ message: "Creator not found" });
-//     }
+    ecosystem.completed = "true";
+    ecosystem.status = "private";
+    await ecosystem.save();
 
-//     if (creator.affiliateId && subscription.subscriptionCount < 2) {
-//       let affiliateEarning = await AffiliateEarning.findOne({
-//         where: { affiliateId: creator.affiliateId },
-//       });
-
-//       if (!affiliateEarning) {
-//         affiliateEarning = await AffiliateEarning.create({
-//           affiliateId: creator.affiliateId,
-//           Naira: 0,
-//           Dollar: 0,
-//         });
-//       }
-
-//       const affiliateShare = (15 / 100) * amount;
-//       if (currency === "NGN") {
-//         affiliateEarning.Naira = (
-//           parseFloat(affiliateEarning.Naira) + affiliateShare
-//         ).toFixed(2);
-//       } else if (currency === "USD") {
-//         affiliateEarning.Dollar = (
-//           parseFloat(affiliateEarning.Dollar) + affiliateShare
-//         ).toFixed(2);
-//       } else {
-//         return res.status(400).json({ message: "Unsupported currency" });
-//       }
-
-//       await affiliateEarning.save();
-//       await AffiliateEarningHistory.create({
-//         affiliateId: creator.affiliateId,
-//         userId: creatorId,
-//         amount: parseFloat(affiliateShare).toFixed(2),
-//         currency,
-//         planType,
-//         sizeLimit,
-//         interval,
-//       });
-//     }
-
-//     // Create subdomain for ecosystem
-//     await createSubdomain(ecosystemDomain);
-//     creator.step = 5;
-//     await creator.save();
-
-//     ecosystem.completed = "true";
-//     ecosystem.status = "private";
-//     await ecosystem.save();
-
-//     return res.status(201).json({
-//       message: "Subscription verified successfully",
-//       ecosystemDomain,
-//       planType,
-//     });
-//   } catch (error) {
-//     console.error("Error verifying Flutterwave subscription:", error);
-//     return res.status(500).json({ message: "Internal server error" });
-//   }
-// };
+    return res.status(201).json({
+      message: "Subscription verified successfully",
+      ecosystemDomain,
+      planType,
+    });
+  } catch (error) {
+    console.error("Error verifying Flutterwave subscription:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
