@@ -3,7 +3,10 @@ const paymentController = require("../controllers/creatorController/Payment/Subs
 const withdrawRequest = require("../controllers/creatorController/Payment/Withdrawal");
 const bookingController = require("../controllers/creatorController/Payment/Features");
 const router = express.Router();
-const authenticatedUser  = require("../middleware/authentication")
+const authenticatedUser = require("../middleware/authentication")
+const {
+  verifyFlutterwaveSubscription
+} = require("../services/paymentServices")
 
 router.post(
   "/payment/verify-subscription",
@@ -26,6 +29,12 @@ router.get(
   withdrawRequest.withdrawalRequest
 );
 
+
+// flutterwebhook
+router.get(
+  "/flw-subcriber-webhook",
+  verifyFlutterwaveSubscription
+);
 
 
 module.exports = router;
