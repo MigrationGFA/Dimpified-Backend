@@ -359,8 +359,7 @@ router.get(
 );
 
 router.post(
-  "/admin/approve-withdrawal/:email",
-   verifyAdmin,
+  "/admin/approve-withdrawal",
   authenticatedAdmin,
   withdrawalController.approveWithdrawalrequest
 );

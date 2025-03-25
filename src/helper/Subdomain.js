@@ -146,6 +146,7 @@ const createSubdomain = async (subdomain) => {
             );
         } catch (error) {
             const match = error.details?.Message?.match(/asuid\.[^\s]+ to ([^\s]+)/);
+            console.log("this is match", match)
             if (match) {
                 validationToken = match[1];
                 console.log(`Validation token for ${fullDomain}: ${validationToken}`);
