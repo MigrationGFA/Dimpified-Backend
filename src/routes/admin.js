@@ -204,7 +204,7 @@ router.get(
 router.get(
   "/admin/all-subscription/:email",
   verifyAdmin,
-  // authenticatedAdmin,
+  authenticatedAdmin,
   adminSubscriptionController.getAllSubscriptions
 );
 
@@ -359,8 +359,7 @@ router.get(
 );
 
 router.post(
-  "/admin/approve-withdrawal/:email",
-   verifyAdmin,
+  "/admin/approve-withdrawal",
   authenticatedAdmin,
   withdrawalController.approveWithdrawalrequest
 );
