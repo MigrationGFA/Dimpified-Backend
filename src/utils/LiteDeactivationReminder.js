@@ -1,4 +1,17 @@
-<!DOCTYPE html>
+const sendEmail = require("./sendEmail");
+
+const sendLiteDeactionReminder = async ({
+  day,
+      email,
+      organizationName,
+      websiteUrl,
+      plan,
+      amount,
+      formattedDate
+  
+}) => {
+      const date = new Date(formattedDate).toLocaleDateString();
+  const message = `<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -41,7 +54,7 @@
                                 </div>
                                 <div
                                     style="font-size: 15px; font-weight: normal; margin-bottom: 27px; line-height: 30px">
-                                    <p style="margin-bottom:2px; color:#333; font-weight: 600">Hello ${organizationName},!</h2>
+                                    <p style="margin-bottom:2px; color:#333; font-weight: 600">Hello ${organizationName}!</h2>
                                     <p>We wish to inform you that your Free Merchant/Business page on Dimpified
           will be deactivated in <strong>${day}</strong>. Please upgrade to a paid Plan to prevent your business website from been deactivated </p>
                                     <p style="margin-bottom: 2px; color: #333">
@@ -114,3 +127,16 @@
 </body>
 
 </html>
+
+`;
+
+  return sendEmail({
+    to: email,
+    subject: "Subscription Reminder",
+    html: `<h4>Subscription Reminder</h4>
+    ${message}
+    `,
+  });
+};
+
+module.exports = sendLiteDeactionReminder;
