@@ -57,7 +57,7 @@ const sendSubscriptionReminder = async ({
                                 <!--begin:Text-->
                                 <div
                                     style="font-size: 15px; font-weight: normal; margin-bottom: 27px; line-height: 30px">
-                                    <p style="margin-bottom:2px; color:#333; font-weight: 600">Hello ${organizationName},!</h2>
+                                    <p style="margin-bottom:2px; color:#333; font-weight: 600">Hello ${organizationName}!</h2>
                                     <p>We wish to inform you that your Merchant/Business page on Dimpified
           will expire in less than <strong>${day}</strong></p>
                                     <p style="margin-bottom: 2px; color: #333">
