@@ -46,6 +46,8 @@ const templateSchema = new mongoose.Schema({
     title2: String,
     text1: String,
     text2: String,
+    text3: String,
+    text4: String,
     buttonText1: String,
     buttonText2: String,
     image1: String,
@@ -135,6 +137,11 @@ const templateSchema = new mongoose.Schema({
     summary5: String,
     image6: String,
     summary6: String,
+    image7: String,
+    summary7: String,
+    image8: String,
+    summary8: String,
+    
   },
   LargeCta: {
     image1: String,
@@ -148,6 +155,8 @@ const templateSchema = new mongoose.Schema({
     buttonText2: String,
   },
   Team: {
+    title1:String,
+    title2:String,
     image1: String,
     header1: String,
     summary1: String,
