@@ -8,7 +8,7 @@ const corsOptions = require("./src/config/corsOptions");
 const PORT = process.env.PORT || 7070;
 const path = require("path");
 const { limiter } = require("./src/middleware/RateLimter");
-require("./src/controllers/CronJob/SubscriptionReminder")
+require("./src/controllers/CronJob/SubscriptionReminder");
 app.use(express.urlencoded({ extended: false }));
 
 connectDB();
