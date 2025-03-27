@@ -1233,7 +1233,6 @@ exports.verifyFlutterwaveSubscription = async (req, res) => {
     const event = req.body;
     const {
       id: reference,
-      tx_ref,
       amount,
       currency,
       customer,
@@ -1241,22 +1240,31 @@ exports.verifyFlutterwaveSubscription = async (req, res) => {
       meta,
     } = event.data;
 
+    const existingTransaction = await SubscriptionTransaction.findOne({ where: { reference } });
+if (existingTransaction) {
+  return res.status(200).json({ message: "Transaction already processed" });
+}
+
     if (status !== "successful") {
       return res.status(400).json({ message: "Payment failed" });
     }
+
+    if (!event.data.meta) {
+  return res.status(200).json({ message: "Meta data is missing" });
+}
 
     // Extract subscription details
     const { creatorId, ecosystemDomain, planType, interval, sizeLimit } =
       meta || {};
 
     if (!creatorId || !ecosystemDomain || !amount || !interval || !planType) {
-      return res.status(400).json({ message: "Missing required fields" });
+      return res.status(200).json({ message: "Missing required fields" });
     }
 
     // Validate ecosystem
     const ecosystem = await Ecosystem.findOne({ ecosystemDomain });
     if (!ecosystem) {
-      return res.status(404).json({ message: "Ecosystem not found" });
+      return res.status(200).json({ message: "Ecosystem not found" });
     }
 
     // Determine subscription duration
@@ -1317,7 +1325,7 @@ exports.verifyFlutterwaveSubscription = async (req, res) => {
     // Affiliate earning logic
     const creator = await Creator.findByPk(creatorId);
     if (!creator) {
-      return res.status(404).json({ message: "Creator not found" });
+      return res.status(200).json({ message: "Creator not found" });
     }
 
     if (creator.affiliateId && subscription.subscriptionCount < 2) {
@@ -1367,7 +1375,7 @@ exports.verifyFlutterwaveSubscription = async (req, res) => {
     ecosystem.status = "private";
     await ecosystem.save();
 
-    return res.status(201).json({
+    return res.status(200).json({
       message: "Subscription verified successfully",
       ecosystemDomain,
       planType,
@@ -1377,3 +1385,46 @@ exports.verifyFlutterwaveSubscription = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+exports.comfirmSubscription = async (param) => {
+   const { email } = param;
+    const details = [ "email"];
+  
+    for (const [key, value] of Object.entries(details)) {
+      if (!value) {
+        return { status: 400, data: { message: `${key} is required` } };
+      }
+    }
+  
+    const creator = await Creator.findOne({ where: { email: email } });
+    if (!creator) {
+      return { status: 401, data: { message: "Invalid email Credential" } };
+  }
+
+  if (creator.step === 5) {
+    const checkSubscribtion = await Subscription.findOne({
+      where: {
+        email
+      }
+    })
+    if (!checkSubscribtion) {
+      return {
+        status: 404, data: {
+          message: "Subscription Pending",
+        }
+      }
+    }
+    return {
+      status: 404, data: {
+        message: "Subscription verified successfully",
+        ecosystemDomain: checkSubscribtion.ecosystemDomain,
+        planType: checkSubscribtion.planType,
+      }
+    };
+  }
+   return {
+        status: 404, data: {
+          message: "Subscription Pending",
+        }
+      }
+}
