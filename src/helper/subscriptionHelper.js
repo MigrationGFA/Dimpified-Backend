@@ -125,9 +125,9 @@ const sendLitePlanDownGradeReminder = async () => {
       let daysLeft = "";
       const endDateStr = sub.endDate.toISOString().split("T")[0];
 
-      if (endDateStr === sevenDaysAhead.toISOString().split("T")[0]) daysLeft = "7 days";
-      if (endDateStr === threeDaysAhead.toISOString().split("T")[0]) daysLeft = "3 days";
-      if (endDateStr === oneDayAhead.toISOString().split("T")[0]) daysLeft = "24 hours";
+      if (endDateStr === sevenDaysAhead.toISOString().split("T")[0]) daysLeft = "in 7 days";
+      if (endDateStr === threeDaysAhead.toISOString().split("T")[0]) daysLeft = "in 3 days";
+      if (endDateStr === oneDayAhead.toISOString().split("T")[0]) daysLeft = "in 24 hours";
 
       if (!daysLeft) continue; // Skip if no match found
 
@@ -150,7 +150,6 @@ const sendLitePlanDownGradeReminder = async () => {
         organizationName: creatorProfile.fullName,
         websiteUrl: `https://${sub.ecosystemDomain}.dimpified.com`,
         plan: sub.planType,
-        amount: sub.amount,
         formattedDate: sub.endDate,
       });
 
@@ -166,6 +165,61 @@ const sendLitePlanDownGradeReminder = async () => {
   }
 };
 
-// const sendPlanExpirationReminder = 
+// send reminder to those subscribtion have expire but have current month grace
+const sendPlanExpirationReminder = async () => {
+  try {
+    // Fetch Lite Plan subscriptions expiring soon
+    const subscriptions = await Subscription.findAll({
+      where: {
+        planType: "Lite",
+        endDate: {
+          [Op.lt]: new Date(),
+        },
+      },
+    });
 
-module.exports = { sendSubscriptionReminders, sendLitePlanDownGradeReminder };
+    if (subscriptions.length === 0) {
+      console.log("✅ No Lite plan subscriptions requiring reminders today.");
+      return;
+    }
+
+    // Send reminders
+    for (const sub of subscriptions) {
+     
+
+      const creatorProfile = await CreatorProfile.findOne({ creatorId: sub.creatorId });
+      if (!creatorProfile) {
+        console.log(`❌ Creator profile not found for ID: ${sub.creatorId}`);
+        continue;
+      }
+
+      const message = `
+        Hello ${creatorProfile.fullName}, Your Lite Plan subscription will expire on March 31st 2025. Your Business website on https://${sub.ecosystemDomain}.dimpified.com will be disabled if you do not upgrade to a paid plan.
+
+        Upgrade now: https://dimpified.com/auth/login?subscription
+      `;
+
+      // Send email reminder
+      await sendLiteDeactionReminder({
+        day: "on March 31st 2025",
+        email: creatorProfile.email,
+        organizationName: creatorProfile.fullName,
+        websiteUrl: `https://${sub.ecosystemDomain}.dimpified.com`,
+        plan: sub.planType,
+        formattedDate: sub.endDate,
+      });
+
+      // Send SMS reminder
+      await newsSendSMS(creatorProfile.phoneNumber, message, "plain");
+
+      console.log(`📩 Reminder sent to ${creatorProfile.email} (expires in ${daysLeft})`);
+    }
+
+    return;
+  } catch (error) {
+    console.error("❌ Error sending Lite Plan downgrade reminders:", error);
+  }
+};
+
+
+module.exports = { sendSubscriptionReminders, sendLitePlanDownGradeReminder, sendPlanExpirationReminder, sendPlanExpirationReminder };

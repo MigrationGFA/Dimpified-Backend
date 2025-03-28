@@ -6,7 +6,6 @@ const sendLiteDeactionReminder = async ({
       organizationName,
       websiteUrl,
       plan,
-      amount,
       formattedDate
   
 }) => {
@@ -56,7 +55,7 @@ const sendLiteDeactionReminder = async ({
                                     style="font-size: 15px; font-weight: normal; margin-bottom: 27px; line-height: 30px">
                                     <p style="margin-bottom:2px; color:#333; font-weight: 600">Hello ${organizationName}!</h2>
                                     <p>We wish to inform you that your Free Merchant/Business page on Dimpified
-          will be deactivated in <strong>${day}</strong>. Please upgrade to a paid Plan to prevent your business website from been deactivated </p>
+          will be deactivated  <strong>${day}</strong>. Please upgrade to a paid Plan to prevent your business website from been deactivated </p>
                                     <p style="margin-bottom: 2px; color: #333">
                                         Below is the website details.
                                     </p>
