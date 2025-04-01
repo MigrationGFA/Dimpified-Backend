@@ -8,7 +8,7 @@ cron.schedule("0 9 * * *", async () => {
     console.log("🔄 Running subscription reminder job...");
     await sendSubscriptionReminders();
     await sendLitePlanDownGradeReminder();
-    await sendPlanExpirationReminder();
+    // await sendPlanExpirationReminder();
 });
 
 module.exports = cron;
