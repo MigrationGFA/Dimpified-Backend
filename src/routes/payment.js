@@ -8,6 +8,19 @@ const {
   verifyFlutterwaveSubscription
 } = require("../services/paymentServices")
 
+// flutterwebhook
+router.get(
+  "/flw-subcriber-webhook",
+verifyFlutterwaveSubscription
+);
+
+// check user subscriptionStatus
+router.get(
+  "/check-subscription-status/:email",
+  paymentController.comfirmSubscription
+);
+
+//
 router.post(
   "/payment/verify-subscription",
   paymentController.verifySubscription
@@ -30,11 +43,7 @@ router.get(
 );
 
 
-// flutterwebhook
-router.get(
-  "/flw-subcriber-webhook",
-  verifyFlutterwaveSubscription
-);
+
 
 
 module.exports = router;
