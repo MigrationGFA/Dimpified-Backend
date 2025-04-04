@@ -1,4 +1,4 @@
-const { DataTypes } = require("sequelize");
+const { DataTypes, BOOLEAN } = require("sequelize");
 const { sequelize } = require("../config/dbConnect");
 const Creator = require("./Creator");
 
@@ -42,6 +42,10 @@ const CreatorSupport = sequelize.define(
       type: DataTypes.ENUM("pending", "completed"),
       allowNull: false,
       defaultValue: "pending",
+    },
+    viewStatus: {
+      type: BOOLEAN,
+      defaultValue: false,
     },
   },
   {
